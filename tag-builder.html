@@ -138,6 +138,16 @@ body.theme-monochrome {
   --accent-grad: linear-gradient(135deg, #111111, #555555);
   --shadow: 0 4px 24px rgba(0,0,0,0.10);
 }
+/* Warm cream ("paper-notebook") palette with a deep teal-to-jade accent —
+   feels professional and easy on the eyes for long writing sessions. */
+body.theme-linen {
+  --bg-grad: linear-gradient(135deg, #FAF6ED 0%, #F2EAD3 100%);
+  --bg: #fdfaf3;  --surface: #fffdf6cc;  --surface-2: #fffdf6;
+  --text: #1f2e2e; --text-muted: #7a8285;
+  --border: #e6dec8; --accent: #0d7377; --accent-2: #14b8a6;
+  --accent-grad: linear-gradient(135deg, #0d7377, #14b8a6);
+  --shadow: 0 4px 24px rgba(13,115,119,0.15);
+}
 
 /* ---------- BASE ---------- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -262,22 +272,22 @@ input, textarea, select { font: inherit; color: inherit; }
 .sidebar-foot { padding: 10px; border-top: 1px solid var(--border); display: flex; gap: 6px; }
 
 /* ---------- BUILDER ---------- */
-.builder { overflow-y: auto; padding: 22px 26px; }
+.builder { overflow-y: auto; padding: 16px 22px; }
 .builder-head {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14px; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 10px; gap: 8px; flex-wrap: wrap;
 }
-.builder-title { font-size: 19px; font-weight: 700; letter-spacing: -0.2px; }
+.builder-title { font-size: 18px; font-weight: 700; letter-spacing: -0.2px; }
 .builder-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .section {
   background: var(--surface); backdrop-filter: blur(10px);
   border: 1px solid var(--border); border-radius: 12px;
-  padding: 14px; margin-bottom: 12px;
+  padding: 10px 12px; margin-bottom: 8px;
 }
 .section-head {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 .section-title {
   font-size: 11px; font-weight: 600;
@@ -285,42 +295,42 @@ input, textarea, select { font: inherit; color: inherit; }
   color: var(--text-muted);
 }
 
-.row { display: grid; gap: 8px; }
+.row { display: grid; gap: 6px; }
 .row-2 { grid-template-columns: 1fr 1fr; }
 .row-3 { grid-template-columns: 1fr 1fr 1fr; }
 .row-rev { grid-template-columns: 1fr 1fr 2fr; }
 .row-att { grid-template-columns: auto 1fr; align-items: end; gap: 12px; }
 
-.field { display: flex; flex-direction: column; gap: 4px; }
+.field { display: flex; flex-direction: column; gap: 2px; }
 .field label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
 .field input, .field textarea, .field select {
-  padding: 8px 10px; border-radius: 8px;
+  padding: 6px 9px; border-radius: 7px;
   border: 1px solid var(--border); background: var(--bg);
   transition: border 0.15s;
 }
 .field input:focus, .field textarea:focus, .field select:focus {
   outline: none; border-color: var(--accent);
 }
-.field textarea { min-height: 56px; resize: vertical; font-family: inherit; }
+.field textarea { min-height: 42px; resize: vertical; font-family: inherit; }
 .field-hint {
-  padding: 8px 10px; color: var(--text-muted); font-size: 12px;
-  background: var(--bg); border-radius: 8px; border: 1px dashed var(--border);
+  padding: 6px 10px; color: var(--text-muted); font-size: 12px;
+  background: var(--bg); border-radius: 7px; border: 1px dashed var(--border);
 }
 
 .subsection {
-  border: 1px solid var(--border); border-radius: 10px;
-  padding: 12px; margin-bottom: 10px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 9px;
+  padding: 8px 10px; margin-bottom: 6px; background: var(--bg);
 }
 .subsection-head {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 10px; gap: 8px;
+  margin-bottom: 6px; gap: 8px;
 }
 .subsection-title { font-size: 12px; font-weight: 600; color: var(--text); }
-.del-btn { color: var(--text-muted); font-size: 12px; padding: 4px 8px; border-radius: 6px; }
+.del-btn { color: var(--text-muted); font-size: 12px; padding: 3px 8px; border-radius: 6px; }
 .del-btn:hover { background: var(--border); color: var(--accent-2); }
 
 .add-btn {
-  border: 1px dashed var(--border); padding: 9px 14px; border-radius: 9px;
+  border: 1px dashed var(--border); padding: 6px 14px; border-radius: 8px;
   font-size: 12px; font-weight: 500; color: var(--text-muted);
   width: 100%; text-align: center; transition: all 0.15s;
 }
@@ -345,12 +355,12 @@ select {
   font-size: 11px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);
 }
-.preview-body { flex: 1; overflow-y: auto; padding: 18px; }
+.preview-body { flex: 1; overflow-y: auto; padding: 14px; }
 .preview-card {
   background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
-  padding: 18px;
+  padding: 14px 16px;
   font-family: "SF Mono", "Menlo", "Consolas", monospace;
-  font-size: 13px; line-height: 1.7;
+  font-size: 13px; line-height: 1.55;
   white-space: pre-wrap; word-break: break-word;
 }
 .preview-card em { color: var(--accent); font-style: italic; }
@@ -494,6 +504,7 @@ kbd {
   <button class="theme-opt" data-theme="theme-lavender"><span class="theme-swatch" style="background:linear-gradient(135deg,#8b5cf6,#6366f1)"></span>Lavender</button>
   <button class="theme-opt" data-theme="theme-rosegold"><span class="theme-swatch" style="background:linear-gradient(135deg,#d4796a,#c9a17a)"></span>Rose Gold</button>
   <button class="theme-opt" data-theme="theme-sage"><span class="theme-swatch" style="background:linear-gradient(135deg,#6a8e5e,#b59f6e)"></span>Sage</button>
+  <button class="theme-opt" data-theme="theme-linen"><span class="theme-swatch" style="background:linear-gradient(135deg,#0d7377,#14b8a6)"></span>Linen</button>
   <button class="theme-opt" data-theme="theme-monochrome"><span class="theme-swatch" style="background:linear-gradient(135deg,#111111,#555555)"></span>Monochrome</button>
   <h4>Dark</h4>
   <button class="theme-opt" data-theme="theme-midnight"><span class="theme-swatch" style="background:linear-gradient(135deg,#38bdf8,#818cf8)"></span>Midnight</button>
