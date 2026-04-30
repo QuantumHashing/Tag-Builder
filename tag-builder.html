@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red Tag Builder</title>
+<style>
+/* ============================================================================
+   TAG BUILDER — single-file app (HTML + CSS + vanilla JS)
+   ----------------------------------------------------------------------------
+   Beginner notes:
+   - Everything lives in this one .html file. No installs, no admin access.
+   - State is held in one JS object called `state`. UI is rebuilt with render()
+     functions whenever state changes — a tiny reactive pattern.
+   - localStorage saves your tags between sessions (per-machine, per-browser).
+     Use Export / Import (top right) to move them between computers.
+   ============================================================================ */
+
+/* ---------- THEME TOKENS ----------------------------------------------------
+   Each theme = a set of CSS variables. Switching theme = swap class on <body>.
+   Modify a value here and it cascades through the whole UI.
+---------------------------------------------------------------------------- */
+body.theme-sunrise {
+  --bg-grad: linear-gradient(135deg, #FFE5D9 0%, #FFD6E0 100%);
+  --bg: #fff8f5;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #2b1d2e; --text-muted: #8a7682;
+  --border: #ecd9d3; --accent: #ff7a59; --accent-2: #ff4f87;
+  --accent-grad: linear-gradient(135deg, #ff7a59, #ff4f87);
+  --shadow: 0 4px 24px rgba(255,122,89,0.15);
+}
+body.theme-mint {
+  --bg-grad: linear-gradient(135deg, #E0F7F4 0%, #D6E9FF 100%);
+  --bg: #f3fbf9;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #1d2e2b; --text-muted: #768a86;
+  --border: #d3ecdf; --accent: #14b8a6; --accent-2: #3b82f6;
+  --accent-grad: linear-gradient(135deg, #14b8a6, #3b82f6);
+  --shadow: 0 4px 24px rgba(20,184,166,0.15);
+}
+body.theme-lavender {
+  --bg-grad: linear-gradient(135deg, #ECE5FF 0%, #E5F0FF 100%);
+  --bg: #f7f4ff;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #2a1d4e; --text-muted: #7a6f9a;
+  --border: #e0d3ec; --accent: #8b5cf6; --accent-2: #6366f1;
+  --accent-grad: linear-gradient(135deg, #8b5cf6, #6366f1);
+  --shadow: 0 4px 24px rgba(139,92,246,0.15);
+}
+body.theme-midnight {
+  --bg-grad: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  --bg: #0b1020;  --surface: rgba(30,41,59,0.7);  --surface-2: #1e293b;
+  --text: #e2e8f0; --text-muted: #94a3b8;
+  --border: #1e293b; --accent: #38bdf8; --accent-2: #818cf8;
+  --accent-grad: linear-gradient(135deg, #38bdf8, #818cf8);
+  --shadow: 0 4px 24px rgba(56,189,248,0.2);
+}
+body.theme-charcoal {
+  --bg-grad: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%);
+  --bg: #18181b;  --surface: rgba(39,39,42,0.75); --surface-2: #27272a;
+  --text: #f4f4f5; --text-muted: #a1a1aa;
+  --border: #3f3f46; --accent: #fbbf24; --accent-2: #f87171;
+  --accent-grad: linear-gradient(135deg, #fbbf24, #f87171);
+  --shadow: 0 4px 24px rgba(251,191,36,0.15);
+}
+body.theme-cosmos {
+  --bg-grad: linear-gradient(135deg, #1a0b2e 0%, #2e0b4a 100%);
+  --bg: #14082a;  --surface: rgba(46,11,74,0.65);  --surface-2: #2e0b4a;
+  --text: #f3e8ff; --text-muted: #c4b5fd;
+  --border: #3b0764; --accent: #ec4899; --accent-2: #a855f7;
+  --accent-grad: linear-gradient(135deg, #ec4899, #a855f7);
+  --shadow: 0 4px 24px rgba(236,72,153,0.2);
+}
+
+/* ---------- BOEING-THEMED ----------
+   Inspired by Boeing's brand palette: Pantone 286 navy + sky blues.
+   Boeing Classic = light/professional. Boeing Sky = dark cockpit-style. */
+body.theme-boeing-classic {
+  --bg-grad: linear-gradient(135deg, #E8F0FA 0%, #F5F8FC 100%);
+  --bg: #f8fbff;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #0a1f44; --text-muted: #5a6b8a;
+  --border: #d4dfee; --accent: #0033A0;  --accent-2: #1E64C8;
+  --accent-grad: linear-gradient(135deg, #0033A0, #1E64C8);
+  --shadow: 0 4px 24px rgba(0,51,160,0.18);
+}
+body.theme-boeing-sky {
+  --bg-grad: linear-gradient(135deg, #001a40 0%, #0a2d6b 100%);
+  --bg: #00102b;  --surface: rgba(10,45,107,0.65);  --surface-2: #0a2d6b;
+  --text: #e6f1ff; --text-muted: #8eaed4;
+  --border: #1a3a7a; --accent: #4ea8ff; --accent-2: #00d4ff;
+  --accent-grad: linear-gradient(135deg, #4ea8ff, #00d4ff);
+  --shadow: 0 4px 24px rgba(78,168,255,0.25);
+}
+
+/* ---------- MORE CREATIVE THEMES ---------- */
+body.theme-aurora {
+  --bg-grad: linear-gradient(135deg, #0a0e1a 0%, #1a0a2e 100%);
+  --bg: #060912;  --surface: rgba(20,25,45,0.7);  --surface-2: #141930;
+  --text: #e8ffec; --text-muted: #94c5a8;
+  --border: #1f2945; --accent: #34d399; --accent-2: #c084fc;
+  --accent-grad: linear-gradient(135deg, #34d399 0%, #60a5fa 50%, #c084fc 100%);
+  --shadow: 0 4px 24px rgba(52,211,153,0.2);
+}
+body.theme-rosegold {
+  --bg-grad: linear-gradient(135deg, #FFF1EE 0%, #FCE4DA 100%);
+  --bg: #fff8f4;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #4a2230; --text-muted: #a08088;
+  --border: #f0d9d0; --accent: #d4796a; --accent-2: #c9a17a;
+  --accent-grad: linear-gradient(135deg, #d4796a, #c9a17a);
+  --shadow: 0 4px 24px rgba(212,121,106,0.18);
+}
+body.theme-cyberpunk {
+  --bg-grad: linear-gradient(135deg, #0a0014 0%, #1a0033 100%);
+  --bg: #06000d;  --surface: rgba(26,0,51,0.7);  --surface-2: #1a0033;
+  --text: #f0e6ff; --text-muted: #b78cd9;
+  --border: #2d0a52; --accent: #00ffd5; --accent-2: #ff006e;
+  --accent-grad: linear-gradient(135deg, #00ffd5, #ff006e);
+  --shadow: 0 4px 24px rgba(255,0,110,0.3);
+}
+body.theme-sage {
+  --bg-grad: linear-gradient(135deg, #EDF4E8 0%, #F4EEE0 100%);
+  --bg: #f8faf3;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #2a3a26; --text-muted: #7a8a72;
+  --border: #d8e3cf; --accent: #6a8e5e; --accent-2: #b59f6e;
+  --accent-grad: linear-gradient(135deg, #6a8e5e, #b59f6e);
+  --shadow: 0 4px 24px rgba(106,142,94,0.15);
+}
+body.theme-ocean {
+  --bg-grad: linear-gradient(135deg, #001f3f 0%, #003d5b 100%);
+  --bg: #001428;  --surface: rgba(0,61,91,0.7);  --surface-2: #003d5b;
+  --text: #d6f1ff; --text-muted: #7aa8c0;
+  --border: #02466a; --accent: #00b4d8; --accent-2: #90e0ef;
+  --accent-grad: linear-gradient(135deg, #00b4d8, #90e0ef);
+  --shadow: 0 4px 24px rgba(0,180,216,0.2);
+}
+body.theme-monochrome {
+  --bg-grad: linear-gradient(135deg, #fafafa 0%, #ececec 100%);
+  --bg: #ffffff;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #111111; --text-muted: #777777;
+  --border: #e0e0e0; --accent: #111111; --accent-2: #555555;
+  --accent-grad: linear-gradient(135deg, #111111, #555555);
+  --shadow: 0 4px 24px rgba(0,0,0,0.10);
+}
+
+/* ---------- BASE ---------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  background: var(--bg-grad); color: var(--text);
+  font-size: 14px; line-height: 1.5; overflow: hidden;
+  transition: background 0.4s ease, color 0.2s ease;
+}
+button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font: inherit; color: inherit; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ---------- LAYOUT ---------- */
+.app { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+
+.topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 18px;
+  background: var(--surface); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  position: relative; z-index: 10;
+}
+.brand {
+  font-weight: 700; font-size: 15px; letter-spacing: -0.2px;
+  background: var(--accent-grad); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+  padding-right: 4px;
+}
+.tabs { display: flex; gap: 4px; }
+.tab {
+  padding: 7px 14px; border-radius: 999px;
+  font-size: 13px; font-weight: 500; color: var(--text-muted);
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--text); background: var(--border); }
+.tab.active {
+  background: var(--accent-grad); color: white; box-shadow: var(--shadow);
+}
+.spacer { flex: 1; }
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); transition: all 0.15s; font-size: 15px;
+}
+.icon-btn:hover { background: var(--border); color: var(--text); }
+
+.main { display: grid; grid-template-columns: 280px 1fr 400px; height: 100%; overflow: hidden; }
+
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+  background: var(--surface); backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sidebar-head { padding: 14px; border-bottom: 1px solid var(--border); }
+.search {
+  width: 100%; padding: 8px 12px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--bg);
+  margin-bottom: 8px; transition: border 0.15s;
+}
+.search:focus { outline: none; border-color: var(--accent); }
+.btn {
+  padding: 8px 14px; border-radius: 9px;
+  font-weight: 500; font-size: 13px;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.15s; white-space: nowrap;
+}
+.btn-primary {
+  background: var(--accent-grad); color: white;
+  box-shadow: var(--shadow);
+}
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-ghost { color: var(--text-muted); border: 1px solid transparent; }
+.btn-ghost:hover { background: var(--border); color: var(--text); }
+.btn-danger { color: var(--accent-2); }
+.btn-block { width: 100%; justify-content: center; }
+.filter-chips { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 500;
+  background: var(--bg); border: 1px solid var(--border);
+  color: var(--text-muted); transition: all 0.15s;
+}
+.chip:hover { color: var(--text); }
+.chip.active {
+  background: var(--accent-grad); color: white; border-color: transparent;
+}
+.tag-list { flex: 1; overflow-y: auto; padding: 8px; }
+.tag-card {
+  position: relative;
+  padding: 10px 32px 10px 12px; border-radius: 9px; margin-bottom: 4px;
+  cursor: pointer; transition: all 0.15s; border: 1px solid transparent;
+}
+.tag-pin {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  font-size: 14px; line-height: 1;
+}
+.tag-card:hover .tag-pin { opacity: 0.5; }
+.tag-pin:hover { opacity: 1 !important; background: var(--border); }
+.tag-pin.pinned { opacity: 1; color: #f59e0b; }
+.tag-card.active .tag-pin { color: white; }
+.tag-card.active .tag-pin.pinned { color: #fde68a; }
+.tag-card:hover { background: var(--border); }
+.tag-card.active {
+  background: var(--accent-grad); color: white;
+  border-color: transparent;
+}
+.tag-card.active .tag-card-meta { color: rgba(255,255,255,0.8); }
+.tag-card-title {
+  font-weight: 500; font-size: 13px; margin-bottom: 2px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tag-card-meta { font-size: 11px; color: var(--text-muted); }
+.sidebar-foot { padding: 10px; border-top: 1px solid var(--border); display: flex; gap: 6px; }
+
+/* ---------- BUILDER ---------- */
+.builder { overflow-y: auto; padding: 22px 26px; }
+.builder-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; gap: 8px; flex-wrap: wrap;
+}
+.builder-title { font-size: 19px; font-weight: 700; letter-spacing: -0.2px; }
+.builder-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.section {
+  background: var(--surface); backdrop-filter: blur(10px);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px; margin-bottom: 12px;
+}
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.section-title {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.row { display: grid; gap: 8px; }
+.row-2 { grid-template-columns: 1fr 1fr; }
+.row-3 { grid-template-columns: 1fr 1fr 1fr; }
+.row-rev { grid-template-columns: 1fr 1fr 2fr; }
+.row-att { grid-template-columns: auto 1fr; align-items: end; gap: 12px; }
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+.field input, .field textarea, .field select {
+  padding: 8px 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg);
+  transition: border 0.15s;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+  outline: none; border-color: var(--accent);
+}
+.field textarea { min-height: 56px; resize: vertical; font-family: inherit; }
+.field-hint {
+  padding: 8px 10px; color: var(--text-muted); font-size: 12px;
+  background: var(--bg); border-radius: 8px; border: 1px dashed var(--border);
+}
+
+.subsection {
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px; margin-bottom: 10px; background: var(--bg);
+}
+.subsection-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; gap: 8px;
+}
+.subsection-title { font-size: 12px; font-weight: 600; color: var(--text); }
+.del-btn { color: var(--text-muted); font-size: 12px; padding: 4px 8px; border-radius: 6px; }
+.del-btn:hover { background: var(--border); color: var(--accent-2); }
+
+.add-btn {
+  border: 1px dashed var(--border); padding: 9px 14px; border-radius: 9px;
+  font-size: 12px; font-weight: 500; color: var(--text-muted);
+  width: 100%; text-align: center; transition: all 0.15s;
+}
+.add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+select {
+  padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+/* ---------- PREVIEW PANE ---------- */
+.preview-pane {
+  background: var(--surface); backdrop-filter: blur(20px);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.preview-head {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.preview-title {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);
+}
+.preview-body { flex: 1; overflow-y: auto; padding: 18px; }
+.preview-card {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px;
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 13px; line-height: 1.7;
+  white-space: pre-wrap; word-break: break-word;
+}
+.preview-card em { color: var(--accent); font-style: italic; }
+.preview-foot {
+  padding: 10px 14px; border-top: 1px solid var(--border);
+  display: flex; gap: 6px;
+}
+
+/* ---------- MODAL ---------- */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: none; align-items: center; justify-content: center;
+  z-index: 100; backdrop-filter: blur(6px);
+}
+.modal-backdrop.show { display: flex; }
+.modal {
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 14px;
+  padding: 18px; width: min(420px, 92vw);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.modal h3 { margin-bottom: 12px; font-size: 16px; }
+.modal-options { display: grid; gap: 6px; margin-bottom: 12px; max-height: 50vh; overflow-y: auto; }
+.modal-options button {
+  text-align: left; padding: 10px 12px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--bg);
+  font-weight: 500; transition: all 0.15s;
+}
+.modal-options button:hover { border-color: var(--accent); transform: translateX(2px); }
+.modal-foot { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ---------- THEME PICKER ---------- */
+.theme-picker {
+  position: absolute; top: 50px; right: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  display: none; z-index: 50; width: 220px;
+  max-height: calc(100vh - 80px); overflow-y: auto;
+}
+.theme-picker.show { display: block; }
+.theme-picker h4 {
+  font-size: 10px; text-transform: uppercase;
+  color: var(--text-muted); padding: 6px 8px; letter-spacing: 0.5px;
+}
+.theme-opt {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px; border-radius: 8px; width: 100%;
+  font-size: 13px; transition: background 0.15s;
+}
+.theme-opt:hover { background: var(--border); }
+.theme-swatch { width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); }
+
+/* ---------- TOAST ---------- */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border);
+  padding: 10px 18px; border-radius: 999px; font-size: 13px;
+  box-shadow: var(--shadow);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 200;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+/* ---------- GUIDES ---------- */
+.guides { display: grid; grid-template-rows: auto 1fr; height: 100%; }
+.guides-tabs {
+  display: flex; gap: 6px; padding: 12px 16px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.guide-tab {
+  padding: 6px 12px; border-radius: 8px; font-size: 13px;
+  background: var(--bg); border: 1px solid var(--border);
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+}
+.guide-tab.active {
+  background: var(--accent-grad); color: white; border-color: transparent;
+}
+.guide-tab .x {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 4px; font-size: 14px;
+  opacity: 0.7;
+}
+.guide-tab .x:hover { background: rgba(255,255,255,0.25); opacity: 1; }
+.guide-viewer { padding: 12px 16px; overflow: hidden; }
+.guide-viewer iframe {
+  width: 100%; height: 100%; border: 1px solid var(--border);
+  border-radius: 12px; background: var(--bg);
+}
+
+/* ---------- EMPTY / COMING-SOON ---------- */
+.empty-state {
+  text-align: center; padding: 40px 16px;
+  color: var(--text-muted); font-size: 13px;
+}
+.coming-soon {
+  display: flex; align-items: center; justify-content: center;
+  height: 100%; flex-direction: column; gap: 10px;
+  color: var(--text-muted); text-align: center; padding: 40px;
+}
+.coming-soon h2 {
+  font-size: 28px;
+  background: var(--accent-grad); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+kbd {
+  font-family: monospace; background: var(--border);
+  padding: 1px 5px; border-radius: 4px; font-size: 11px;
+}
+</style>
+</head>
+<body class="theme-sunrise">
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">✈ Red Tag Builder</div>
+    <nav class="tabs" id="tabs"></nav>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="themeBtn" title="Theme">🎨</button>
+    <button class="icon-btn" id="importBtn" title="Import JSON">⬇️</button>
+    <button class="icon-btn" id="exportBtn" title="Export all (JSON)">⬆️</button>
+  </header>
+  <main class="main" id="main"></main>
+</div>
+
+<!-- Theme picker dropdown -->
+<div class="theme-picker" id="themePicker">
+  <h4>Boeing</h4>
+  <button class="theme-opt" data-theme="theme-boeing-classic"><span class="theme-swatch" style="background:linear-gradient(135deg,#0033A0,#1E64C8)"></span>Boeing Classic</button>
+  <button class="theme-opt" data-theme="theme-boeing-sky"><span class="theme-swatch" style="background:linear-gradient(135deg,#4ea8ff,#00d4ff)"></span>Boeing Sky</button>
+  <h4>Light</h4>
+  <button class="theme-opt" data-theme="theme-sunrise"><span class="theme-swatch" style="background:linear-gradient(135deg,#ff7a59,#ff4f87)"></span>Sunrise</button>
+  <button class="theme-opt" data-theme="theme-mint"><span class="theme-swatch" style="background:linear-gradient(135deg,#14b8a6,#3b82f6)"></span>Mint</button>
+  <button class="theme-opt" data-theme="theme-lavender"><span class="theme-swatch" style="background:linear-gradient(135deg,#8b5cf6,#6366f1)"></span>Lavender</button>
+  <button class="theme-opt" data-theme="theme-rosegold"><span class="theme-swatch" style="background:linear-gradient(135deg,#d4796a,#c9a17a)"></span>Rose Gold</button>
+  <button class="theme-opt" data-theme="theme-sage"><span class="theme-swatch" style="background:linear-gradient(135deg,#6a8e5e,#b59f6e)"></span>Sage</button>
+  <button class="theme-opt" data-theme="theme-monochrome"><span class="theme-swatch" style="background:linear-gradient(135deg,#111111,#555555)"></span>Monochrome</button>
+  <h4>Dark</h4>
+  <button class="theme-opt" data-theme="theme-midnight"><span class="theme-swatch" style="background:linear-gradient(135deg,#38bdf8,#818cf8)"></span>Midnight</button>
+  <button class="theme-opt" data-theme="theme-charcoal"><span class="theme-swatch" style="background:linear-gradient(135deg,#fbbf24,#f87171)"></span>Charcoal</button>
+  <button class="theme-opt" data-theme="theme-cosmos"><span class="theme-swatch" style="background:linear-gradient(135deg,#ec4899,#a855f7)"></span>Cosmos</button>
+  <button class="theme-opt" data-theme="theme-aurora"><span class="theme-swatch" style="background:linear-gradient(135deg,#34d399,#60a5fa,#c084fc)"></span>Aurora</button>
+  <button class="theme-opt" data-theme="theme-ocean"><span class="theme-swatch" style="background:linear-gradient(135deg,#00b4d8,#90e0ef)"></span>Ocean</button>
+  <button class="theme-opt" data-theme="theme-cyberpunk"><span class="theme-swatch" style="background:linear-gradient(135deg,#00ffd5,#ff006e)"></span>Cyberpunk</button>
+</div>
+
+<!-- Modal & hidden file inputs & toast -->
+<div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modal"></div></div>
+<input type="file" id="fileImport" accept="application/json" style="display:none">
+<input type="file" id="filePdf" accept="application/pdf" style="display:none" multiple>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================================
+   STATE — single source of truth
+   ============================================================================ */
+
+const STORAGE_KEY = 'tagBuilder.v1';
+
+// blankTag() returns a fresh tag object every call. Doing this as a function
+// (instead of a constant) avoids accidentally sharing references between tags.
+const blankTag = () => ({
+  id: 'tag_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+  type: 'NCR',
+  revisionNumber: 0,      // if > 0, prepends "*Revision N*" line at the top
+  drawings: [
+    { type: 'Engineering', custom: '', number: '', sheet: '', rev: '' }
+  ],
+  processSpecs: [
+    { number: '', section: '', rev: '' }
+  ],
+  items: [ blankItem() ],
+  lso: '',
+  lio: '',
+  attachmentsEnabled: true,
+  attachmentsText: '*See Attachments*',
+  pinned: false,        // pin tags to the top of the sidebar
+  createdAt: Date.now(),
+  updatedAt: Date.now()
+});
+
+function blankItem() {
+  return {
+    countOf: '', countTotal: '',
+    partNumber: '', description: '',
+    discrepancy: '',
+    ctPartNumber: '', ctDescription: '',
+    measL: '', measW: '', measD: '',
+    sbText: ''
+  };
+}
+
+const state = {
+  activeTab: 'NCRs',
+  activeTheme: 'theme-sunrise',
+  tags: [],          // saved NCR tags
+  templates: [],     // saved templates
+  current: blankTag(),
+  selectedId: null,  // id of the currently-loaded saved tag (null = new)
+  search: '',
+  dateFilter: 'all', // 'all' | 'today' | 'week' | 'month'
+  guides: [],        // [{name, url}] PDFs loaded via file picker (object URLs)
+  activeGuideIdx: 0
+};
+
+/* ---------- PERSISTENCE ----------
+   Tags + templates + active theme survive page reloads via localStorage.
+   PDF guides do NOT persist — object URLs only live for the session,
+   which is fine since the user loads from a shared folder each time. */
+function persist() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    activeTheme: state.activeTheme,
+    tags: state.tags,
+    templates: state.templates
+  }));
+}
+function loadPersisted() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    state.activeTheme = data.activeTheme || state.activeTheme;
+    state.tags = data.tags || [];
+    state.templates = data.templates || [];
+  } catch (e) { console.warn('Load failed', e); }
+}
+
+/* On first run, seed a sample "Sharp Dent" template so users can see what a
+   filled-out tag looks like and how templates work. We store a "seeded" flag
+   so we don't keep re-adding it after the user deletes the sample. */
+function seedDefaults() {
+  if (localStorage.getItem(STORAGE_KEY + '.seeded')) return;
+  state.templates.push({
+    id: 'tpl_sharp_dent',
+    templateName: 'Sharp Dent',
+    type: 'NCR',
+    revisionNumber: 0,
+    drawings: [
+      { type: 'Engineering', custom: '', number: '123A1234', sheet: '1', rev: 'A' }
+    ],
+    processSpecs: [
+      { number: 'BAC1234', section: '11.1a', rev: 'A' }
+    ],
+    items: [{
+      countOf: '1', countTotal: '8',
+      partNumber: '123Q1234-1', description: 'Tube Assy',
+      discrepancy: 'has a sharp dent',
+      ctPartNumber: 'C/T the QA1234a', ctDescription: 'Fitting',
+      measL: '0.172', measW: '0.086', measD: '0.007',
+      sbText: 'No blah blah on the tube'
+    }],
+    lso: '100/010',
+    lio: '110/010',
+    attachmentsEnabled: true,
+    attachmentsText: '*See Attachments*',
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  });
+  localStorage.setItem(STORAGE_KEY + '.seeded', '1');
+  persist();
+}
+
+/* ---------- DOM HELPERS ---------- */
+const $  = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+// el(tag, attrs, children) — tiny createElement helper.
+// Beginner note: this lets us build DOM trees declaratively, almost like JSX.
+function el(tag, attrs = {}, children = []) {
+  const node = document.createElement(tag);
+  for (const k in attrs) {
+    if (attrs[k] == null) continue;
+    if (k === 'class') node.className = attrs[k];
+    else if (k === 'html') node.innerHTML = attrs[k];
+    else if (k === 'style') node.style.cssText = attrs[k];
+    else if (k.startsWith('on') && typeof attrs[k] === 'function')
+      node.addEventListener(k.slice(2), attrs[k]);
+    else node.setAttribute(k, attrs[k]);
+  }
+  (Array.isArray(children) ? children : [children]).forEach(c => {
+    if (c == null || c === false) return;
+    node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return node;
+}
+
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+const clone = o => JSON.parse(JSON.stringify(o));
+
+function formatDate(ms) {
+  const d = new Date(ms);
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
+         ' ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+/* ============================================================================
+   RENDER — TABS & THEME
+   ============================================================================ */
+const TABS = ['NCRs', 'NCOs', 'Scrap', 'Guides'];
+
+function renderTabs() {
+  const root = $('#tabs');
+  root.innerHTML = '';
+  TABS.forEach(name => {
+    root.appendChild(el('button', {
+      class: 'tab' + (state.activeTab === name ? ' active' : ''),
+      onclick: () => {
+        state.activeTab = name;
+        // If switching to a tab whose type differs from the in-progress tag,
+        // reset the buffer to a fresh blank tag of the right type so the
+        // builder shows the correct context.
+        const expected = currentTagType();
+        if ((name === 'NCRs' || name === 'NCOs') && state.current.type !== expected) {
+          state.current = blankTag();
+          state.current.type = expected;
+          state.selectedId = null;
+        }
+        renderAll();
+      }
+    }, name));
+  });
+}
+
+function applyTheme() { document.body.className = state.activeTheme; }
+
+/* ============================================================================
+   RENDER — MAIN ROUTER
+   Different tab = different layout; we swap grid columns accordingly.
+   ============================================================================ */
+function renderMain() {
+  const main = $('#main');
+  main.innerHTML = '';
+
+  if (state.activeTab === 'Guides') {
+    main.style.gridTemplateColumns = '1fr';
+    main.appendChild(renderGuides());
+    return;
+  }
+
+  if (state.activeTab === 'Scrap') {
+    main.style.gridTemplateColumns = '1fr';
+    main.appendChild(renderComingSoon(state.activeTab));
+    return;
+  }
+
+  // NCRs and NCOs — full 3-column UI (same builder, different tag.type)
+  main.style.gridTemplateColumns = '280px 1fr 400px';
+  main.appendChild(renderSidebar());
+  main.appendChild(renderBuilder());
+  main.appendChild(renderPreview());
+}
+
+// Map active tab → tag.type ("NCR" or "NCO")
+function currentTagType() {
+  return state.activeTab === 'NCOs' ? 'NCO' : 'NCR';
+}
+
+function renderComingSoon(label) {
+  return el('section', { class: 'coming-soon' }, [
+    el('h2', {}, label + ' — Coming Soon'),
+    el('p', {}, 'This section will get its own builder when the team finalizes the format.'),
+    el('p', { style: 'font-size:12px;max-width:400px' },
+       'For now, all tags live under NCRs. Switch tabs above to keep working.')
+  ]);
+}
+
+/* ============================================================================
+   RENDER — SIDEBAR (search + tag list + import/export)
+   ============================================================================ */
+function renderSidebar() {
+  const wrap = el('aside', { class: 'sidebar' });
+
+  // Search + New
+  const head = el('div', { class: 'sidebar-head' });
+  const search = el('input', {
+    class: 'search', type: 'search', placeholder: 'Search tags…',
+    value: state.search,
+    oninput: e => { state.search = e.target.value; replaceTagList(); }
+  });
+  head.appendChild(search);
+  head.appendChild(el('button', {
+    class: 'btn btn-primary btn-block',
+    onclick: () => {
+      state.current = blankTag();
+      state.current.type = currentTagType();
+      state.selectedId = null;
+      renderAll();
+    }
+  }, '+ New tag'));
+
+  // Date-range filter chips: All / Today / Week / Month
+  const filters = el('div', { class: 'filter-chips' });
+  [
+    { id: 'all',   label: 'All' },
+    { id: 'today', label: 'Today' },
+    { id: 'week',  label: 'Week' },
+    { id: 'month', label: 'Month' }
+  ].forEach(f => {
+    filters.appendChild(el('button', {
+      class: 'chip' + (state.dateFilter === f.id ? ' active' : ''),
+      onclick: () => { state.dateFilter = f.id; replaceTagList(); renderSidebarChips(); }
+    }, f.label));
+  });
+  head.appendChild(filters);
+
+  wrap.appendChild(head);
+
+  // Tag list (separate function so we can re-render only this on search)
+  const list = el('div', { class: 'tag-list', id: 'tagList' });
+  list.appendChild(buildTagList());
+  wrap.appendChild(list);
+
+  // Import / Export
+  const foot = el('div', { class: 'sidebar-foot' });
+  foot.appendChild(el('button', {
+    class: 'btn btn-ghost', onclick: () => $('#fileImport').click()
+  }, 'Import'));
+  foot.appendChild(el('button', {
+    class: 'btn btn-ghost', onclick: exportAll
+  }, 'Export'));
+  wrap.appendChild(foot);
+
+  return wrap;
+}
+
+function buildTagList() {
+  const frag = document.createDocumentFragment();
+  const q = state.search.trim().toLowerCase();
+  const expectedType = currentTagType();
+
+  // Filter: matches current tab's type, search query, and date range.
+  // Sort: pinned first, then most-recently-updated.
+  const visible = state.tags
+    .filter(t => (t.type || 'NCR') === expectedType)
+    .filter(t => !q || textIndex(t).includes(q))
+    .filter(t => inDateRange(t, state.dateFilter))
+    .sort((a, b) => {
+      if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+      return b.updatedAt - a.updatedAt;
+    });
+
+  if (visible.length === 0) {
+    frag.appendChild(el('div', { class: 'empty-state' },
+      state.search || state.dateFilter !== 'all'
+        ? 'No matches'
+        : 'No tags yet — fill out a tag and hit Save.'));
+    return frag;
+  }
+  visible.forEach(t => {
+    const card = el('div', {
+      class: 'tag-card' + (state.selectedId === t.id ? ' active' : ''),
+      onclick: () => {
+        state.current = clone(t);
+        state.selectedId = t.id;
+        renderAll();
+      }
+    });
+    card.appendChild(el('div', { class: 'tag-card-title' }, tagSummary(t) || '(empty)'));
+    card.appendChild(el('div', { class: 'tag-card-meta' }, formatDate(t.updatedAt)));
+
+    // Pin/unpin star — visible on hover, golden when pinned.
+    card.appendChild(el('button', {
+      class: 'tag-pin' + (t.pinned ? ' pinned' : ''),
+      title: t.pinned ? 'Unpin' : 'Pin to top',
+      onclick: e => {
+        e.stopPropagation();
+        t.pinned = !t.pinned;
+        persist();
+        replaceTagList();
+      }
+    }, t.pinned ? '★' : '☆'));
+
+    frag.appendChild(card);
+  });
+  return frag;
+}
+
+// Returns true if a tag's updatedAt falls inside the chosen filter window.
+function inDateRange(t, filter) {
+  if (filter === 'all') return true;
+  const day = 24 * 60 * 60 * 1000;
+  const windows = { today: day, week: 7 * day, month: 30 * day };
+  return Date.now() - t.updatedAt < windows[filter];
+}
+
+// Re-render only the date-filter chips so the active state updates.
+function renderSidebarChips() {
+  const filterRow = document.querySelector('.sidebar .filter-chips');
+  if (!filterRow) return;
+  Array.from(filterRow.children).forEach(b => {
+    b.classList.toggle('active', b.textContent.toLowerCase() === state.dateFilter);
+  });
+}
+
+// Replace just the list when search changes — keeps focus on the search box.
+function replaceTagList() {
+  const list = $('#tagList');
+  if (!list) return;
+  list.innerHTML = '';
+  list.appendChild(buildTagList());
+}
+
+function textIndex(t) {
+  // Searchable string for a tag — combine all text fields.
+  const parts = [
+    ...(t.drawings || []).flatMap(d => [d.number, d.sheet, d.rev, d.custom, d.type]),
+    ...(t.processSpecs || []).flatMap(s => [s.number, s.section, s.rev]),
+    ...(t.items || []).flatMap(i => [
+      i.partNumber, i.description, i.discrepancy,
+      i.ctPartNumber, i.ctDescription, i.sbText
+    ]),
+    t.lso, t.lio
+  ];
+  return parts.filter(Boolean).join(' ').toLowerCase();
+}
+
+function tagSummary(t) {
+  const item = t.items && t.items[0];
+  const draw = t.drawings && t.drawings[0];
+  if (item && item.partNumber) return `${item.partNumber} ${item.description || ''}`.trim();
+  if (draw && draw.number) return draw.number;
+  return 'Untitled';
+}
+
+/* ============================================================================
+   RENDER — BUILDER (the form)
+   ============================================================================ */
+function renderBuilder() {
+  const t = state.current;
+  const wrap = el('section', { class: 'builder' });
+
+  // Header
+  const head = el('div', { class: 'builder-head' });
+  head.appendChild(el('div', { class: 'builder-title' },
+    state.selectedId ? 'Edit Tag' : ('New ' + currentTagType() + ' Tag')));
+
+  const actions = el('div', { class: 'builder-actions' });
+  actions.appendChild(el('button', { class: 'btn btn-ghost', onclick: openTemplatePicker }, '📋 Templates'));
+  actions.appendChild(el('button', { class: 'btn btn-ghost', onclick: saveAsTemplate }, '+ Template'));
+  actions.appendChild(el('button', { class: 'btn btn-ghost', onclick: duplicateTag, title: '⌘D' }, 'Duplicate'));
+  if (state.selectedId) {
+    actions.appendChild(el('button', {
+      class: 'btn btn-ghost btn-danger',
+      onclick: () => { if (confirm('Delete this tag?')) deleteCurrent(); }
+    }, 'Delete'));
+  }
+  actions.appendChild(el('button', { class: 'btn btn-primary', onclick: saveTag, title: '⌘S' }, '💾 Save'));
+  head.appendChild(actions);
+  wrap.appendChild(head);
+
+  // ----- Header / Revision section -----
+  const revSec = section('Header');
+  const revRow = el('div', { class: 'row' });
+  revRow.appendChild(field('Revision #', 'number', t.revisionNumber,
+    v => { t.revisionNumber = parseInt(v) || 0; updatePreview(); }, { min: 0 }));
+  revSec.appendChild(revRow);
+  wrap.appendChild(revSec);
+
+  // ----- Drawings -----
+  const drawSec = section('Drawings');
+  t.drawings.forEach((d, i) => drawSec.appendChild(renderDrawing(d, i)));
+  drawSec.appendChild(el('button', {
+    class: 'add-btn',
+    onclick: () => openDrawingTypeModal(type => {
+      t.drawings.push({ type, custom: '', number: '', sheet: '', rev: '' });
+      renderAll();
+    })
+  }, '+ Add drawing'));
+  wrap.appendChild(drawSec);
+
+  // ----- Process Specs -----
+  const specSec = section('Process Specs');
+  t.processSpecs.forEach((s, i) => specSec.appendChild(renderSpec(s, i)));
+  specSec.appendChild(el('button', {
+    class: 'add-btn',
+    onclick: () => { t.processSpecs.push({ number: '', section: '', rev: '' }); renderAll(); }
+  }, '+ Add process spec'));
+  wrap.appendChild(specSec);
+
+  // ----- Items -----
+  const itemSec = section('Items');
+  t.items.forEach((it, i) => itemSec.appendChild(renderItem(it, i)));
+  itemSec.appendChild(el('button', {
+    class: 'add-btn',
+    onclick: () => { t.items.push(blankItem()); renderAll(); }
+  }, '+ Add item'));
+  wrap.appendChild(itemSec);
+
+  // ----- Footer -----
+  const footSec = section('Footer');
+  const footRow = el('div', { class: 'row row-2' });
+  footRow.appendChild(field('LSO', 'text', t.lso,
+    v => { t.lso = v; updatePreview(); }, { placeholder: '100/010' }));
+  footRow.appendChild(field('LIO', 'text', t.lio,
+    v => { t.lio = v; updatePreview(); }, { placeholder: '110/010' }));
+  footSec.appendChild(footRow);
+
+  const attRow = el('div', { class: 'row row-att' });
+  const attLabel = el('label', { style: 'display:flex;gap:6px;align-items:center;font-size:12px;color:var(--text-muted);padding-bottom:8px' });
+  const cb = el('input', {
+    type: 'checkbox',
+    onchange: e => { t.attachmentsEnabled = e.target.checked; updatePreview(); }
+  });
+  if (t.attachmentsEnabled) cb.checked = true;
+  attLabel.appendChild(cb);
+  attLabel.appendChild(document.createTextNode(' Include attachments line'));
+  attRow.appendChild(attLabel);
+  attRow.appendChild(field('Attachments text', 'text', t.attachmentsText,
+    v => { t.attachmentsText = v; updatePreview(); }, { placeholder: '*See Attachments*' }));
+  footSec.appendChild(attRow);
+  wrap.appendChild(footSec);
+
+  return wrap;
+}
+
+// Helper to build a section card with a title.
+function section(title) {
+  const sec = el('div', { class: 'section' });
+  sec.appendChild(el('div', { class: 'section-head' }, [
+    el('div', { class: 'section-title' }, title)
+  ]));
+  return sec;
+}
+
+// Generic input field — labeled input with an oninput callback.
+function field(labelText, type, value, onInput, extra = {}) {
+  const f = el('div', { class: 'field' });
+  f.appendChild(el('label', {}, labelText));
+  const input = el('input', {
+    type, value: value ?? '',
+    placeholder: extra.placeholder || '',
+    min: extra.min, max: extra.max,
+    oninput: e => onInput(e.target.value)
+  });
+  f.appendChild(input);
+  return f;
+}
+
+// Multi-line field for longer text (discrepancy, S/B).
+function textareaField(labelText, value, onInput, extra = {}) {
+  const f = el('div', { class: 'field' });
+  f.appendChild(el('label', {}, labelText));
+  const ta = el('textarea', {
+    placeholder: extra.placeholder || '',
+    oninput: e => onInput(e.target.value)
+  });
+  ta.value = value || '';
+  f.appendChild(ta);
+  return f;
+}
+
+function renderDrawing(d, idx) {
+  const t = state.current;
+  const sub = el('div', { class: 'subsection' });
+  const head = el('div', { class: 'subsection-head' });
+
+  // Type select
+  const typeSel = el('select', {
+    onchange: e => { d.type = e.target.value; updatePreview(); renderAll(); }
+  });
+  ['Engineering', 'Tool', 'Supplier', 'Other'].forEach(opt => {
+    const o = el('option', { value: opt }, opt + ' Drawing');
+    if (d.type === opt) o.selected = true;
+    typeSel.appendChild(o);
+  });
+  head.appendChild(typeSel);
+
+  // Show Remove on every drawing as long as we have at least one to fall back on
+  if (t.drawings.length > 1) {
+    head.appendChild(el('button', {
+      class: 'del-btn',
+      onclick: () => { t.drawings.splice(idx, 1); renderAll(); }
+    }, 'Remove'));
+  }
+  sub.appendChild(head);
+
+  if (d.type === 'Other') {
+    sub.appendChild(field('Custom label', 'text', d.custom,
+      v => { d.custom = v; updatePreview(); },
+      { placeholder: 'e.g., Vendor Drawing' }));
+  }
+
+  const row = el('div', { class: 'row row-3' });
+  row.appendChild(field('Number', 'text', d.number,
+    v => { d.number = v; updatePreview(); }, { placeholder: '123A1234' }));
+  row.appendChild(field('Sheet', 'text', d.sheet,
+    v => { d.sheet = v; updatePreview(); }, { placeholder: '1' }));
+  row.appendChild(field('Rev', 'text', d.rev,
+    v => { d.rev = v; updatePreview(); }, { placeholder: 'A' }));
+  sub.appendChild(row);
+  return sub;
+}
+
+function renderSpec(s, idx) {
+  const t = state.current;
+  const sub = el('div', { class: 'subsection' });
+  const head = el('div', { class: 'subsection-head' });
+  head.appendChild(el('div', { class: 'subsection-title' },
+    'Process Spec ' + (idx + 1) + (idx === 0 ? '  (used in S/B references)' : '')));
+  if (t.processSpecs.length > 1) {
+    head.appendChild(el('button', {
+      class: 'del-btn',
+      onclick: () => { t.processSpecs.splice(idx, 1); renderAll(); }
+    }, 'Remove'));
+  }
+  sub.appendChild(head);
+
+  const row = el('div', { class: 'row row-3' });
+  row.appendChild(field('Number', 'text', s.number,
+    v => { s.number = v; updatePreview(); }, { placeholder: 'BAC1234' }));
+  row.appendChild(field('Section', 'text', s.section,
+    v => { s.section = v; updatePreview(); }, { placeholder: '11.1a' }));
+  row.appendChild(field('Rev', 'text', s.rev,
+    v => { s.rev = v; updatePreview(); }, { placeholder: 'A' }));
+  sub.appendChild(row);
+  return sub;
+}
+
+function renderItem(it, idx) {
+  const t = state.current;
+  const sub = el('div', { class: 'subsection' });
+  const head = el('div', { class: 'subsection-head' });
+  head.appendChild(el('div', { class: 'subsection-title' }, 'Item ' + (idx + 1)));
+  if (t.items.length > 1) {
+    head.appendChild(el('button', {
+      class: 'del-btn',
+      onclick: () => { t.items.splice(idx, 1); renderAll(); }
+    }, 'Remove'));
+  }
+  sub.appendChild(head);
+
+  // Bad parts / Total quantity
+  const cnt = el('div', { class: 'row row-2' });
+  cnt.appendChild(field('Bad Parts', 'text', it.countOf,
+    v => { it.countOf = v; updatePreview(); }, { placeholder: '1' }));
+  cnt.appendChild(field('Total Quantity', 'text', it.countTotal,
+    v => { it.countTotal = v; updatePreview(); }, { placeholder: '8' }));
+  sub.appendChild(cnt);
+
+  // Part number + description
+  const part = el('div', { class: 'row row-2' });
+  part.appendChild(field('Part Number', 'text', it.partNumber,
+    v => { it.partNumber = v; updatePreview(); }, { placeholder: '123Q1234-1' }));
+  part.appendChild(field('Item Description', 'text', it.description,
+    v => { it.description = v; updatePreview(); }, { placeholder: 'Tube Assy' }));
+  sub.appendChild(part);
+
+  // Discrepancy
+  sub.appendChild(textareaField('Discrepancy', it.discrepancy,
+    v => { it.discrepancy = v; updatePreview(); }, { placeholder: 'has a sharp dent' }));
+
+  // C/T - common to what area (optional)
+  const ct = el('div', { class: 'row row-2' });
+  ct.appendChild(field('C/T - (Common to what area)', 'text', it.ctPartNumber,
+    v => { it.ctPartNumber = v; updatePreview(); }, { placeholder: 'C/T the QA1234a' }));
+  ct.appendChild(field('C/T Item Description', 'text', it.ctDescription,
+    v => { it.ctDescription = v; updatePreview(); }, { placeholder: 'Fitting' }));
+  sub.appendChild(ct);
+
+  // Measurements
+  const meas = el('div', { class: 'row row-3' });
+  meas.appendChild(field('Length (L)', 'text', it.measL,
+    v => { it.measL = v; updatePreview(); }, { placeholder: '0.172' }));
+  meas.appendChild(field('Width (W)', 'text', it.measW,
+    v => { it.measW = v; updatePreview(); }, { placeholder: '0.086' }));
+  meas.appendChild(field('Depth (D)', 'text', it.measD,
+    v => { it.measD = v; updatePreview(); }, { placeholder: '0.007' }));
+  sub.appendChild(meas);
+
+  // S/B (auto-references first process spec)
+  sub.appendChild(textareaField('S/B (auto-cites first process spec)', it.sbText,
+    v => { it.sbText = v; updatePreview(); }, { placeholder: 'No blah blah on the tube' }));
+
+  return sub;
+}
+
+/* ============================================================================
+   RENDER — PREVIEW
+   ============================================================================ */
+function renderPreview() {
+  const wrap = el('aside', { class: 'preview-pane' });
+
+  const head = el('div', { class: 'preview-head' });
+  head.appendChild(el('div', { class: 'preview-title' }, 'Live Preview'));
+  head.appendChild(el('div', { class: 'tag-card-meta' },
+    'Type: ' + (state.current.type || 'NCR')));
+  wrap.appendChild(head);
+
+  const body = el('div', { class: 'preview-body' });
+  const card = el('div', { class: 'preview-card', id: 'previewCard' });
+  card.innerHTML = previewHTML(state.current);
+  body.appendChild(card);
+  wrap.appendChild(body);
+
+  const foot = el('div', { class: 'preview-foot' });
+  foot.appendChild(el('button', {
+    class: 'btn btn-primary btn-block', onclick: copyPreview, title: '⌘Enter'
+  }, '📋 Copy to clipboard'));
+  wrap.appendChild(foot);
+
+  return wrap;
+}
+
+// Lightweight update — only the preview text, keeps form focus intact.
+function updatePreview() {
+  const c = $('#previewCard');
+  if (c) c.innerHTML = previewHTML(state.current);
+}
+
+// Build the preview text from current tag state. Output mirrors the user's
+// example format exactly: Eng. Drawing line, Process Spec line, Item line(s),
+// Measurements, S/B with auto-reference, LSO/LIO, attachments.
+function previewHTML(t) {
+  const esc = s => String(s || '').replace(/[&<>]/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;'}[ch]));
+  const lines = [];
+
+  if (t.revisionNumber > 0) {
+    lines.push(`<em>*Revision ${esc(t.revisionNumber)}*</em>`);
+    lines.push('');
+  }
+
+  // Drawings
+  t.drawings.forEach(d => {
+    if (!d.number && !d.sheet && !d.rev) return;
+    const label =
+      d.type === 'Engineering' ? 'Eng. Drawing' :
+      d.type === 'Tool'        ? 'Tool Drawing' :
+      d.type === 'Supplier'    ? 'Supplier Drawing' :
+      (d.custom || 'Other Drawing');
+    let s = `${esc(label)}: ${esc(d.number)}`;
+    if (d.sheet) s += ` Sht.${esc(d.sheet)}`;
+    if (d.rev)   s += ` Rev.${esc(d.rev)}`;
+    lines.push(s);
+  });
+
+  // Process specs
+  t.processSpecs.forEach(p => {
+    if (!p.number && !p.section && !p.rev) return;
+    let s = `Process Spec: ${esc(p.number)}`;
+    if (p.section) s += ` Sec.${esc(p.section)}`;
+    if (p.rev)     s += ` Rev.${esc(p.rev)}`;
+    lines.push(s);
+  });
+
+  // Items
+  t.items.forEach((it, i) => {
+    if (lines.length) lines.push('');
+
+    let line = `Item ${i+1}: ${esc(it.countOf)} of ${esc(it.countTotal)} ${esc(it.partNumber)} ${esc(it.description)} ${esc(it.discrepancy)}`;
+    if (it.ctPartNumber || it.ctDescription) {
+      // The C/T field is typed by the user (e.g., "C/T the QA1234a") so we
+      // don't auto-prefix anymore — just append it verbatim.
+      line += ` ${esc(it.ctPartNumber)} ${esc(it.ctDescription)}`;
+    }
+    lines.push(line.replace(/\s+/g, ' ').trim());
+
+    if (it.measL || it.measW || it.measD) {
+      lines.push('');
+      lines.push('Measurements:');
+      const parts = [];
+      if (it.measL) parts.push(`${esc(it.measL)}"L`);
+      if (it.measW) parts.push(`${esc(it.measW)}"W`);
+      if (it.measD) parts.push(`${esc(it.measD)}"D`);
+      lines.push(parts.join(' x '));
+    }
+
+    if (it.sbText) {
+      lines.push('');
+      const firstSpec = t.processSpecs[0];
+      let ref = '';
+      if (firstSpec && (firstSpec.number || firstSpec.section || firstSpec.rev)) {
+        ref = ` per ${esc(firstSpec.number)}`;
+        if (firstSpec.section) ref += ` Sec.${esc(firstSpec.section)}`;
+        if (firstSpec.rev)     ref += ` Rev.${esc(firstSpec.rev)}`;
+      }
+      lines.push(`S/B: ${esc(it.sbText)}${ref}`);
+    }
+  });
+
+  // LSO/LIO
+  if (t.lso || t.lio) {
+    lines.push('');
+    if (t.lso) lines.push(`LSO: ${esc(t.lso)}`);
+    if (t.lio) lines.push(`LIO: ${esc(t.lio)}`);
+  }
+
+  // Attachments
+  if (t.attachmentsEnabled && t.attachmentsText) {
+    lines.push('');
+    const att = esc(t.attachmentsText).replace(/\*([^*]+)\*/g, '<em>*$1*</em>');
+    lines.push(att);
+  }
+
+  return lines.join('\n');
+}
+
+// Plain text for the clipboard (strips <em>, decodes entities).
+function previewPlainText(t) {
+  return previewHTML(t)
+    .replace(/<\/?em>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+}
+
+function copyPreview() {
+  const text = previewPlainText(state.current);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(
+      () => toast('Copied to clipboard'),
+      () => fallbackCopy(text)
+    );
+  } else fallbackCopy(text);
+}
+
+function fallbackCopy(text) {
+  // For older browsers / restricted environments. Uses a hidden textarea.
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); toast('Copied to clipboard'); }
+  catch (e) { toast('Copy failed — select & copy manually'); }
+  ta.remove();
+}
+
+/* ============================================================================
+   ACTIONS — save / duplicate / delete / templates
+   ============================================================================ */
+function saveTag() {
+  const t = state.current;
+  t.updatedAt = Date.now();
+  const idx = state.tags.findIndex(x => x.id === t.id);
+  if (idx >= 0) state.tags[idx] = clone(t);
+  else state.tags.push(clone(t));
+  state.selectedId = t.id;
+  persist();
+  toast('Saved');
+  renderAll();
+}
+
+function duplicateTag() {
+  const fresh = clone(state.current);
+  fresh.id = blankTag().id;
+  fresh.createdAt = Date.now();
+  fresh.updatedAt = Date.now();
+  state.current = fresh;
+  state.selectedId = null;
+  toast('Duplicated — Save when ready');
+  renderAll();
+}
+
+function deleteCurrent() {
+  if (!state.selectedId) return;
+  state.tags = state.tags.filter(x => x.id !== state.selectedId);
+  state.current = blankTag();
+  state.selectedId = null;
+  persist();
+  toast('Deleted');
+  renderAll();
+}
+
+function saveAsTemplate() {
+  const name = prompt('Template name?');
+  if (!name) return;
+  const tpl = clone(state.current);
+  tpl.id = 'tpl_' + Date.now();
+  tpl.templateName = name;
+  state.templates.push(tpl);
+  persist();
+  toast('Template saved');
+}
+
+function openTemplatePicker() {
+  const opts = state.templates.length === 0
+    ? [el('div', { class: 'empty-state' },
+        'No templates yet. Build a tag, then click "+ Template".')]
+    : state.templates.map(tpl => el('button', {
+        onclick: () => {
+          const fresh = clone(tpl);
+          fresh.id = blankTag().id;
+          fresh.type = currentTagType();   // tag inherits current tab's type
+          fresh.createdAt = Date.now();
+          fresh.updatedAt = Date.now();
+          delete fresh.templateName;
+          state.current = fresh;
+          state.selectedId = null;
+          closeModal();
+          toast('Template applied');
+          renderAll();
+        }
+      }, tpl.templateName || 'Untitled'));
+
+  const footer = [el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel')];
+  if (state.templates.length > 0) {
+    footer.push(el('button', {
+      class: 'btn btn-ghost btn-danger',
+      onclick: () => {
+        if (confirm('Delete all templates?')) {
+          state.templates = []; persist(); closeModal(); renderAll();
+        }
+      }
+    }, 'Clear all'));
+  }
+  openModal('Apply a template', opts, footer);
+}
+
+/* ============================================================================
+   IMPORT / EXPORT JSON — for moving tags between machines
+   ============================================================================ */
+function exportAll() {
+  const data = {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    tags: state.tags,
+    templates: state.templates
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = el('a', { href: url, download: 'tag-builder-' + Date.now() + '.json' });
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('Exported');
+}
+
+function importFile(file) {
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const incoming = data.tags || [];
+      const incomingTpl = data.templates || [];
+      // Merge by id (incoming wins on conflict).
+      const byId = new Map(state.tags.map(t => [t.id, t]));
+      incoming.forEach(t => byId.set(t.id, t));
+      state.tags = Array.from(byId.values());
+      const tplById = new Map(state.templates.map(t => [t.id, t]));
+      incomingTpl.forEach(t => tplById.set(t.id, t));
+      state.templates = Array.from(tplById.values());
+      persist();
+      toast(`Imported ${incoming.length} tags`);
+      renderAll();
+    } catch (err) {
+      alert('Invalid JSON: ' + err.message);
+    }
+  };
+  r.readAsText(file);
+}
+
+/* ============================================================================
+   MODAL helpers
+   ============================================================================ */
+function openModal(title, options, footer) {
+  const m = $('#modal');
+  m.innerHTML = '';
+  m.appendChild(el('h3', {}, title));
+  const list = el('div', { class: 'modal-options' });
+  (Array.isArray(options) ? options : [options]).forEach(o => o && list.appendChild(o));
+  m.appendChild(list);
+  const f = el('div', { class: 'modal-foot' });
+  (footer || []).forEach(b => b && f.appendChild(b));
+  m.appendChild(f);
+  $('#modalBackdrop').classList.add('show');
+}
+function closeModal() { $('#modalBackdrop').classList.remove('show'); }
+
+function openDrawingTypeModal(onPick) {
+  const types = ['Engineering', 'Tool', 'Supplier', 'Other'];
+  const opts = types.map(t => el('button', {
+    onclick: () => { closeModal(); onPick(t); }
+  }, t + ' Drawing'));
+  openModal('Add drawing — pick type', opts, [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel')
+  ]);
+}
+
+/* ============================================================================
+   GUIDES TAB — multiple PDF tabs, loaded from disk via file picker
+   PDFs persist for the session only (object URLs are not durable).
+   Tip: keep your team's guides in a shared folder so anyone can pick the
+   same files.
+   ============================================================================ */
+function renderGuides() {
+  const wrap = el('section', { class: 'guides' });
+  const tabs = el('div', { class: 'guides-tabs' });
+
+  state.guides.forEach((g, i) => {
+    const isActive = i === state.activeGuideIdx;
+    const t = el('div', {
+      class: 'guide-tab' + (isActive ? ' active' : ''),
+      onclick: () => { state.activeGuideIdx = i; renderAll(); }
+    });
+    t.appendChild(document.createTextNode(g.name));
+    t.appendChild(el('span', {
+      class: 'x',
+      onclick: e => {
+        e.stopPropagation();
+        URL.revokeObjectURL(state.guides[i].url);
+        state.guides.splice(i, 1);
+        if (state.activeGuideIdx >= state.guides.length)
+          state.activeGuideIdx = Math.max(0, state.guides.length - 1);
+        renderAll();
+      }
+    }, '×'));
+    tabs.appendChild(t);
+  });
+
+  tabs.appendChild(el('button', {
+    class: 'btn btn-ghost',
+    onclick: () => $('#filePdf').click()
+  }, '+ Add PDF'));
+  wrap.appendChild(tabs);
+
+  const view = el('div', { class: 'guide-viewer' });
+  if (state.guides.length === 0) {
+    view.appendChild(el('div', { class: 'empty-state' }, [
+      el('h3', { style: 'margin-bottom:8px;color:var(--text);font-size:18px' }, 'Team Guides'),
+      el('div', {}, 'Click "+ Add PDF" to load one or more PDFs from disk.'),
+      el('div', { style: 'margin-top:12px;font-size:12px;max-width:480px;margin-left:auto;margin-right:auto' },
+        'Tip: keep guides on a shared folder (OneDrive / SharePoint / network drive) so everyone picks the same source. PDFs aren\'t saved into this file — they load fresh each session.')
+    ]));
+  } else {
+    const g = state.guides[state.activeGuideIdx];
+    const frame = el('iframe', { src: g.url });
+    // Make iframe fill remaining viewport height
+    frame.style.height = 'calc(100vh - 130px)';
+    view.appendChild(frame);
+  }
+  wrap.appendChild(view);
+  return wrap;
+}
+
+/* ============================================================================
+   GLOBAL EVENTS — theme toggle, file inputs, keyboard shortcuts
+   ============================================================================ */
+function setupGlobalEvents() {
+  // Theme picker show/hide
+  $('#themeBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    $('#themePicker').classList.toggle('show');
+  });
+  document.addEventListener('click', e => {
+    if (!$('#themePicker').contains(e.target) && e.target !== $('#themeBtn'))
+      $('#themePicker').classList.remove('show');
+  });
+  $$('#themePicker .theme-opt').forEach(b => {
+    b.addEventListener('click', () => {
+      state.activeTheme = b.dataset.theme;
+      applyTheme();
+      persist();
+      $('#themePicker').classList.remove('show');
+    });
+  });
+
+  // Modal: backdrop click closes
+  $('#modalBackdrop').addEventListener('click', e => {
+    if (e.target === $('#modalBackdrop')) closeModal();
+  });
+
+  // Top bar import/export buttons
+  $('#importBtn').addEventListener('click', () => $('#fileImport').click());
+  $('#exportBtn').addEventListener('click', exportAll);
+  $('#fileImport').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (f) importFile(f);
+    e.target.value = '';
+  });
+  $('#filePdf').addEventListener('change', e => {
+    const files = Array.from(e.target.files || []);
+    files.forEach(f => state.guides.push({ name: f.name, url: URL.createObjectURL(f) }));
+    if (files.length) state.activeGuideIdx = state.guides.length - files.length;
+    e.target.value = '';
+    renderAll();
+  });
+
+  // Keyboard shortcuts (works great with BetterTouchTool gestures too):
+  //   ⌘/Ctrl + S      Save
+  //   ⌘/Ctrl + D      Duplicate current tag
+  //   ⌘/Ctrl + Enter  Copy preview to clipboard
+  document.addEventListener('keydown', e => {
+    if (state.activeTab !== 'NCRs') return;
+    const meta = e.metaKey || e.ctrlKey;
+    if (meta && e.key.toLowerCase() === 's') { e.preventDefault(); saveTag(); }
+    else if (meta && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateTag(); }
+    else if (meta && e.key === 'Enter') { e.preventDefault(); copyPreview(); }
+  });
+}
+
+/* ============================================================================
+   RENDER LOOP — call this any time state changes structurally
+   ============================================================================ */
+function renderAll() {
+  applyTheme();
+  renderTabs();
+  renderMain();
+}
+
+/* ---------- BOOT ---------- */
+loadPersisted();
+seedDefaults();
+setupGlobalEvents();
+renderAll();
+</script>
+</body>
+</html>
