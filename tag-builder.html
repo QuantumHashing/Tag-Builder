@@ -242,7 +242,7 @@ input, textarea, select { font: inherit; color: inherit; }
 .tag-list { flex: 1; overflow-y: auto; padding: 8px; }
 .tag-card {
   position: relative;
-  padding: 10px 32px 10px 12px; border-radius: 9px; margin-bottom: 4px;
+  padding: 10px 64px 10px 12px; border-radius: 9px; margin-bottom: 4px;
   cursor: pointer; transition: all 0.15s; border: 1px solid transparent;
 }
 .tag-pin {
@@ -269,6 +269,23 @@ input, textarea, select { font: inherit; color: inherit; }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .tag-card-meta { font-size: 11px; color: var(--text-muted); }
+.tag-card-actions {
+  position: absolute; top: 8px; right: 8px;
+  display: flex; gap: 4px;
+}
+.tag-action {
+  width: 24px; height: 24px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  font-size: 13px; line-height: 1;
+}
+.tag-card:hover .tag-action,
+.tag-card.active .tag-action { opacity: 1; }
+.tag-card.active .tag-action { color: rgba(255,255,255,0.82); }
+.tag-action:hover { background: var(--border); color: var(--text); }
+.tag-card.active .tag-action:hover { color: white; }
+.tag-action.delete:hover { color: var(--accent-2); }
 .sidebar-foot { padding: 10px; border-top: 1px solid var(--border); display: flex; gap: 6px; }
 
 /* ---------- BUILDER ---------- */
@@ -479,7 +496,7 @@ kbd {
 }
 </style>
 </head>
-<body class="theme-sunrise">
+<body class="theme-midnight">
 
 <div class="app">
   <header class="topbar">
@@ -532,6 +549,7 @@ const STORAGE_KEY = 'tagBuilder.v1';
 // (instead of a constant) avoids accidentally sharing references between tags.
 const blankTag = () => ({
   id: 'tag_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+  templateName: '',
   type: 'NCR',
   revisionNumber: 0,      // if > 0, prepends "*Revision N*" line at the top
   drawings: [
@@ -563,11 +581,11 @@ function blankItem() {
 
 const state = {
   activeTab: 'NCRs',
-  activeTheme: 'theme-sunrise',
+  activeTheme: 'theme-midnight',
   tags: [],          // saved NCR tags
   templates: [],     // saved templates
   current: blankTag(),
-  selectedId: null,  // id of the currently-loaded saved tag (null = new)
+  selectedId: null,  // id of the currently-loaded template (null = new)
   search: '',
   dateFilter: 'all', // 'all' | 'today' | 'week' | 'month'
   guides: [],        // [{name, url}] PDFs loaded via file picker (object URLs)
@@ -743,17 +761,17 @@ function renderComingSoon(label) {
 }
 
 /* ============================================================================
-   RENDER — SIDEBAR (search + tag list + import/export)
+   RENDER — SIDEBAR (saved templates + import/export)
    ============================================================================ */
 function renderSidebar() {
   const wrap = el('aside', { class: 'sidebar' });
 
-  // Search + New
+  // Search + New template
   const head = el('div', { class: 'sidebar-head' });
   const search = el('input', {
-    class: 'search', type: 'search', placeholder: 'Search tags…',
+    class: 'search', type: 'search', placeholder: 'Search templates…',
     value: state.search,
-    oninput: e => { state.search = e.target.value; replaceTagList(); }
+    oninput: e => { state.search = e.target.value; replaceTemplateList(); }
   });
   head.appendChild(search);
   head.appendChild(el('button', {
@@ -764,28 +782,13 @@ function renderSidebar() {
       state.selectedId = null;
       renderAll();
     }
-  }, '+ New tag'));
-
-  // Date-range filter chips: All / Today / Week / Month
-  const filters = el('div', { class: 'filter-chips' });
-  [
-    { id: 'all',   label: 'All' },
-    { id: 'today', label: 'Today' },
-    { id: 'week',  label: 'Week' },
-    { id: 'month', label: 'Month' }
-  ].forEach(f => {
-    filters.appendChild(el('button', {
-      class: 'chip' + (state.dateFilter === f.id ? ' active' : ''),
-      onclick: () => { state.dateFilter = f.id; replaceTagList(); renderSidebarChips(); }
-    }, f.label));
-  });
-  head.appendChild(filters);
+  }, '+ New template'));
 
   wrap.appendChild(head);
 
-  // Tag list (separate function so we can re-render only this on search)
+  // Template list (separate function so we can re-render only this on search)
   const list = el('div', { class: 'tag-list', id: 'tagList' });
-  list.appendChild(buildTagList());
+  list.appendChild(buildTemplateList());
   wrap.appendChild(list);
 
   // Import / Export
@@ -801,27 +804,21 @@ function renderSidebar() {
   return wrap;
 }
 
-function buildTagList() {
+function buildTemplateList() {
   const frag = document.createDocumentFragment();
   const q = state.search.trim().toLowerCase();
   const expectedType = currentTagType();
 
-  // Filter: matches current tab's type, search query, and date range.
-  // Sort: pinned first, then most-recently-updated.
-  const visible = state.tags
+  const visible = state.templates
     .filter(t => (t.type || 'NCR') === expectedType)
     .filter(t => !q || textIndex(t).includes(q))
-    .filter(t => inDateRange(t, state.dateFilter))
-    .sort((a, b) => {
-      if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
-      return b.updatedAt - a.updatedAt;
-    });
+    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
   if (visible.length === 0) {
     frag.appendChild(el('div', { class: 'empty-state' },
-      state.search || state.dateFilter !== 'all'
+      state.search
         ? 'No matches'
-        : 'No tags yet — fill out a tag and hit Save.'));
+        : 'No templates yet — fill one out and hit Save.'));
     return frag;
   }
   visible.forEach(t => {
@@ -833,20 +830,29 @@ function buildTagList() {
         renderAll();
       }
     });
-    card.appendChild(el('div', { class: 'tag-card-title' }, tagSummary(t) || '(empty)'));
-    card.appendChild(el('div', { class: 'tag-card-meta' }, formatDate(t.updatedAt)));
+    card.appendChild(el('div', { class: 'tag-card-title' },
+      t.templateName || tagSummary(t) || 'Untitled'));
+    card.appendChild(el('div', { class: 'tag-card-meta' },
+      `${t.type || expectedType} template • ${formatDate(t.updatedAt || t.createdAt || Date.now())}`));
 
-    // Pin/unpin star — visible on hover, golden when pinned.
-    card.appendChild(el('button', {
-      class: 'tag-pin' + (t.pinned ? ' pinned' : ''),
-      title: t.pinned ? 'Unpin' : 'Pin to top',
+    const actions = el('div', { class: 'tag-card-actions' });
+    actions.appendChild(el('button', {
+      class: 'tag-action',
+      title: 'Rename template',
       onclick: e => {
         e.stopPropagation();
-        t.pinned = !t.pinned;
-        persist();
-        replaceTagList();
+        renameTemplate(t.id);
       }
-    }, t.pinned ? '★' : '☆'));
+    }, '✎'));
+    actions.appendChild(el('button', {
+      class: 'tag-action delete',
+      title: 'Delete template',
+      onclick: e => {
+        e.stopPropagation();
+        confirmTemplateDelete(t.id);
+      }
+    }, '🗑'));
+    card.appendChild(actions);
 
     frag.appendChild(card);
   });
@@ -861,26 +867,18 @@ function inDateRange(t, filter) {
   return Date.now() - t.updatedAt < windows[filter];
 }
 
-// Re-render only the date-filter chips so the active state updates.
-function renderSidebarChips() {
-  const filterRow = document.querySelector('.sidebar .filter-chips');
-  if (!filterRow) return;
-  Array.from(filterRow.children).forEach(b => {
-    b.classList.toggle('active', b.textContent.toLowerCase() === state.dateFilter);
-  });
-}
-
 // Replace just the list when search changes — keeps focus on the search box.
-function replaceTagList() {
+function replaceTemplateList() {
   const list = $('#tagList');
   if (!list) return;
   list.innerHTML = '';
-  list.appendChild(buildTagList());
+  list.appendChild(buildTemplateList());
 }
 
 function textIndex(t) {
   // Searchable string for a tag — combine all text fields.
   const parts = [
+    t.templateName,
     ...(t.drawings || []).flatMap(d => [d.number, d.sheet, d.rev, d.custom, d.type]),
     ...(t.processSpecs || []).flatMap(s => [s.number, s.section, s.rev]),
     ...(t.items || []).flatMap(i => [
@@ -910,21 +908,34 @@ function renderBuilder() {
   // Header
   const head = el('div', { class: 'builder-head' });
   head.appendChild(el('div', { class: 'builder-title' },
-    state.selectedId ? 'Edit Tag' : ('New ' + currentTagType() + ' Tag')));
+    state.selectedId ? 'Edit Template' : ('New ' + currentTagType() + ' Template')));
 
   const actions = el('div', { class: 'builder-actions' });
-  actions.appendChild(el('button', { class: 'btn btn-ghost', onclick: openTemplatePicker }, '📋 Templates'));
-  actions.appendChild(el('button', { class: 'btn btn-ghost', onclick: saveAsTemplate }, '+ Template'));
-  actions.appendChild(el('button', { class: 'btn btn-ghost', onclick: duplicateTag, title: '⌘D' }, 'Duplicate'));
+  actions.appendChild(el('button', {
+    class: 'btn btn-ghost',
+    onclick: duplicateTemplate,
+    title: '⌘D'
+  }, 'Duplicate'));
   if (state.selectedId) {
     actions.appendChild(el('button', {
       class: 'btn btn-ghost btn-danger',
-      onclick: () => { if (confirm('Delete this tag?')) deleteCurrent(); }
+      onclick: () => confirmTemplateDelete(state.selectedId)
     }, 'Delete'));
   }
-  actions.appendChild(el('button', { class: 'btn btn-primary', onclick: saveTag, title: '⌘S' }, '💾 Save'));
+  actions.appendChild(el('button', {
+    class: 'btn btn-primary',
+    onclick: saveTemplate,
+    title: '⌘S'
+  }, '💾 Save'));
   head.appendChild(actions);
   wrap.appendChild(head);
+
+  const templateSec = section('Template');
+  const templateRow = el('div', { class: 'row' });
+  templateRow.appendChild(field('Template Name', 'text', t.templateName,
+    v => { t.templateName = v; }, { placeholder: 'Midnight dent template' }));
+  templateSec.appendChild(templateRow);
+  wrap.appendChild(templateSec);
 
   // ----- Header / Revision section -----
   const revSec = section('Header');
@@ -1301,84 +1312,120 @@ function fallbackCopy(text) {
 }
 
 /* ============================================================================
-   ACTIONS — save / duplicate / delete / templates
+   ACTIONS — save / duplicate / delete / rename templates
    ============================================================================ */
-function saveTag() {
+function saveTemplate() {
   const t = state.current;
+  const name = (t.templateName || '').trim();
+  if (!name) {
+    toast('Name the template first');
+    return;
+  }
+
+  t.templateName = name;
+  t.type = currentTagType();
+  t.createdAt = t.createdAt || Date.now();
   t.updatedAt = Date.now();
-  const idx = state.tags.findIndex(x => x.id === t.id);
-  if (idx >= 0) state.tags[idx] = clone(t);
-  else state.tags.push(clone(t));
+  const idx = state.templates.findIndex(x => x.id === t.id);
+  if (idx >= 0) state.templates[idx] = clone(t);
+  else state.templates.unshift(clone(t));
   state.selectedId = t.id;
   persist();
-  toast('Saved');
+  toast(idx >= 0 ? 'Template updated' : 'Template saved');
   renderAll();
 }
 
-function duplicateTag() {
+function duplicateTemplate() {
   const fresh = clone(state.current);
   fresh.id = blankTag().id;
+  fresh.templateName = fresh.templateName
+    ? `${fresh.templateName} Copy`
+    : '';
+  fresh.type = currentTagType();
   fresh.createdAt = Date.now();
   fresh.updatedAt = Date.now();
   state.current = fresh;
   state.selectedId = null;
-  toast('Duplicated — Save when ready');
+  toast('Template duplicated — save when ready');
   renderAll();
 }
 
-function deleteCurrent() {
-  if (!state.selectedId) return;
-  state.tags = state.tags.filter(x => x.id !== state.selectedId);
-  state.current = blankTag();
-  state.selectedId = null;
-  persist();
-  toast('Deleted');
-  renderAll();
-}
+function renameTemplate(templateId) {
+  const template = state.templates.find(x => x.id === templateId);
+  if (!template) return;
 
-function saveAsTemplate() {
-  const name = prompt('Template name?');
-  if (!name) return;
-  const tpl = clone(state.current);
-  tpl.id = 'tpl_' + Date.now();
-  tpl.templateName = name;
-  state.templates.push(tpl);
-  persist();
-  toast('Template saved');
-}
+  const nextName = prompt('Rename template', template.templateName || '');
+  if (nextName == null) return;
 
-function openTemplatePicker() {
-  const opts = state.templates.length === 0
-    ? [el('div', { class: 'empty-state' },
-        'No templates yet. Build a tag, then click "+ Template".')]
-    : state.templates.map(tpl => el('button', {
-        onclick: () => {
-          const fresh = clone(tpl);
-          fresh.id = blankTag().id;
-          fresh.type = currentTagType();   // tag inherits current tab's type
-          fresh.createdAt = Date.now();
-          fresh.updatedAt = Date.now();
-          delete fresh.templateName;
-          state.current = fresh;
-          state.selectedId = null;
-          closeModal();
-          toast('Template applied');
-          renderAll();
-        }
-      }, tpl.templateName || 'Untitled'));
-
-  const footer = [el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel')];
-  if (state.templates.length > 0) {
-    footer.push(el('button', {
-      class: 'btn btn-ghost btn-danger',
-      onclick: () => {
-        if (confirm('Delete all templates?')) {
-          state.templates = []; persist(); closeModal(); renderAll();
-        }
-      }
-    }, 'Clear all'));
+  const name = nextName.trim();
+  if (!name) {
+    toast('Template name cannot be empty');
+    return;
   }
-  openModal('Apply a template', opts, footer);
+
+  template.templateName = name;
+  template.updatedAt = Date.now();
+  if (state.selectedId === templateId) {
+    state.current.templateName = name;
+    state.current.updatedAt = template.updatedAt;
+  }
+  persist();
+  toast('Template renamed');
+  renderAll();
+}
+
+function deleteTemplateById(templateId) {
+  state.templates = state.templates.filter(x => x.id !== templateId);
+  if (state.selectedId === templateId) {
+    state.current = blankTag();
+    state.current.type = currentTagType();
+    state.selectedId = null;
+  }
+  closeModal();
+  persist();
+  toast('Template deleted');
+  renderAll();
+}
+
+function confirmTemplateDelete(templateId) {
+  const template = state.templates.find(x => x.id === templateId);
+  if (!template) return;
+  const name = template.templateName || 'Untitled';
+
+  openModal('Delete template?', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `Delete "${name}" from the template list?`)
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-danger',
+      onclick: () => confirmTemplateDeleteFinal(templateId)
+    }, 'Continue')
+  ]);
+}
+
+function confirmTemplateDeleteFinal(templateId) {
+  const template = state.templates.find(x => x.id === templateId);
+  if (!template) {
+    closeModal();
+    return;
+  }
+  const name = template.templateName || 'Untitled';
+
+  openModal('Final confirmation', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `"${name}" will be permanently deleted. This cannot be undone.`)
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-danger',
+      onclick: () => deleteTemplateById(templateId)
+    }, 'Delete template')
+  ]);
 }
 
 /* ============================================================================
@@ -1414,7 +1461,7 @@ function importFile(file) {
       incomingTpl.forEach(t => tplById.set(t.id, t));
       state.templates = Array.from(tplById.values());
       persist();
-      toast(`Imported ${incoming.length} tags`);
+      toast(`Imported ${incoming.length} tags and ${incomingTpl.length} templates`);
       renderAll();
     } catch (err) {
       alert('Invalid JSON: ' + err.message);
@@ -1554,10 +1601,10 @@ function setupGlobalEvents() {
   //   ⌘/Ctrl + D      Duplicate current tag
   //   ⌘/Ctrl + Enter  Copy preview to clipboard
   document.addEventListener('keydown', e => {
-    if (state.activeTab !== 'NCRs') return;
+    if (!['NCRs', 'NCOs'].includes(state.activeTab)) return;
     const meta = e.metaKey || e.ctrlKey;
-    if (meta && e.key.toLowerCase() === 's') { e.preventDefault(); saveTag(); }
-    else if (meta && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateTag(); }
+    if (meta && e.key.toLowerCase() === 's') { e.preventDefault(); saveTemplate(); }
+    else if (meta && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateTemplate(); }
     else if (meta && e.key === 'Enter') { e.preventDefault(); copyPreview(); }
   });
 }
