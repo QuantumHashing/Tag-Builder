@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "savedAt": "2026-05-04T11:32:01.591Z",
+  "tags": [],
+  "templates": [
+    {
+      "id": "tag_1777888479001_souu",
+      "templateName": "Sharp Dent",
+      "type": "NCO",
+      "revisionNumber": 0,
+      "drawings": [
+        {
+          "type": "Engineering",
+          "custom": "",
+          "number": "123A1234-1",
+          "sheet": "1",
+          "rev": "A"
+        }
+      ],
+      "processSpecs": [
+        {
+          "number": "BAC1234",
+          "section": "11.1a",
+          "rev": "A"
+        }
+      ],
+      "items": [
+        {
+          "countOf": "1",
+          "countTotal": "1",
+          "partNumber": "123A1234-1",
+          "description": "Tube Assy",
+          "discrepancy": "has a sharp dent C/T the AS56942 Fitting",
+          "measL": "0.123",
+          "measW": "0.023",
+          "measD": "0.004",
+          "measCustom": "",
+          "sbText": "No dents on the tube"
+        }
+      ],
+      "lso": "100/010",
+      "lio": "",
+      "carrotTemplateId": "carrot_1777887328543_vut5",
+      "carrotTemplateName": "Sanding",
+      "carrotsText": "^^\nSand part\n^^\nInspect Thickness\n^^\nFinal Inspection",
+      "attachmentsEnabled": false,
+      "attachmentsText": "*See Attachments*",
+      "pinned": false,
+      "createdAt": 1777888479001,
+      "updatedAt": 1777893487324
+    },
+    {
+      "id": "tpl_sharp_dent",
+      "templateName": "Sharp Dent",
+      "type": "NCR",
+      "revisionNumber": 0,
+      "drawings": [
+        {
+          "type": "Engineering",
+          "custom": "",
+          "number": "123A1234",
+          "sheet": "1",
+          "rev": "A"
+        }
+      ],
+      "processSpecs": [
+        {
+          "number": "BAC1234",
+          "section": "11.1a",
+          "rev": "A"
+        }
+      ],
+      "items": [
+        {
+          "countOf": "1",
+          "countTotal": "8",
+          "partNumber": "123Q1234-1",
+          "description": "Tube Assy",
+          "discrepancy": "has a sharp dent",
+          "measL": "0.172",
+          "measW": "0.086",
+          "measD": "0.007",
+          "measCustom": "",
+          "sbText": "No dents on the tube",
+          "sbAutoRef": true
+        }
+      ],
+      "lso": "100/010",
+      "lio": "110/010",
+      "attachmentsEnabled": true,
+      "attachmentsText": "*See Attachments*",
+      "createdAt": 1777884798268,
+      "updatedAt": 1777890770740,
+      "carrotTemplateId": null
+    }
+  ],
+  "carrotTemplates": [
+    {
+      "id": "carrot_1777887328543_vut5",
+      "name": "Sanding",
+      "text": "^^\nSand part\n^^\nInspect Thickness\n^^\nFinal Inspection",
+      "createdAt": 1777887328543,
+      "updatedAt": 1777887328543
+    }
+  ]
+}
