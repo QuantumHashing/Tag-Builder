@@ -196,6 +196,7 @@ input, textarea, select { font: inherit; color: inherit; }
   display: flex; align-items: center; justify-content: center;
   color: var(--text-muted); transition: all 0.15s; font-size: 15px;
 }
+.icon-btn svg { width: 16px; height: 16px; display: block; }
 .icon-btn:hover { background: var(--border); color: var(--text); }
 
 .main { display: grid; grid-template-columns: 280px 1fr 400px; height: 100%; overflow: hidden; }
@@ -286,6 +287,19 @@ input, textarea, select { font: inherit; color: inherit; }
 .tag-action:hover { background: var(--border); color: var(--text); }
 .tag-card.active .tag-action:hover { color: white; }
 .tag-action.delete:hover { color: var(--accent-2); }
+.tag-action svg { display: block; }
+.tag-list-group { margin-bottom: 12px; }
+.tag-list-group:last-child { margin-bottom: 0; }
+.tag-list-group-title {
+  padding: 6px 6px 8px;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  color: var(--text-muted);
+}
+.tag-list-group-empty {
+  padding: 0 6px 8px;
+  font-size: 12px; color: var(--text-muted);
+}
 .sidebar-foot { padding: 10px; border-top: 1px solid var(--border); display: flex; gap: 6px; }
 
 /* ---------- BUILDER ---------- */
@@ -294,41 +308,143 @@ input, textarea, select { font: inherit; color: inherit; }
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 10px; gap: 8px; flex-wrap: wrap;
 }
-.builder-title { font-size: 18px; font-weight: 700; letter-spacing: -0.2px; }
+.builder-title {
+  font-size: 22px; font-weight: 800; letter-spacing: -0.4px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative; display: inline-block;
+  padding-bottom: 5px;
+}
+.builder-title::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 3px; border-radius: 999px;
+  background: var(--accent-grad);
+  opacity: 0.85;
+}
 .builder-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.builder-title-wrap {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.builder-title-input {
+  width: 190px;
+  padding: 6px 9px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  transition: border 0.15s;
+  font: inherit; color: inherit;
+}
+.builder-title-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
 
 .section {
   background: var(--surface); backdrop-filter: blur(10px);
   border: 1px solid var(--border); border-radius: 12px;
-  padding: 10px 12px; margin-bottom: 8px;
+  padding: 8px 10px; margin-bottom: 6px;
 }
 .section-head {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 .section-title {
-  font-size: 11px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.5px;
-  color: var(--text-muted);
+  font-size: 14px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.section-head-inline {
+  justify-content: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.section-head-input {
+  width: 190px;
+  padding: 6px 9px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  transition: border 0.15s;
+  font: inherit;
+  color: inherit;
+}
+.section-head-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.builder-divider {
+  position: relative;
+  height: 1px;
+  margin: 8px 2px 10px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--accent) 22%, var(--border)) 18%,
+    color-mix(in srgb, var(--accent-2) 28%, var(--accent)) 50%,
+    color-mix(in srgb, var(--accent) 22%, var(--border)) 82%,
+    transparent 100%
+  );
+  opacity: 0.75;
+}
+.builder-divider::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 84px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--accent) 18%, transparent) 0%,
+    transparent 72%
+  );
+  pointer-events: none;
 }
 
-.row { display: grid; gap: 6px; }
+.row { display: grid; gap: 6px; margin-bottom: 4px; }
+.row:last-child { margin-bottom: 0; }
 .row-2 { grid-template-columns: 1fr 1fr; }
 .row-3 { grid-template-columns: 1fr 1fr 1fr; }
 .row-rev { grid-template-columns: 1fr 1fr 2fr; }
 .row-att { grid-template-columns: auto 1fr; align-items: end; gap: 12px; }
 
 .field { display: flex; flex-direction: column; gap: 2px; }
-.field label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
-.field input, .field textarea, .field select {
+.field label { font-size: 11px; color: var(--accent-2); font-weight: 600; letter-spacing: 0.2px; }
+
+/* L/W/D labels — themed slightly differently from other field labels:
+   small-caps tone with the accent gradient instead of solid accent-2. */
+.lwd-row .field label {
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+  font-size: 10px;
+}
+.field input, .field textarea, .field select,
+.inner-group > textarea {
   padding: 6px 9px; border-radius: 7px;
   border: 1px solid var(--border); background: var(--bg);
   transition: border 0.15s;
+  font: inherit; color: inherit;
 }
-.field input:focus, .field textarea:focus, .field select:focus {
+.field input:focus, .field textarea:focus, .field select:focus,
+.inner-group > textarea:focus {
   outline: none; border-color: var(--accent);
 }
-.field textarea { min-height: 42px; resize: vertical; font-family: inherit; }
+.field input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+.field input[type="number"]::-webkit-inner-spin-button,
+.field input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none; margin: 0;
+}
+.field textarea, .inner-group > textarea {
+  min-height: 38px; resize: vertical;
+}
+.field textarea.lg, .inner-group > textarea.lg { min-height: 64px; }
+.inner-group > textarea.tall { min-height: 56px; }
 .field-hint {
   padding: 6px 10px; color: var(--text-muted); font-size: 12px;
   background: var(--bg); border-radius: 7px; border: 1px dashed var(--border);
@@ -336,13 +452,43 @@ input, textarea, select { font: inherit; color: inherit; }
 
 .subsection {
   border: 1px solid var(--border); border-radius: 9px;
-  padding: 8px 10px; margin-bottom: 6px; background: var(--bg);
+  padding: 6px 8px 8px; margin-bottom: 4px; background: var(--surface-2);
 }
 .subsection-head {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 6px; gap: 8px;
+  margin-bottom: 4px; gap: 8px;
 }
-.subsection-title { font-size: 12px; font-weight: 600; color: var(--text); }
+.subsection-title {
+  font-size: 13px; font-weight: 700;
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.subsection-title-wrap {
+  display: flex; align-items: center; gap: 6px; min-width: 0;
+}
+.subsection-mini-input {
+  width: 52px;
+  padding: 4px 7px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  transition: border 0.15s;
+  font: inherit; color: inherit;
+}
+.subsection-mini-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Grouped fields inside an Item — flush with the surrounding rows
+   so contents align with the part-number row above. */
+.inner-group {
+  margin: 4px 0; display: flex; flex-direction: column; gap: 2px;
+}
+.inner-group-title {
+  font-size: 12px; font-weight: 600; color: var(--accent-2); letter-spacing: 0.2px;
+}
 .del-btn { color: var(--text-muted); font-size: 12px; padding: 3px 8px; border-radius: 6px; }
 .del-btn:hover { background: var(--border); color: var(--accent-2); }
 
@@ -374,13 +520,43 @@ select {
 }
 .preview-body { flex: 1; overflow-y: auto; padding: 14px; }
 .preview-card {
-  background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
-  padding: 14px 16px;
+  position: relative; overflow: hidden;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px 18px 16px;
   font-family: "SF Mono", "Menlo", "Consolas", monospace;
-  font-size: 13px; line-height: 1.55;
+  font-size: 13px; line-height: 1.6;
   white-space: pre-wrap; word-break: break-word;
+  box-shadow: var(--shadow);
 }
-.preview-card em { color: var(--accent); font-style: italic; }
+.preview-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--accent-grad);
+}
+.preview-card em { color: var(--accent-2); font-style: italic; }
+.preview-card .preview-placeholder {
+  color: var(--text-muted); font-style: italic; opacity: 0.85;
+}
+.preview-card .lbl {
+  color: var(--accent); font-weight: 600;
+}
+.preview-card .item-hdr {
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+.preview-card .meas-hdr {
+  color: var(--accent-2); font-weight: 600;
+  text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;
+}
+.preview-card.formatted-preview,
+.tag-preview-pop.formatted-preview {
+  white-space: pre-wrap;
+}
+.preview-card.formatted-preview .preview-inline-label,
+.tag-preview-pop.formatted-preview .preview-inline-label {
+  white-space: pre-wrap;
+}
 .preview-foot {
   padding: 10px 14px; border-top: 1px solid var(--border);
   display: flex; gap: 6px;
@@ -407,7 +583,7 @@ select {
   border: 1px solid var(--border); background: var(--bg);
   font-weight: 500; transition: all 0.15s;
 }
-.modal-options button:hover { border-color: var(--accent); transform: translateX(2px); }
+.modal-options button:hover { border-color: var(--accent); }
 .modal-foot { display: flex; justify-content: flex-end; gap: 8px; }
 
 /* ---------- THEME PICKER ---------- */
@@ -446,6 +622,36 @@ select {
   z-index: 200;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+/* ---------- DRAG IMPORT ---------- */
+.drop-overlay {
+  position: fixed; inset: 0;
+  display: none; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--bg) 42%, rgba(0,0,0,0.34));
+  backdrop-filter: blur(10px);
+  z-index: 250;
+  pointer-events: none;
+}
+body.drag-importing .drop-overlay { display: flex; }
+.drop-overlay-card {
+  min-width: min(420px, calc(100vw - 40px));
+  max-width: 520px;
+  padding: 22px 26px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--accent) 18%, rgba(0,0,0,0.18));
+  text-align: center;
+}
+.drop-overlay-title {
+  font-size: 18px; font-weight: 800; margin-bottom: 4px;
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.drop-overlay-copy {
+  font-size: 13px; color: var(--text-muted); line-height: 1.5;
+}
 
 /* ---------- GUIDES ---------- */
 .guides { display: grid; grid-template-rows: auto 1fr; height: 100%; }
@@ -494,6 +700,320 @@ kbd {
   font-family: monospace; background: var(--border);
   padding: 1px 5px; border-radius: 4px; font-size: 11px;
 }
+
+/* ============================================================================
+   POLISH LAYER — micro-interactions, focus halos, themed touches.
+   Universal first, then per-theme "it factor" overrides.
+   ============================================================================ */
+
+/* Themed text selection + caret */
+::selection { background: var(--accent); color: #fff; }
+input, textarea { caret-color: var(--accent); }
+
+/* Soft focus halo on every editable surface */
+.field input:focus, .field textarea:focus, .field select:focus,
+.inner-group > textarea:focus, .search:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* Brand wordmark — slow drifting sheen along the gradient */
+.brand {
+  background-size: 220% 100%;
+  animation: brandSheen 7s ease-in-out infinite;
+}
+@keyframes brandSheen {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* Topbar — subtle accent rule under the bottom border */
+.topbar { position: relative; }
+.topbar::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: var(--accent-grad); opacity: 0.4; pointer-events: none;
+}
+
+/* Tabs — gentle lift on active */
+.tab { transition: transform .18s cubic-bezier(.4,0,.2,1), background .18s, color .18s, box-shadow .2s; }
+.tab.active { transform: translateY(-1px); }
+
+/* Buttons — pressable feel + sweep on primary hover */
+.btn { transition: transform .12s ease, box-shadow .18s ease, background .18s ease, color .15s ease; }
+.btn:active { transform: scale(.97); }
+.btn-primary { position: relative; overflow: hidden; isolation: isolate; }
+.btn-primary::after {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(120deg, transparent 25%, rgba(255,255,255,.28) 50%, transparent 75%);
+  transform: translateX(-110%);
+  transition: transform .65s ease;
+}
+.btn-primary:hover::after { transform: translateX(110%); }
+.btn-primary:hover {
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 35%, transparent),
+              0 1px 3px rgba(0,0,0,.12);
+}
+
+/* Icon buttons — tiny scale pop */
+.icon-btn { transition: background .15s, color .15s, transform .15s; }
+.icon-btn:hover { transform: scale(1.08); }
+.icon-btn:active { transform: scale(.92); }
+
+/* Section cards — accent border on hover */
+.section { transition: border-color .25s ease, box-shadow .25s ease; }
+.section:hover {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+
+/* Subsections — light up when focused */
+.subsection { transition: border-color .2s ease, box-shadow .25s ease; }
+.subsection:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* Sidebar tag cards — accent stripe + lift */
+.tag-card {
+  border-left: 3px solid transparent;
+  transition: transform .18s ease, background .18s, border-left-color .2s, box-shadow .2s;
+}
+.tag-card:hover { transform: translateX(2px); border-left-color: var(--accent); }
+.tag-card.active {
+  border-left-color: transparent;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+/* Preview card — soft glow on hover, deepen when copying */
+.preview-card { transition: box-shadow .25s ease, transform .25s ease; }
+.preview-card:hover {
+  box-shadow: 0 10px 32px color-mix(in srgb, var(--accent) 18%, transparent),
+              0 2px 6px rgba(0,0,0,.08);
+}
+
+/* Toast — accent-tinted ring */
+.toast { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+
+/* Modal — pop entry */
+.modal-backdrop.show .modal { animation: modalIn .24s cubic-bezier(.2,.9,.3,1.2); }
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(10px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Scrollbar — accent on hover */
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Theme picker swatches — subtle ring on hover */
+.theme-opt:hover .theme-swatch {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+/* ---------- THEME "IT FACTOR" ----------
+   Exotic / dark themes get a slow background drift + animated topbar accent
+   for atmosphere. Crisp light themes stay still for that "professional" feel. */
+
+body.theme-aurora,
+body.theme-cyberpunk,
+body.theme-cosmos,
+body.theme-ocean,
+body.theme-midnight,
+body.theme-charcoal,
+body.theme-boeing-sky {
+  background-size: 220% 220%;
+  animation: bgDrift 28s ease-in-out infinite alternate;
+}
+@keyframes bgDrift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+/* Animated flowing topbar accent on the most expressive themes */
+body.theme-aurora .topbar::after,
+body.theme-cyberpunk .topbar::after,
+body.theme-cosmos .topbar::after,
+body.theme-ocean .topbar::after {
+  background-size: 220% 100%;
+  animation: stripeFlow 9s linear infinite;
+  opacity: .7;
+}
+@keyframes stripeFlow { to { background-position: 220% 0; } }
+
+/* Glow under active tabs on dark themes */
+body.theme-midnight .tab.active,
+body.theme-charcoal .tab.active,
+body.theme-cosmos .tab.active,
+body.theme-cyberpunk .tab.active,
+body.theme-aurora .tab.active,
+body.theme-ocean .tab.active,
+body.theme-boeing-sky .tab.active {
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 50%, transparent),
+              0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* Cyberpunk — neon glow on focus + primary text */
+body.theme-cyberpunk .btn-primary {
+  text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+body.theme-cyberpunk .field input:focus,
+body.theme-cyberpunk .field textarea:focus,
+body.theme-cyberpunk .field select:focus,
+body.theme-cyberpunk .inner-group > textarea:focus {
+  box-shadow: 0 0 0 1px var(--accent),
+              0 0 18px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* Aurora — preview gets a multi-stop animated border-top */
+body.theme-aurora .preview-card::before,
+body.theme-cyberpunk .preview-card::before,
+body.theme-cosmos .preview-card::before {
+  background-size: 220% 100%;
+  animation: stripeFlow 10s linear infinite;
+}
+
+/* Light themes — soft top-down sheen inside section cards */
+body.theme-sunrise .section,
+body.theme-mint .section,
+body.theme-lavender .section,
+body.theme-rosegold .section,
+body.theme-sage .section,
+body.theme-linen .section,
+body.theme-monochrome .section,
+body.theme-boeing-classic .section {
+  background-image: linear-gradient(180deg, rgba(255,255,255,.45), transparent 55%);
+}
+
+/* Boeing Classic — crisp navy top accent under the topbar */
+body.theme-boeing-classic .topbar::after { opacity: .9; height: 2px; }
+
+/* Cosmos / Aurora / Cyberpunk — radial accent halo behind the brand */
+body.theme-cosmos .brand,
+body.theme-aurora .brand,
+body.theme-cyberpunk .brand {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 35%, transparent));
+}
+
+/* Linen / Sage / Rosegold — paper-y fine inner border on cards */
+body.theme-linen .section,
+body.theme-sage .section,
+body.theme-rosegold .section {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 1px 0 rgba(0,0,0,.02);
+}
+
+/* Reduced motion — disable animated bg + sheens */
+@media (prefers-reduced-motion: reduce) {
+  body, .brand, .preview-card::before, .topbar::after { animation: none !important; }
+  .btn-primary::after { display: none; }
+  .modal-backdrop.show .modal { animation: none !important; }
+}
+
+/* ============================================================================
+   FEATURE LAYER — custom themes, hover preview,
+   theme ripple, focus mode, uppercase text.
+   ============================================================================ */
+
+/* ---------- Theme builder modal ---------- */
+.theme-builder { display: grid; gap: 12px; }
+.theme-builder .tb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.theme-builder label {
+  font-size: 11px; color: var(--accent-2); font-weight: 600;
+  letter-spacing: 0.2px; display: block; margin-bottom: 4px;
+}
+.theme-builder input[type="color"] {
+  width: 100%; height: 38px; padding: 2px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg); cursor: pointer;
+}
+.theme-builder input[type="text"], .theme-builder select {
+  width: 100%; padding: 7px 9px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--bg);
+  font: inherit; color: inherit;
+}
+.theme-builder .tb-preview {
+  height: 56px; border-radius: 10px; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: white; letter-spacing: 0.4px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+
+/* Custom themes section in theme picker */
+.theme-picker .ct-row {
+  display: flex; align-items: center; gap: 4px;
+}
+.theme-picker .ct-row .theme-opt { flex: 1; min-width: 0; }
+.theme-picker .ct-row .theme-opt span:not(.theme-swatch) {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.theme-picker .ct-mini-btn {
+  width: 22px; height: 22px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); font-size: 12px; transition: all .15s;
+}
+.theme-picker .ct-mini-btn:hover { background: var(--border); color: var(--text); }
+.theme-picker .ct-mini-btn.del:hover { color: var(--accent-2); }
+.theme-picker .ct-mini-btn svg { width: 12px; height: 12px; display: block; }
+.theme-picker .ct-empty {
+  padding: 6px 8px; font-size: 11px; color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ---------- Tag-card hover preview popover ---------- */
+.tag-preview-pop {
+  position: fixed; z-index: 80;
+  width: 360px; max-height: 360px; overflow-y: auto;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px;
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 12px; line-height: 1.55;
+  white-space: pre-wrap; word-break: break-word;
+  box-shadow: 0 16px 40px rgba(0,0,0,.28), 0 2px 8px rgba(0,0,0,.1);
+  pointer-events: none;
+  animation: popIn .14s ease;
+}
+.tag-preview-pop::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--accent-grad);
+  border-radius: 12px 12px 0 0;
+}
+.tag-preview-pop em { color: var(--accent-2); font-style: italic; }
+.tag-preview-pop .lbl { color: var(--accent); font-weight: 600; }
+.tag-preview-pop .item-hdr {
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; font-weight: 700;
+}
+.tag-preview-pop .meas-hdr {
+  color: var(--accent-2); font-weight: 700;
+  text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;
+}
+.tag-preview-pop .preview-placeholder { color: var(--text-muted); font-style: italic; }
+@keyframes popIn {
+  from { opacity: 0; transform: translateX(-6px) scale(.98); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ---------- Theme ripple ---------- */
+.theme-ripple {
+  position: fixed; pointer-events: none; z-index: 9999;
+  border-radius: 50%; width: 0; height: 0;
+  transform: translate(-50%, -50%);
+  animation: themeRipple .7s cubic-bezier(.2,.6,.3,1) forwards;
+}
+@keyframes themeRipple {
+  0%   { width: 0; height: 0; opacity: .8; }
+  60%  { opacity: .55; }
+  100% { width: 260vmax; height: 260vmax; opacity: 0; }
+}
+
+/* ---------- Focus mode ---------- */
+body.focus-mode .sidebar,
+body.focus-mode .preview-pane { display: none; }
+body.focus-mode .main { grid-template-columns: 1fr !important; }
+body.focus-mode .builder { max-width: 920px; margin: 0 auto; padding: 24px 28px; }
+.icon-btn.feature-on {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.uppercase-text { text-transform: uppercase; }
 </style>
 </head>
 <body class="theme-midnight">
@@ -503,9 +1023,17 @@ kbd {
     <div class="brand">✈ Red Tag Builder</div>
     <nav class="tabs" id="tabs"></nav>
     <div class="spacer"></div>
+    <button class="icon-btn" id="formatBtn" title="Toggle formatted preview layout" aria-label="Toggle formatted preview layout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 6h16"></path>
+        <path d="M4 12h7"></path>
+        <path d="M13 12h7"></path>
+        <path d="M4 18h16"></path>
+      </svg>
+    </button>
+    <button class="icon-btn" id="uppercaseBtn" title="Toggle uppercase tag text" aria-label="Toggle uppercase tag text">aA</button>
+    <button class="icon-btn" id="focusBtn" title="Focus mode (⌘.)">⛶</button>
     <button class="icon-btn" id="themeBtn" title="Theme">🎨</button>
-    <button class="icon-btn" id="importBtn" title="Import JSON">⬇️</button>
-    <button class="icon-btn" id="exportBtn" title="Export all (JSON)">⬆️</button>
   </header>
   <main class="main" id="main"></main>
 </div>
@@ -530,6 +1058,9 @@ kbd {
   <button class="theme-opt" data-theme="theme-aurora"><span class="theme-swatch" style="background:linear-gradient(135deg,#34d399,#60a5fa,#c084fc)"></span>Aurora</button>
   <button class="theme-opt" data-theme="theme-ocean"><span class="theme-swatch" style="background:linear-gradient(135deg,#00b4d8,#90e0ef)"></span>Ocean</button>
   <button class="theme-opt" data-theme="theme-cyberpunk"><span class="theme-swatch" style="background:linear-gradient(135deg,#00ffd5,#ff006e)"></span>Cyberpunk</button>
+  <h4>Custom</h4>
+  <div id="customThemesList"></div>
+  <button class="theme-opt" id="createThemeBtn"><span class="theme-swatch" style="background:linear-gradient(135deg,var(--accent),var(--accent-2))"></span>+ Create theme</button>
 </div>
 
 <!-- Modal & hidden file inputs & toast -->
@@ -537,6 +1068,12 @@ kbd {
 <input type="file" id="fileImport" accept="application/json" style="display:none">
 <input type="file" id="filePdf" accept="application/pdf" style="display:none" multiple>
 <div class="toast" id="toast"></div>
+<div class="drop-overlay" id="dropOverlay" aria-hidden="true">
+  <div class="drop-overlay-card">
+    <div class="drop-overlay-title">Drop JSON to Import</div>
+    <div class="drop-overlay-copy">Release your file to load templates, tags, and caret templates.</div>
+  </div>
+</div>
 
 <script>
 /* ============================================================================
@@ -553,7 +1090,7 @@ const blankTag = () => ({
   type: 'NCR',
   revisionNumber: 0,      // if > 0, prepends "*Revision N*" line at the top
   drawings: [
-    { type: 'Engineering', custom: '', number: '', sheet: '', rev: '' }
+    { type: 'Engineering', custom: '', number: '', sheet: '', rev: '', location: '' }
   ],
   processSpecs: [
     { number: '', section: '', rev: '' }
@@ -561,6 +1098,9 @@ const blankTag = () => ({
   items: [ blankItem() ],
   lso: '',
   lio: '',
+  carrotTemplateId: null,
+  carrotTemplateName: '',
+  carrotsText: '',
   attachmentsEnabled: true,
   attachmentsText: '*See Attachments*',
   pinned: false,        // pin tags to the top of the sidebar
@@ -568,14 +1108,23 @@ const blankTag = () => ({
   updatedAt: Date.now()
 });
 
-function blankItem() {
+function blankTagForType(type = 'NCR') {
+  const tag = blankTag();
+  tag.type = type;
+  if (type === 'NCO') tag.attachmentsEnabled = false;
+  return tag;
+}
+
+function blankItem(itemNumber = '') {
   return {
+    itemNumber: itemNumber ? String(itemNumber) : '',
     countOf: '', countTotal: '',
     partNumber: '', description: '',
     discrepancy: '',
-    ctPartNumber: '', ctDescription: '',
     measL: '', measW: '', measD: '',
-    sbText: ''
+    measCustom: '',
+    sbText: '',
+    sbAutoRef: true
   };
 }
 
@@ -584,12 +1133,20 @@ const state = {
   activeTheme: 'theme-midnight',
   tags: [],          // saved NCR tags
   templates: [],     // saved templates
-  current: blankTag(),
+  carrotTemplates: [], // saved NCO carrot templates
+  current: blankTagForType('NCR'),
   selectedId: null,  // id of the currently-loaded template (null = new)
+  selectedCarrotId: null,
+  previewSuppressed: false,
+  carrotPreviewSuppressed: false,
   search: '',
   dateFilter: 'all', // 'all' | 'today' | 'week' | 'month'
   guides: [],        // [{name, url}] PDFs loaded via file picker (object URLs)
-  activeGuideIdx: 0
+  activeGuideIdx: 0,
+  customThemes: [],  // user-built themes [{id, name, base, accent, accent2}]
+  focusMode: false,  // transient — not persisted
+  formattedPreview: false,
+  uppercaseText: false
 };
 
 /* ---------- PERSISTENCE ----------
@@ -600,7 +1157,11 @@ function persist() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     activeTheme: state.activeTheme,
     tags: state.tags,
-    templates: state.templates
+    templates: state.templates,
+    carrotTemplates: state.carrotTemplates,
+    customThemes: state.customThemes,
+    formattedPreview: state.formattedPreview,
+    uppercaseText: state.uppercaseText
   }));
 }
 function loadPersisted() {
@@ -611,6 +1172,10 @@ function loadPersisted() {
     state.activeTheme = data.activeTheme || state.activeTheme;
     state.tags = data.tags || [];
     state.templates = data.templates || [];
+    state.carrotTemplates = data.carrotTemplates || [];
+    state.customThemes = data.customThemes || [];
+    state.formattedPreview = !!data.formattedPreview;
+    state.uppercaseText = !!data.uppercaseText;
   } catch (e) { console.warn('Load failed', e); }
 }
 
@@ -633,13 +1198,16 @@ function seedDefaults() {
     items: [{
       countOf: '1', countTotal: '8',
       partNumber: '123Q1234-1', description: 'Tube Assy',
-      discrepancy: 'has a sharp dent',
-      ctPartNumber: 'C/T the QA1234a', ctDescription: 'Fitting',
+      discrepancy: 'has a sharp dent C/T the AS56942 Fitting',
       measL: '0.172', measW: '0.086', measD: '0.007',
+      measCustom: '',
       sbText: 'No blah blah on the tube'
     }],
     lso: '100/010',
     lio: '110/010',
+    carrotTemplateId: null,
+    carrotTemplateName: '',
+    carrotsText: '',
     attachmentsEnabled: true,
     attachmentsText: '*See Attachments*',
     createdAt: Date.now(),
@@ -707,9 +1275,11 @@ function renderTabs() {
         // builder shows the correct context.
         const expected = currentTagType();
         if ((name === 'NCRs' || name === 'NCOs') && state.current.type !== expected) {
-          state.current = blankTag();
-          state.current.type = expected;
+          state.current = blankTagForType(expected);
           state.selectedId = null;
+          state.selectedCarrotId = null;
+          state.previewSuppressed = false;
+          state.carrotPreviewSuppressed = false;
         }
         renderAll();
       }
@@ -717,7 +1287,39 @@ function renderTabs() {
   });
 }
 
-function applyTheme() { document.body.className = state.activeTheme; }
+function applyTheme() {
+  // Reset any inline custom-theme variables before applying the next theme.
+  ['--accent', '--accent-2', '--accent-grad', '--shadow'].forEach(p =>
+    document.body.style.removeProperty(p));
+
+  let cls = state.activeTheme;
+  if (cls && cls.startsWith('custom:')) {
+    const id = cls.slice(7);
+    const ct = state.customThemes.find(t => t.id === id);
+    if (ct) {
+      cls = ct.base || 'theme-midnight';
+      document.body.style.setProperty('--accent', ct.accent);
+      document.body.style.setProperty('--accent-2', ct.accent2);
+      document.body.style.setProperty('--accent-grad',
+        `linear-gradient(135deg, ${ct.accent}, ${ct.accent2})`);
+      document.body.style.setProperty('--shadow',
+        `0 4px 24px ${hexToRgba(ct.accent, 0.2)}`);
+    } else {
+      cls = 'theme-midnight';
+    }
+  }
+  document.body.className = cls + (state.focusMode ? ' focus-mode' : '');
+}
+
+// Convert #rrggbb (or #rgb) to rgba(r,g,b,alpha) string.
+function hexToRgba(hex, alpha) {
+  let h = String(hex || '').replace('#', '');
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const r = parseInt(h.slice(0, 2), 16) || 0;
+  const g = parseInt(h.slice(2, 4), 16) || 0;
+  const b = parseInt(h.slice(4, 6), 16) || 0;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
 
 /* ============================================================================
    RENDER — MAIN ROUTER
@@ -769,7 +1371,8 @@ function renderSidebar() {
   // Search + New template
   const head = el('div', { class: 'sidebar-head' });
   const search = el('input', {
-    class: 'search', type: 'search', placeholder: 'Search templates…',
+    class: 'search', type: 'search',
+    placeholder: state.activeTab === 'NCOs' ? 'Search NCO tags and caret templates…' : 'Search templates…',
     value: state.search,
     oninput: e => { state.search = e.target.value; replaceTemplateList(); }
   });
@@ -777,12 +1380,14 @@ function renderSidebar() {
   head.appendChild(el('button', {
     class: 'btn btn-primary btn-block',
     onclick: () => {
-      state.current = blankTag();
-      state.current.type = currentTagType();
+      state.current = blankTagForType(currentTagType());
       state.selectedId = null;
+      state.selectedCarrotId = null;
+      state.previewSuppressed = false;
+      state.carrotPreviewSuppressed = false;
       renderAll();
     }
-  }, '+ New template'));
+  }, '+ New Tag (Clear Forms)'));
 
   wrap.appendChild(head);
 
@@ -814,49 +1419,146 @@ function buildTemplateList() {
     .filter(t => !q || textIndex(t).includes(q))
     .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
-  if (visible.length === 0) {
-    frag.appendChild(el('div', { class: 'empty-state' },
-      state.search
-        ? 'No matches'
-        : 'No templates yet — fill one out and hit Save.'));
+  if (state.activeTab !== 'NCOs') {
+    if (visible.length === 0) {
+      frag.appendChild(el('div', { class: 'empty-state' },
+        state.search
+          ? 'No matches'
+          : 'No templates yet — fill one out and hit Save.'));
+      return frag;
+    }
+    visible.forEach(t => frag.appendChild(renderTemplateCard(t, expectedType)));
     return frag;
   }
-  visible.forEach(t => {
-    const card = el('div', {
-      class: 'tag-card' + (state.selectedId === t.id ? ' active' : ''),
-      onclick: () => {
-        state.current = clone(t);
-        state.selectedId = t.id;
-        renderAll();
-      }
-    });
-    card.appendChild(el('div', { class: 'tag-card-title' },
-      t.templateName || tagSummary(t) || 'Untitled'));
-    card.appendChild(el('div', { class: 'tag-card-meta' },
-      `${t.type || expectedType} template • ${formatDate(t.updatedAt || t.createdAt || Date.now())}`));
 
-    const actions = el('div', { class: 'tag-card-actions' });
-    actions.appendChild(el('button', {
-      class: 'tag-action',
-      title: 'Rename template',
-      onclick: e => {
-        e.stopPropagation();
-        renameTemplate(t.id);
-      }
-    }, '✎'));
-    actions.appendChild(el('button', {
-      class: 'tag-action delete',
-      title: 'Delete template',
-      onclick: e => {
-        e.stopPropagation();
-        confirmTemplateDelete(t.id);
-      }
-    }, '🗑'));
-    card.appendChild(actions);
+  const carrotVisible = state.carrotTemplates
+    .filter(t => !q || carrotTextIndex(t).includes(q))
+    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
-    frag.appendChild(card);
-  });
+  frag.appendChild(renderSidebarGroup(
+    'NCO Tags',
+    visible,
+    state.search ? 'No matching NCO tags' : 'No NCO tags yet — fill one out and hit Save.',
+    t => renderTemplateCard(t, expectedType)
+  ));
+  frag.appendChild(renderSidebarGroup(
+    'Caret Templates',
+    carrotVisible,
+    state.search ? 'No matching caret templates' : 'No caret templates yet — save one from the Caret section.',
+    renderCarrotTemplateCard
+  ));
+
   return frag;
+}
+
+function renderSidebarGroup(title, items, emptyMessage, renderItem) {
+  const group = el('div', { class: 'tag-list-group' });
+  group.appendChild(el('div', { class: 'tag-list-group-title' }, title));
+  if (items.length === 0) {
+    group.appendChild(el('div', { class: 'tag-list-group-empty' }, emptyMessage));
+    return group;
+  }
+  items.forEach(item => group.appendChild(renderItem(item)));
+  return group;
+}
+
+function renderTemplateCard(t, expectedType) {
+  const card = el('div', {
+    class: 'tag-card' + (state.selectedId === t.id ? ' active' : ''),
+    onclick: () => {
+      if (state.selectedId === t.id) {
+        state.previewSuppressed = !state.previewSuppressed;
+        renderAll();
+        return;
+      }
+      state.current = clone(t);
+      state.selectedId = t.id;
+      state.selectedCarrotId = t.carrotTemplateId || null;
+      state.previewSuppressed = false;
+      state.carrotPreviewSuppressed = false;
+      renderAll();
+    }
+  });
+  card.appendChild(el('div', { class: 'tag-card-title' },
+    t.templateName || tagSummary(t) || 'Untitled'));
+  card.appendChild(el('div', { class: 'tag-card-meta' },
+    `${t.type || expectedType} template • ${formatDate(t.updatedAt || t.createdAt || Date.now())}`));
+
+  const actions = el('div', { class: 'tag-card-actions' });
+  actions.appendChild(el('button', {
+    class: 'tag-action',
+    title: 'Rename template',
+    onclick: e => {
+      e.stopPropagation();
+      renameTemplate(t.id);
+    }
+  }, '✎'));
+  actions.appendChild(el('button', {
+    class: 'tag-action delete',
+    title: 'Delete template',
+    html: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>',
+    onclick: e => {
+      e.stopPropagation();
+      confirmTemplateDelete(t.id);
+    }
+  }));
+  card.appendChild(actions);
+
+  attachHoverPreview(card, t);
+  return card;
+}
+
+function renderCarrotTemplateCard(t) {
+  const card = el('div', {
+    class: 'tag-card' + (state.selectedCarrotId === t.id ? ' active' : ''),
+    onclick: () => {
+      if (state.selectedCarrotId === t.id) {
+        state.current.carrotTemplateId = t.id;
+        state.current.carrotTemplateName = state.current.carrotTemplateName || t.name || '';
+        state.carrotPreviewSuppressed = !state.carrotPreviewSuppressed;
+        renderAll();
+        return;
+      }
+      state.selectedCarrotId = t.id;
+      state.current.carrotTemplateId = t.id;
+      state.current.carrotTemplateName = t.name || '';
+      state.current.carrotsText = t.text || '';
+      state.carrotPreviewSuppressed = false;
+      renderAll();
+    }
+  });
+  card.appendChild(el('div', { class: 'tag-card-title' }, t.name || 'Untitled'));
+  card.appendChild(el('div', { class: 'tag-card-meta' },
+    `Caret template • ${formatDate(t.updatedAt || t.createdAt || Date.now())}`));
+
+  const actions = el('div', { class: 'tag-card-actions' });
+  actions.appendChild(el('button', {
+    class: 'tag-action',
+    title: 'Rename caret template',
+    onclick: e => {
+      e.stopPropagation();
+      renameCarrotTemplate(t.id);
+    }
+  }, '✎'));
+  actions.appendChild(el('button', {
+    class: 'tag-action delete',
+    title: 'Delete caret template',
+    html: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>',
+    onclick: e => {
+      e.stopPropagation();
+      confirmCarrotTemplateDelete(t.id);
+    }
+  }));
+  card.appendChild(actions);
+  attachHoverPreview(card, caretTemplatePreviewTag(t));
+  return card;
+}
+
+function caretTemplatePreviewTag(t) {
+  const preview = blankTagForType('NCO');
+  preview.carrotTemplateName = t.name || '';
+  preview.carrotsText = t.text || '';
+  return preview;
 }
 
 // Returns true if a tag's updatedAt falls inside the chosen filter window.
@@ -879,22 +1581,27 @@ function textIndex(t) {
   // Searchable string for a tag — combine all text fields.
   const parts = [
     t.templateName,
-    ...(t.drawings || []).flatMap(d => [d.number, d.sheet, d.rev, d.custom, d.type]),
+    ...(t.drawings || []).flatMap(d => [d.number, d.sheet, d.rev, d.location, d.custom, d.type]),
     ...(t.processSpecs || []).flatMap(s => [s.number, s.section, s.rev]),
     ...(t.items || []).flatMap(i => [
       i.partNumber, i.description, i.discrepancy,
-      i.ctPartNumber, i.ctDescription, i.sbText
+      i.measCustom, i.sbText
     ]),
-    t.lso, t.lio
+    t.lso, t.lio,
+    t.carrotTemplateName, t.carrotsText
   ];
   return parts.filter(Boolean).join(' ').toLowerCase();
+}
+
+function carrotTextIndex(t) {
+  return [t.name, t.text].filter(Boolean).join(' ').toLowerCase();
 }
 
 function tagSummary(t) {
   const item = t.items && t.items[0];
   const draw = t.drawings && t.drawings[0];
   if (item && item.partNumber) return `${item.partNumber} ${item.description || ''}`.trim();
-  if (draw && draw.number) return draw.number;
+  if (draw && (draw.number || draw.location)) return draw.number || draw.location;
   return 'Untitled';
 }
 
@@ -907,8 +1614,20 @@ function renderBuilder() {
 
   // Header
   const head = el('div', { class: 'builder-head' });
-  head.appendChild(el('div', { class: 'builder-title' },
+  const titleWrap = el('div', { class: 'builder-title-wrap' });
+  titleWrap.appendChild(el('div', { class: 'builder-title' },
     state.selectedId ? 'Edit Template' : ('New ' + currentTagType() + ' Template')));
+  if (['NCRs', 'NCOs'].includes(state.activeTab)) {
+    titleWrap.appendChild(el('input', {
+      class: 'builder-title-input',
+      type: 'text',
+      value: t.templateName || '',
+      placeholder: 'Template Name',
+      'aria-label': 'Template Name',
+      oninput: e => { t.templateName = e.target.value; }
+    }));
+  }
+  head.appendChild(titleWrap);
 
   const actions = el('div', { class: 'builder-actions' });
   actions.appendChild(el('button', {
@@ -926,16 +1645,13 @@ function renderBuilder() {
     class: 'btn btn-primary',
     onclick: saveTemplate,
     title: '⌘S'
-  }, '💾 Save'));
+  }, 'Save Template'));
   head.appendChild(actions);
   wrap.appendChild(head);
 
-  const templateSec = section('Template');
-  const templateRow = el('div', { class: 'row' });
-  templateRow.appendChild(field('Template Name', 'text', t.templateName,
-    v => { t.templateName = v; }, { placeholder: 'Midnight dent template' }));
-  templateSec.appendChild(templateRow);
-  wrap.appendChild(templateSec);
+  if (state.activeTab !== 'NCOs') {
+    wrap.appendChild(el('div', { class: 'builder-divider', 'aria-hidden': 'true' }));
+  }
 
   // ----- Header / Revision section -----
   const revSec = section('Header');
@@ -951,7 +1667,7 @@ function renderBuilder() {
   drawSec.appendChild(el('button', {
     class: 'add-btn',
     onclick: () => openDrawingTypeModal(type => {
-      t.drawings.push({ type, custom: '', number: '', sheet: '', rev: '' });
+      t.drawings.push({ type, custom: '', number: '', sheet: '', rev: '', location: '' });
       renderAll();
     })
   }, '+ Add drawing'));
@@ -971,16 +1687,16 @@ function renderBuilder() {
   t.items.forEach((it, i) => itemSec.appendChild(renderItem(it, i)));
   itemSec.appendChild(el('button', {
     class: 'add-btn',
-    onclick: () => { t.items.push(blankItem()); renderAll(); }
+    onclick: () => { t.items.push(blankItem(t.items.length + 1)); renderAll(); }
   }, '+ Add item'));
   wrap.appendChild(itemSec);
 
   // ----- Footer -----
   const footSec = section('Footer');
   const footRow = el('div', { class: 'row row-2' });
-  footRow.appendChild(field('LSO', 'text', t.lso,
+  footRow.appendChild(field('LSO - Last Shop Operation', 'text', t.lso,
     v => { t.lso = v; updatePreview(); }, { placeholder: '100/010' }));
-  footRow.appendChild(field('LIO', 'text', t.lio,
+  footRow.appendChild(field('LIO - Last Inspection Operation', 'text', t.lio,
     v => { t.lio = v; updatePreview(); }, { placeholder: '110/010' }));
   footSec.appendChild(footRow);
 
@@ -998,6 +1714,11 @@ function renderBuilder() {
     v => { t.attachmentsText = v; updatePreview(); }, { placeholder: '*See Attachments*' }));
   footSec.appendChild(attRow);
   wrap.appendChild(footSec);
+
+  if (state.activeTab === 'NCOs') {
+    wrap.appendChild(el('div', { class: 'builder-divider', 'aria-hidden': 'true' }));
+    wrap.appendChild(renderCarrotsSection(t));
+  }
 
   return wrap;
 }
@@ -1030,12 +1751,58 @@ function textareaField(labelText, value, onInput, extra = {}) {
   const f = el('div', { class: 'field' });
   f.appendChild(el('label', {}, labelText));
   const ta = el('textarea', {
+    class: extra.size === 'lg' ? 'lg' : null,
     placeholder: extra.placeholder || '',
     oninput: e => onInput(e.target.value)
   });
   ta.value = value || '';
   f.appendChild(ta);
   return f;
+}
+
+function formatMeasurementToken(value, suffix) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/[′']$/.test(raw)) return `${raw.replace(/[′']$/, "'")}${suffix}`;
+  if (/["″]$/.test(raw)) return `${raw.replace(/["″]$/, '"')}${suffix}`;
+  return `${raw}"${suffix}`;
+}
+
+function renderCarrotsSection(t) {
+  const sec = section('Caret');
+  const title = sec.querySelector('.section-title');
+  const head = sec.querySelector('.section-head');
+  if (title) title.title = 'Custom Work Instructions';
+  if (head) {
+    head.classList.add('section-head-inline');
+    head.appendChild(el('input', {
+      class: 'section-head-input',
+      type: 'text',
+      value: t.carrotTemplateName || '',
+      placeholder: 'Caret Template Title',
+      'aria-label': 'Caret Template Name',
+      oninput: e => { t.carrotTemplateName = e.target.value; }
+    }));
+    head.appendChild(el('button', {
+      class: 'btn btn-primary',
+      onclick: saveCarrotTemplate
+    }, 'Save Caret Template'));
+  }
+
+  const f = el('div', { class: 'field' });
+  f.appendChild(el('label', {}, 'Custom Work Instructions'));
+  const ta = el('textarea', {
+    placeholder: 'Paste or write text here...',
+    style: 'min-height:180px;resize:vertical',
+    oninput: e => {
+      t.carrotsText = e.target.value;
+      updatePreview();
+    }
+  });
+  ta.value = t.carrotsText || '';
+  f.appendChild(ta);
+  sec.appendChild(f);
+  return sec;
 }
 
 function renderDrawing(d, idx) {
@@ -1066,7 +1833,17 @@ function renderDrawing(d, idx) {
   if (d.type === 'Other') {
     sub.appendChild(field('Custom label', 'text', d.custom,
       v => { d.custom = v; updatePreview(); },
-      { placeholder: 'e.g., Vendor Drawing' }));
+      { placeholder: 'Vendor' }));
+    sub.appendChild(field('Location', 'text', d.location || d.number,
+      v => {
+        d.location = v;
+        d.number = '';
+        d.sheet = '';
+        d.rev = '';
+        updatePreview();
+      },
+      { placeholder: 'TWMetals' }));
+    return sub;
   }
 
   const row = el('div', { class: 'row row-3' });
@@ -1109,7 +1886,16 @@ function renderItem(it, idx) {
   const t = state.current;
   const sub = el('div', { class: 'subsection' });
   const head = el('div', { class: 'subsection-head' });
-  head.appendChild(el('div', { class: 'subsection-title' }, 'Item ' + (idx + 1)));
+  const titleWrap = el('div', { class: 'subsection-title-wrap' });
+  titleWrap.appendChild(el('div', { class: 'subsection-title' }, 'Item'));
+  titleWrap.appendChild(el('input', {
+    class: 'subsection-mini-input',
+    type: 'text',
+    value: it.itemNumber || String(idx + 1),
+    'aria-label': `Item number ${idx + 1}`,
+    oninput: e => { it.itemNumber = e.target.value; updatePreview(); }
+  }));
+  head.appendChild(titleWrap);
   if (t.items.length > 1) {
     head.appendChild(el('button', {
       class: 'del-btn',
@@ -1135,30 +1921,56 @@ function renderItem(it, idx) {
   sub.appendChild(part);
 
   // Discrepancy
-  sub.appendChild(textareaField('Discrepancy', it.discrepancy,
-    v => { it.discrepancy = v; updatePreview(); }, { placeholder: 'has a sharp dent' }));
+  const discGroup = el('div', { class: 'inner-group' });
+  discGroup.appendChild(el('div', { class: 'inner-group-title' }, 'Discrepancy'));
+  const discTa = el('textarea', {
+    class: 'lg',
+    placeholder: 'has a sharp dent C/T the AS56942 Fitting',
+    oninput: e => { it.discrepancy = e.target.value; updatePreview(); }
+  });
+  discTa.value = it.discrepancy || '';
+  discGroup.appendChild(discTa);
+  sub.appendChild(discGroup);
 
-  // C/T - common to what area (optional)
-  const ct = el('div', { class: 'row row-2' });
-  ct.appendChild(field('C/T - (Common to what area)', 'text', it.ctPartNumber,
-    v => { it.ctPartNumber = v; updatePreview(); }, { placeholder: 'C/T the QA1234a' }));
-  ct.appendChild(field('C/T Item Description', 'text', it.ctDescription,
-    v => { it.ctDescription = v; updatePreview(); }, { placeholder: 'Fitting' }));
-  sub.appendChild(ct);
-
-  // Measurements
-  const meas = el('div', { class: 'row row-3' });
+  // Measurements (L/W/D)
+  const measGroup = el('div', { class: 'inner-group' });
+  measGroup.appendChild(el('div', { class: 'inner-group-title' }, 'Measurements'));
+  const meas = el('div', { class: 'row row-3 lwd-row' });
   meas.appendChild(field('Length (L)', 'text', it.measL,
     v => { it.measL = v; updatePreview(); }, { placeholder: '0.172' }));
   meas.appendChild(field('Width (W)', 'text', it.measW,
     v => { it.measW = v; updatePreview(); }, { placeholder: '0.086' }));
   meas.appendChild(field('Depth (D)', 'text', it.measD,
     v => { it.measD = v; updatePreview(); }, { placeholder: '0.007' }));
-  sub.appendChild(meas);
+  measGroup.appendChild(meas);
+  sub.appendChild(measGroup);
 
-  // S/B (auto-references first process spec)
-  sub.appendChild(textareaField('S/B (auto-cites first process spec)', it.sbText,
-    v => { it.sbText = v; updatePreview(); }, { placeholder: 'No blah blah on the tube' }));
+  // Defect Description Other (sibling of Measurements, not nested)
+  const customBox = el('div', { class: 'inner-group' });
+  customBox.appendChild(el('div', { class: 'inner-group-title' }, 'Defect Description Other'));
+  const customTa = el('textarea', {
+    class: 'tall',
+    placeholder: 'is missing alodine C/T the 123A4321-1 Flange',
+    oninput: e => { it.measCustom = e.target.value; updatePreview(); }
+  });
+  customTa.value = it.measCustom || '';
+  customBox.appendChild(customTa);
+  sub.appendChild(customBox);
+
+  // S/B (What the Spec says it should be)
+  sub.appendChild(textareaField('S/B (What the Spec says it should be)', it.sbText,
+    v => { it.sbText = v; updatePreview(); }, { placeholder: 'No dents on the tube' }));
+  const sbToggle = el('label', {
+    style: 'display:flex;gap:6px;align-items:center;font-size:12px;color:var(--text-muted);margin-top:4px'
+  });
+  const sbCb = el('input', {
+    type: 'checkbox',
+    onchange: e => { it.sbAutoRef = e.target.checked; updatePreview(); }
+  });
+  if (it.sbAutoRef !== false) sbCb.checked = true;
+  sbToggle.appendChild(sbCb);
+  sbToggle.appendChild(document.createTextNode(' Auto-reference first process spec'));
+  sub.appendChild(sbToggle);
 
   return sub;
 }
@@ -1176,8 +1988,13 @@ function renderPreview() {
   wrap.appendChild(head);
 
   const body = el('div', { class: 'preview-body' });
-  const card = el('div', { class: 'preview-card', id: 'previewCard' });
-  card.innerHTML = previewHTML(state.current);
+  const card = el('div', {
+    class: 'preview-card'
+      + (state.formattedPreview ? ' formatted-preview' : '')
+      + (state.uppercaseText ? ' uppercase-text' : ''),
+    id: 'previewCard'
+  });
+  card.innerHTML = currentPreviewHTML();
   body.appendChild(card);
   wrap.appendChild(body);
 
@@ -1193,101 +2010,361 @@ function renderPreview() {
 // Lightweight update — only the preview text, keeps form focus intact.
 function updatePreview() {
   const c = $('#previewCard');
-  if (c) c.innerHTML = previewHTML(state.current);
+  if (c) {
+    c.classList.toggle('formatted-preview', state.formattedPreview);
+    c.classList.toggle('uppercase-text', state.uppercaseText);
+    c.innerHTML = currentPreviewHTML();
+  }
 }
 
-// Build the preview text from current tag state. Output mirrors the user's
-// example format exactly: Eng. Drawing line, Process Spec line, Item line(s),
-// Measurements, S/B with auto-reference, LSO/LIO, attachments.
-function previewHTML(t) {
-  const esc = s => String(s || '').replace(/[&<>]/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;'}[ch]));
-  const lines = [];
+function currentPreviewHTML() {
+  if (state.selectedId && state.previewSuppressed) {
+    return `<span class="preview-placeholder">Click the selected template again to show its preview.</span>`;
+  }
+  return previewHTML(state.current);
+}
+
+function isCaretPreviewSuppressed(t = state.current) {
+  if (t.type !== 'NCO' || !state.carrotPreviewSuppressed || !state.selectedCarrotId) {
+    return false;
+  }
+  return !t.carrotTemplateId || t.carrotTemplateId === state.selectedCarrotId;
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>]/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[ch]));
+}
+
+function joinPreviewTokens(tokens) {
+  return tokens
+    .filter(token => token != null && token !== '')
+    .join(' ')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+}
+
+function hasPreviewInput(t) {
+  return (
+    (t.revisionNumber || 0) > 0 ||
+    (t.drawings || []).some(d => d.number || d.sheet || d.rev || d.location || d.custom) ||
+    (t.processSpecs || []).some(s => s.number || s.section || s.rev) ||
+    (t.items || []).some(i =>
+      i.countOf || i.countTotal || i.partNumber || i.description ||
+      i.discrepancy || i.measL || i.measW || i.measD ||
+      i.measCustom || i.sbText
+    ) ||
+    t.lso || t.lio || t.carrotsText
+  );
+}
+
+function buildPreviewBlocks(t) {
+  const blocks = [];
 
   if (t.revisionNumber > 0) {
-    lines.push(`<em>*Revision ${esc(t.revisionNumber)}*</em>`);
-    lines.push('');
+    blocks.push({ type: 'emphasis', lines: [`*Revision ${t.revisionNumber}*`] });
+    blocks.push({ type: 'spacer' });
   }
 
-  // Drawings
-  t.drawings.forEach(d => {
+  (t.drawings || []).forEach(d => {
+    if (d.type === 'Other') {
+      const text = joinPreviewTokens([d.location || d.number || '']);
+      if (!text) return;
+      blocks.push({
+        type: 'inline',
+        className: 'lbl',
+        label: `${d.custom || 'Other Drawing'}:`,
+        text
+      });
+      return;
+    }
     if (!d.number && !d.sheet && !d.rev) return;
     const label =
       d.type === 'Engineering' ? 'Eng. Drawing' :
       d.type === 'Tool'        ? 'Tool Drawing' :
       d.type === 'Supplier'    ? 'Supplier Drawing' :
       (d.custom || 'Other Drawing');
-    let s = `${esc(label)}: ${esc(d.number)}`;
-    if (d.sheet) s += ` Sht.${esc(d.sheet)}`;
-    if (d.rev)   s += ` Rev.${esc(d.rev)}`;
-    lines.push(s);
+    const text = joinPreviewTokens([
+      d.number,
+      d.sheet ? `Sht.${d.sheet}` : '',
+      d.rev ? `Rev.${d.rev}` : ''
+    ]);
+    blocks.push({ type: 'inline', className: 'lbl', label: `${label}:`, text });
   });
 
-  // Process specs
-  t.processSpecs.forEach(p => {
+  (t.processSpecs || []).forEach(p => {
     if (!p.number && !p.section && !p.rev) return;
-    let s = `Process Spec: ${esc(p.number)}`;
-    if (p.section) s += ` Sec.${esc(p.section)}`;
-    if (p.rev)     s += ` Rev.${esc(p.rev)}`;
-    lines.push(s);
+    const text = joinPreviewTokens([
+      p.number,
+      p.section ? `Sec.${p.section}` : '',
+      p.rev ? `Rev.${p.rev}` : ''
+    ]);
+    blocks.push({ type: 'inline', className: 'lbl', label: 'Process Spec:', text });
   });
 
-  // Items
-  t.items.forEach((it, i) => {
-    if (lines.length) lines.push('');
+  (t.items || []).forEach((it, i) => {
+    const hasContent =
+      it.countOf || it.countTotal ||
+      it.partNumber || it.description || it.discrepancy ||
+      it.measL || it.measW || it.measD ||
+      it.measCustom || it.sbText;
+    if (!hasContent) return;
 
-    let line = `Item ${i+1}: ${esc(it.countOf)} of ${esc(it.countTotal)} ${esc(it.partNumber)} ${esc(it.description)} ${esc(it.discrepancy)}`;
-    if (it.ctPartNumber || it.ctDescription) {
-      // The C/T field is typed by the user (e.g., "C/T the QA1234a") so we
-      // don't auto-prefix anymore — just append it verbatim.
-      line += ` ${esc(it.ctPartNumber)} ${esc(it.ctDescription)}`;
+    if (blocks.length) blocks.push({ type: 'spacer' });
+
+    const headerHasContent =
+      it.countOf || it.countTotal ||
+      it.partNumber || it.description || it.discrepancy;
+    if (headerHasContent) {
+      const countPart = (it.countOf || it.countTotal)
+        ? `${it.countOf || ''} of ${it.countTotal || ''}`
+        : '';
+      const text = joinPreviewTokens([
+        countPart,
+        it.partNumber,
+        it.description,
+        it.discrepancy
+      ]);
+      blocks.push({
+        type: 'inline',
+        className: 'item-hdr',
+        label: `Item ${it.itemNumber || String(i + 1)}:`,
+        text
+      });
     }
-    lines.push(line.replace(/\s+/g, ' ').trim());
 
     if (it.measL || it.measW || it.measD) {
-      lines.push('');
-      lines.push('Measurements:');
       const parts = [];
-      if (it.measL) parts.push(`${esc(it.measL)}"L`);
-      if (it.measW) parts.push(`${esc(it.measW)}"W`);
-      if (it.measD) parts.push(`${esc(it.measD)}"D`);
-      lines.push(parts.join(' x '));
+      if (it.measL) parts.push(formatMeasurementToken(it.measL, 'L'));
+      if (it.measW) parts.push(formatMeasurementToken(it.measW, 'W'));
+      if (it.measD) parts.push(formatMeasurementToken(it.measD, 'D'));
+      blocks.push({ type: 'spacer' });
+      blocks.push({ type: 'heading', className: 'meas-hdr', label: 'Measurements:' });
+      blocks.push({ type: 'text', text: parts.join(' x ') });
+    }
+
+    if (it.measCustom) {
+      blocks.push({ type: 'spacer' });
+      blocks.push({ type: 'multiline', lines: String(it.measCustom).split('\n') });
     }
 
     if (it.sbText) {
-      lines.push('');
-      const firstSpec = t.processSpecs[0];
       let ref = '';
-      if (firstSpec && (firstSpec.number || firstSpec.section || firstSpec.rev)) {
-        ref = ` per ${esc(firstSpec.number)}`;
-        if (firstSpec.section) ref += ` Sec.${esc(firstSpec.section)}`;
-        if (firstSpec.rev)     ref += ` Rev.${esc(firstSpec.rev)}`;
+      if (it.sbAutoRef !== false) {
+        const firstSpec = t.processSpecs[0];
+        if (firstSpec && (firstSpec.number || firstSpec.section || firstSpec.rev)) {
+          ref = ` per ${firstSpec.number || ''}`;
+          if (firstSpec.section) ref += ` Sec.${firstSpec.section}`;
+          if (firstSpec.rev) ref += ` Rev.${firstSpec.rev}`;
+        }
       }
-      lines.push(`S/B: ${esc(it.sbText)}${ref}`);
+      blocks.push({ type: 'spacer' });
+      blocks.push({
+        type: 'inline',
+        className: 'lbl',
+        label: 'S/B:',
+        text: `${it.sbText}${ref}`
+      });
     }
   });
 
-  // LSO/LIO
   if (t.lso || t.lio) {
-    lines.push('');
-    if (t.lso) lines.push(`LSO: ${esc(t.lso)}`);
-    if (t.lio) lines.push(`LIO: ${esc(t.lio)}`);
+    blocks.push({ type: 'spacer' });
+    if (t.lso) blocks.push({ type: 'inline', className: 'lbl', label: 'LSO:', text: t.lso });
+    if (t.lio) blocks.push({ type: 'inline', className: 'lbl', label: 'LIO:', text: t.lio });
   }
 
-  // Attachments
   if (t.attachmentsEnabled && t.attachmentsText) {
-    lines.push('');
-    const att = esc(t.attachmentsText).replace(/\*([^*]+)\*/g, '<em>*$1*</em>');
-    lines.push(att);
+    blocks.push({ type: 'spacer' });
+    blocks.push({ type: 'emphasis', lines: String(t.attachmentsText).split('\n') });
   }
+
+  if (t.type === 'NCO' && t.carrotsText && !isCaretPreviewSuppressed(t)) {
+    blocks.push({ type: 'spacer' });
+    blocks.push({ type: 'multiline', lines: String(t.carrotsText).split('\n') });
+  }
+
+  return blocks;
+}
+
+function renderPreviewRichText(text) {
+  return escapeHtml(text).replace(/\*([^*]+)\*/g, '<em>*$1*</em>');
+}
+
+const FORMATTED_PREVIEW_WIDTH = 40;
+
+function renderPreviewClassic(blocks) {
+  const lines = [];
+  blocks.forEach(block => {
+    if (block.type === 'spacer') {
+      lines.push('');
+      return;
+    }
+    if (block.type === 'inline') {
+      const labelClass = block.className || 'lbl';
+      const label = `<span class="${labelClass}">${escapeHtml(block.label)}</span>`;
+      lines.push(joinPreviewTokens([label, block.text]));
+      return;
+    }
+    if (block.type === 'heading') {
+      lines.push(`<span class="${block.className || 'meas-hdr'}">${escapeHtml(block.label)}</span>`);
+      return;
+    }
+    if (block.type === 'text') {
+      lines.push(escapeHtml(block.text));
+      return;
+    }
+    if (block.type === 'multiline') {
+      block.lines.forEach(line => lines.push(escapeHtml(line)));
+      return;
+    }
+    if (block.type === 'emphasis') {
+      block.lines.forEach(line => lines.push(renderPreviewRichText(line)));
+    }
+  });
+  return lines.join('\n');
+}
+
+function wrapIndentedText(text, firstIndent, nextIndent, width = FORMATTED_PREVIEW_WIDTH) {
+  const source = String(text || '').trim();
+  if (!source) return [firstIndent.trimEnd()];
+
+  const words = source.split(/\s+/).filter(Boolean);
+  const lines = [];
+  let current = firstIndent;
+
+  words.forEach(word => {
+    if (current === firstIndent || current === nextIndent) {
+      current += word;
+      return;
+    }
+    if ((current + ' ' + word).length <= width) {
+      current += ' ' + word;
+      return;
+    }
+    lines.push(current);
+    current = nextIndent + word;
+  });
+
+  lines.push(current);
+  return lines;
+}
+
+function renderFormattedInlineBlock(block) {
+  const labelText = String(block.label || '');
+  const firstIndent = labelText + ' ';
+  const nextIndent = ' '.repeat(firstIndent.length);
+  const lines = wrapIndentedText(block.text, firstIndent, nextIndent);
+  return lines.map((line, idx) => {
+    if (idx !== 0) return escapeHtml(line);
+    return `<span class="${block.className || 'lbl'} preview-inline-label">${escapeHtml(labelText)}</span> ${escapeHtml(line.slice(firstIndent.length))}`;
+  });
+}
+
+function renderPreviewFormatted(blocks) {
+  const lines = [];
+
+  blocks.forEach(block => {
+    if (block.type === 'spacer') {
+      lines.push('');
+      return;
+    }
+    if (block.type === 'inline') {
+      renderFormattedInlineBlock(block).forEach(line => lines.push(line));
+      return;
+    }
+    if (block.type === 'heading') {
+      lines.push(`<span class="${block.className || 'meas-hdr'}">${escapeHtml(block.label)}</span>`);
+      return;
+    }
+    if (block.type === 'text') {
+      lines.push(escapeHtml(block.text));
+      return;
+    }
+    if (block.type === 'multiline') {
+      block.lines.forEach(line => lines.push(escapeHtml(line)));
+      return;
+    }
+    if (block.type === 'emphasis') {
+      block.lines.forEach(line => lines.push(renderPreviewRichText(line)));
+    }
+  });
 
   return lines.join('\n');
 }
 
-// Plain text for the clipboard (strips <em>, decodes entities).
+function previewText(blocks) {
+  if (state.formattedPreview) {
+    const lines = [];
+
+    blocks.forEach(block => {
+      if (block.type === 'spacer') {
+        lines.push('');
+        return;
+      }
+      if (block.type === 'inline') {
+        const firstIndent = String(block.label || '') + ' ';
+        const nextIndent = ' '.repeat(firstIndent.length);
+        wrapIndentedText(block.text, firstIndent, nextIndent).forEach(line => lines.push(line));
+        return;
+      }
+      if (block.type === 'heading') {
+        lines.push(block.label);
+        return;
+      }
+      if (block.type === 'text') {
+        lines.push(String(block.text || ''));
+        return;
+      }
+      if (block.type === 'multiline' || block.type === 'emphasis') {
+        block.lines.forEach(line => lines.push(String(line || '')));
+      }
+    });
+
+    return lines.join('\n');
+  }
+
+  const lines = [];
+  blocks.forEach(block => {
+    if (block.type === 'spacer') {
+      lines.push('');
+      return;
+    }
+    if (block.type === 'inline') {
+      lines.push(joinPreviewTokens([block.label, block.text]));
+      return;
+    }
+    if (block.type === 'heading') {
+      lines.push(block.label);
+      return;
+    }
+    if (block.type === 'text') {
+      lines.push(String(block.text || ''));
+      return;
+    }
+    if (block.type === 'multiline' || block.type === 'emphasis') {
+      block.lines.forEach(line => lines.push(String(line || '')));
+    }
+  });
+  return lines.join('\n');
+}
+
+// Build the preview text from current tag state. Output mirrors the user's
+// example format exactly: Eng. Drawing line, Process Spec line, Item line(s),
+// Measurements, S/B with auto-reference, LSO/LIO, attachments.
+function previewHTML(t) {
+  if (!hasPreviewInput(t)) {
+    return `<span class="preview-placeholder">Start typing to show live preview.</span>`;
+  }
+  const blocks = buildPreviewBlocks(t);
+  return state.formattedPreview ? renderPreviewFormatted(blocks) : renderPreviewClassic(blocks);
+}
+
+// Plain text for the clipboard.
 function previewPlainText(t) {
-  return previewHTML(t)
-    .replace(/<\/?em>/g, '')
-    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+  const text = hasPreviewInput(t)
+    ? previewText(buildPreviewBlocks(t))
+    : 'Start typing to show live preview.';
+  return state.uppercaseText ? text.toUpperCase() : text;
 }
 
 function copyPreview() {
@@ -1324,6 +2401,7 @@ function saveTemplate() {
 
   t.templateName = name;
   t.type = currentTagType();
+  t.carrotTemplateId = state.activeTab === 'NCOs' ? (state.selectedCarrotId || null) : null;
   t.createdAt = t.createdAt || Date.now();
   t.updatedAt = Date.now();
   const idx = state.templates.findIndex(x => x.id === t.id);
@@ -1335,18 +2413,71 @@ function saveTemplate() {
   renderAll();
 }
 
+function saveCarrotTemplate() {
+  if (state.activeTab !== 'NCOs') return;
+  const name = (state.current.carrotTemplateName || '').trim();
+  const text = state.current.carrotsText || '';
+  if (!name) {
+    toast('Name the caret template first');
+    return;
+  }
+  if (!text.trim()) {
+    toast('Add caret text first');
+    return;
+  }
+
+  const id = state.selectedCarrotId || ('carrot_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
+  const next = {
+    id,
+    name,
+    text,
+    createdAt: state.carrotTemplates.find(x => x.id === id)?.createdAt || Date.now(),
+    updatedAt: Date.now()
+  };
+  const idx = state.carrotTemplates.findIndex(x => x.id === id);
+  if (idx >= 0) state.carrotTemplates[idx] = next;
+  else state.carrotTemplates.unshift(next);
+  state.selectedCarrotId = id;
+  state.current.carrotTemplateId = id;
+  state.current.carrotTemplateName = name;
+  persist();
+  toast(idx >= 0 ? 'Caret template updated' : 'Caret template saved');
+  renderAll();
+}
+
 function duplicateTemplate() {
+  const name = (state.current.templateName || '').trim() || 'Untitled';
+  openModal('Duplicate template?', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `Are you sure you want to duplicate this template? "${name}" will be copied into the template list.`)
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-primary',
+      onclick: confirmDuplicateTemplate
+    }, 'Duplicate')
+  ]);
+}
+
+function confirmDuplicateTemplate() {
   const fresh = clone(state.current);
-  fresh.id = blankTag().id;
+  fresh.id = blankTagForType(currentTagType()).id;
   fresh.templateName = fresh.templateName
     ? `${fresh.templateName} Copy`
     : '';
   fresh.type = currentTagType();
   fresh.createdAt = Date.now();
   fresh.updatedAt = Date.now();
+  state.templates.unshift(fresh);
   state.current = fresh;
-  state.selectedId = null;
-  toast('Template duplicated — save when ready');
+  state.selectedId = fresh.id;
+  state.previewSuppressed = false;
+  state.carrotPreviewSuppressed = false;
+  closeModal();
+  persist();
+  toast('Template duplicated');
   renderAll();
 }
 
@@ -1374,16 +2505,55 @@ function renameTemplate(templateId) {
   renderAll();
 }
 
+function renameCarrotTemplate(templateId) {
+  const template = state.carrotTemplates.find(x => x.id === templateId);
+  if (!template) return;
+
+  const nextName = prompt('Rename caret template', template.name || '');
+  if (nextName == null) return;
+
+  const name = nextName.trim();
+  if (!name) {
+    toast('Caret template name cannot be empty');
+    return;
+  }
+
+  template.name = name;
+  template.updatedAt = Date.now();
+  if (state.selectedCarrotId === templateId) {
+    state.current.carrotTemplateName = name;
+  }
+  persist();
+  toast('Caret template renamed');
+  renderAll();
+}
+
 function deleteTemplateById(templateId) {
   state.templates = state.templates.filter(x => x.id !== templateId);
   if (state.selectedId === templateId) {
-    state.current = blankTag();
-    state.current.type = currentTagType();
+    state.current = blankTagForType(currentTagType());
     state.selectedId = null;
+    state.selectedCarrotId = null;
+    state.previewSuppressed = false;
+    state.carrotPreviewSuppressed = false;
   }
   closeModal();
   persist();
   toast('Template deleted');
+  renderAll();
+}
+
+function deleteCarrotTemplateById(templateId) {
+  state.carrotTemplates = state.carrotTemplates.filter(x => x.id !== templateId);
+  if (state.selectedCarrotId === templateId) {
+    state.selectedCarrotId = null;
+    state.current.carrotTemplateId = null;
+    state.current.carrotTemplateName = '';
+    state.carrotPreviewSuppressed = false;
+  }
+  closeModal();
+  persist();
+  toast('Caret template deleted');
   renderAll();
 }
 
@@ -1402,6 +2572,25 @@ function confirmTemplateDelete(templateId) {
     el('button', {
       class: 'btn btn-danger',
       onclick: () => confirmTemplateDeleteFinal(templateId)
+    }, 'Continue')
+  ]);
+}
+
+function confirmCarrotTemplateDelete(templateId) {
+  const template = state.carrotTemplates.find(x => x.id === templateId);
+  if (!template) return;
+  const name = template.name || 'Untitled';
+
+  openModal('Delete caret template?', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `Delete caret template "${name}" from the NCO sidebar?`)
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-danger',
+      onclick: () => confirmCarrotTemplateDeleteFinal(templateId)
     }, 'Continue')
   ]);
 }
@@ -1428,6 +2617,28 @@ function confirmTemplateDeleteFinal(templateId) {
   ]);
 }
 
+function confirmCarrotTemplateDeleteFinal(templateId) {
+  const template = state.carrotTemplates.find(x => x.id === templateId);
+  if (!template) {
+    closeModal();
+    return;
+  }
+  const name = template.name || 'Untitled';
+
+  openModal('Final confirmation', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `Caret template "${name}" will be permanently deleted. This cannot be undone.`)
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-danger',
+      onclick: () => deleteCarrotTemplateById(templateId)
+    }, 'Delete caret template')
+  ]);
+}
+
 /* ============================================================================
    IMPORT / EXPORT JSON — for moving tags between machines
    ============================================================================ */
@@ -1436,7 +2647,8 @@ function exportAll() {
     version: 1,
     savedAt: new Date().toISOString(),
     tags: state.tags,
-    templates: state.templates
+    templates: state.templates,
+    carrotTemplates: state.carrotTemplates
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -1453,6 +2665,7 @@ function importFile(file) {
       const data = JSON.parse(e.target.result);
       const incoming = data.tags || [];
       const incomingTpl = data.templates || [];
+      const incomingCarrots = data.carrotTemplates || [];
       // Merge by id (incoming wins on conflict).
       const byId = new Map(state.tags.map(t => [t.id, t]));
       incoming.forEach(t => byId.set(t.id, t));
@@ -1460,14 +2673,23 @@ function importFile(file) {
       const tplById = new Map(state.templates.map(t => [t.id, t]));
       incomingTpl.forEach(t => tplById.set(t.id, t));
       state.templates = Array.from(tplById.values());
+      const carrotById = new Map(state.carrotTemplates.map(t => [t.id, t]));
+      incomingCarrots.forEach(t => carrotById.set(t.id, t));
+      state.carrotTemplates = Array.from(carrotById.values());
       persist();
-      toast(`Imported ${incoming.length} tags and ${incomingTpl.length} templates`);
+      toast(`Imported ${incoming.length} tags, ${incomingTpl.length} templates, and ${incomingCarrots.length} caret templates`);
       renderAll();
     } catch (err) {
       alert('Invalid JSON: ' + err.message);
     }
   };
   r.readAsText(file);
+}
+
+function isJsonFile(file) {
+  if (!file) return false;
+  const name = String(file.name || '').toLowerCase();
+  return file.type === 'application/json' || name.endsWith('.json');
 }
 
 /* ============================================================================
@@ -1557,6 +2779,8 @@ function renderGuides() {
    GLOBAL EVENTS — theme toggle, file inputs, keyboard shortcuts
    ============================================================================ */
 function setupGlobalEvents() {
+  let dragDepth = 0;
+
   // Theme picker show/hide
   $('#themeBtn').addEventListener('click', e => {
     e.stopPropagation();
@@ -1566,23 +2790,33 @@ function setupGlobalEvents() {
     if (!$('#themePicker').contains(e.target) && e.target !== $('#themeBtn'))
       $('#themePicker').classList.remove('show');
   });
-  $$('#themePicker .theme-opt').forEach(b => {
-    b.addEventListener('click', () => {
-      state.activeTheme = b.dataset.theme;
-      applyTheme();
-      persist();
+  $$('#themePicker .theme-opt[data-theme]').forEach(b => {
+    b.addEventListener('click', e => {
+      const sw = b.querySelector('.theme-swatch');
+      const bg = sw ? sw.style.background : '';
+      applyThemeWithRipple(b.dataset.theme, e.clientX, e.clientY, bg);
       $('#themePicker').classList.remove('show');
     });
   });
+  $('#createThemeBtn').addEventListener('click', () => {
+    $('#themePicker').classList.remove('show');
+    openThemeBuilder(null);
+  });
+  renderCustomThemes();
 
   // Modal: backdrop click closes
   $('#modalBackdrop').addEventListener('click', e => {
     if (e.target === $('#modalBackdrop')) closeModal();
   });
 
-  // Top bar import/export buttons
-  $('#importBtn').addEventListener('click', () => $('#fileImport').click());
-  $('#exportBtn').addEventListener('click', exportAll);
+  // Focus mode + uppercase text toggle
+  $('#focusBtn').addEventListener('click', toggleFocusMode);
+  $('#formatBtn').addEventListener('click', toggleFormattedPreview);
+  $('#uppercaseBtn').addEventListener('click', toggleUppercaseText);
+  if (state.formattedPreview) $('#formatBtn').classList.add('feature-on');
+  if (state.uppercaseText) $('#uppercaseBtn').classList.add('feature-on');
+
+  // Hidden file input is triggered from the sidebar Import button.
   $('#fileImport').addEventListener('change', e => {
     const f = e.target.files && e.target.files[0];
     if (f) importFile(f);
@@ -1596,13 +2830,55 @@ function setupGlobalEvents() {
     renderAll();
   });
 
+  function setDropOverlay(show) {
+    document.body.classList.toggle('drag-importing', show);
+    const overlay = $('#dropOverlay');
+    if (overlay) overlay.setAttribute('aria-hidden', show ? 'false' : 'true');
+  }
+  function fileDragEvent(e) {
+    return !!(e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files'));
+  }
+
+  document.addEventListener('dragenter', e => {
+    if (!fileDragEvent(e)) return;
+    e.preventDefault();
+    dragDepth++;
+    setDropOverlay(true);
+  });
+  document.addEventListener('dragover', e => {
+    if (!fileDragEvent(e)) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+    setDropOverlay(true);
+  });
+  document.addEventListener('dragleave', e => {
+    if (!fileDragEvent(e)) return;
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (dragDepth === 0) setDropOverlay(false);
+  });
+  document.addEventListener('drop', e => {
+    if (!fileDragEvent(e)) return;
+    e.preventDefault();
+    dragDepth = 0;
+    setDropOverlay(false);
+    const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!file) return;
+    if (!isJsonFile(file)) {
+      toast('Drop a JSON export file');
+      return;
+    }
+    importFile(file);
+  });
+
   // Keyboard shortcuts (works great with BetterTouchTool gestures too):
   //   ⌘/Ctrl + S      Save
   //   ⌘/Ctrl + D      Duplicate current tag
   //   ⌘/Ctrl + Enter  Copy preview to clipboard
   document.addEventListener('keydown', e => {
-    if (!['NCRs', 'NCOs'].includes(state.activeTab)) return;
     const meta = e.metaKey || e.ctrlKey;
+    // ⌘. — focus mode (works on any tab)
+    if (meta && e.key === '.') { e.preventDefault(); toggleFocusMode(); return; }
+    if (!['NCRs', 'NCOs'].includes(state.activeTab)) return;
     if (meta && e.key.toLowerCase() === 's') { e.preventDefault(); saveTemplate(); }
     else if (meta && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateTemplate(); }
     else if (meta && e.key === 'Enter') { e.preventDefault(); copyPreview(); }
@@ -1616,6 +2892,265 @@ function renderAll() {
   applyTheme();
   renderTabs();
   renderMain();
+}
+
+/* ============================================================================
+   FEATURES — custom themes, theme ripple,
+   tag-card hover preview, focus mode, uppercase text
+   ============================================================================ */
+
+/* ---------- Custom theme builder ---------- */
+const BUILTIN_THEMES = [
+  { cls: 'theme-boeing-classic', name: 'Boeing Classic' },
+  { cls: 'theme-boeing-sky',     name: 'Boeing Sky' },
+  { cls: 'theme-sunrise',        name: 'Sunrise' },
+  { cls: 'theme-mint',           name: 'Mint' },
+  { cls: 'theme-lavender',       name: 'Lavender' },
+  { cls: 'theme-rosegold',       name: 'Rose Gold' },
+  { cls: 'theme-sage',           name: 'Sage' },
+  { cls: 'theme-linen',          name: 'Linen' },
+  { cls: 'theme-monochrome',     name: 'Monochrome' },
+  { cls: 'theme-midnight',       name: 'Midnight' },
+  { cls: 'theme-charcoal',       name: 'Charcoal' },
+  { cls: 'theme-cosmos',         name: 'Cosmos' },
+  { cls: 'theme-aurora',         name: 'Aurora' },
+  { cls: 'theme-ocean',          name: 'Ocean' },
+  { cls: 'theme-cyberpunk',      name: 'Cyberpunk' }
+];
+
+function renderCustomThemes() {
+  const list = $('#customThemesList');
+  if (!list) return;
+  list.innerHTML = '';
+  if (state.customThemes.length === 0) {
+    list.appendChild(el('div', { class: 'ct-empty' }, 'No custom themes yet'));
+    return;
+  }
+  state.customThemes.forEach(ct => {
+    const row = el('div', { class: 'ct-row' });
+    const opt = el('button', {
+      class: 'theme-opt', 'data-custom': ct.id,
+      onclick: e => {
+        const sw = opt.querySelector('.theme-swatch');
+        applyThemeWithRipple('custom:' + ct.id, e.clientX, e.clientY,
+          sw ? sw.style.background : '');
+        $('#themePicker').classList.remove('show');
+      }
+    });
+    opt.appendChild(el('span', {
+      class: 'theme-swatch',
+      style: `background:linear-gradient(135deg,${ct.accent},${ct.accent2})`
+    }));
+    opt.appendChild(el('span', {}, ct.name));
+    row.appendChild(opt);
+
+    row.appendChild(el('button', {
+      class: 'ct-mini-btn', title: 'Edit',
+      html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+      onclick: e => { e.stopPropagation(); openThemeBuilder(ct); }
+    }));
+    row.appendChild(el('button', {
+      class: 'ct-mini-btn', title: 'Copy theme JSON',
+      html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+      onclick: e => {
+        e.stopPropagation();
+        const json = JSON.stringify({ customTheme: ct }, null, 2);
+        navigator.clipboard.writeText(json).then(
+          () => toast('Theme JSON copied — share with coworkers'),
+          () => toast('Copy failed')
+        );
+      }
+    }));
+    row.appendChild(el('button', {
+      class: 'ct-mini-btn del', title: 'Delete',
+      html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>',
+      onclick: e => {
+        e.stopPropagation();
+        if (!confirm(`Delete theme "${ct.name}"?`)) return;
+        state.customThemes = state.customThemes.filter(x => x.id !== ct.id);
+        if (state.activeTheme === 'custom:' + ct.id) {
+          state.activeTheme = 'theme-midnight';
+          applyTheme();
+        }
+        persist();
+        renderCustomThemes();
+        toast('Theme deleted');
+      }
+    }));
+    list.appendChild(row);
+  });
+}
+
+function openThemeBuilder(existing) {
+  const isEdit = !!existing;
+  const draft = existing
+    ? { ...existing }
+    : { id: 'ct_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        name: 'My Theme', base: 'theme-midnight', accent: '#38bdf8', accent2: '#818cf8' };
+
+  const wrap = el('div', { class: 'theme-builder' });
+
+  const nameRow = el('div');
+  nameRow.appendChild(el('label', {}, 'Theme name'));
+  const nameInput = el('input', {
+    type: 'text', value: draft.name,
+    oninput: e => { draft.name = e.target.value; }
+  });
+  nameRow.appendChild(nameInput);
+
+  const baseRow = el('div');
+  baseRow.appendChild(el('label', {}, 'Base palette (light or dark)'));
+  const baseSel = el('select', {
+    onchange: e => { draft.base = e.target.value; updatePreviewSwatch(); }
+  });
+  BUILTIN_THEMES.forEach(b => {
+    const o = el('option', { value: b.cls }, b.name);
+    if (b.cls === draft.base) o.selected = true;
+    baseSel.appendChild(o);
+  });
+  baseRow.appendChild(baseSel);
+
+  const colorRow = el('div', { class: 'tb-row' });
+  const c1 = el('div');
+  c1.appendChild(el('label', {}, 'Accent color'));
+  const c1Input = el('input', {
+    type: 'color', value: draft.accent,
+    oninput: e => { draft.accent = e.target.value; updatePreviewSwatch(); }
+  });
+  c1.appendChild(c1Input);
+  const c2 = el('div');
+  c2.appendChild(el('label', {}, 'Secondary accent'));
+  const c2Input = el('input', {
+    type: 'color', value: draft.accent2,
+    oninput: e => { draft.accent2 = e.target.value; updatePreviewSwatch(); }
+  });
+  c2.appendChild(c2Input);
+  colorRow.appendChild(c1);
+  colorRow.appendChild(c2);
+
+  const preview = el('div', { class: 'tb-preview' }, 'Live theme preview');
+  function updatePreviewSwatch() {
+    preview.style.background =
+      `linear-gradient(135deg, ${draft.accent}, ${draft.accent2})`;
+  }
+  updatePreviewSwatch();
+
+  wrap.appendChild(nameRow);
+  wrap.appendChild(baseRow);
+  wrap.appendChild(colorRow);
+  wrap.appendChild(preview);
+
+  openModal(isEdit ? 'Edit theme' : 'Create theme', [wrap], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-primary',
+      onclick: () => {
+        if (!draft.name.trim()) { toast('Name required'); return; }
+        if (isEdit) {
+          const idx = state.customThemes.findIndex(x => x.id === draft.id);
+          if (idx >= 0) state.customThemes[idx] = draft;
+        } else {
+          state.customThemes.unshift(draft);
+        }
+        persist();
+        renderCustomThemes();
+        // Apply immediately if active or new
+        state.activeTheme = 'custom:' + draft.id;
+        applyTheme();
+        closeModal();
+        toast(isEdit ? 'Theme updated' : 'Theme created');
+      }
+    }, isEdit ? 'Save changes' : 'Create')
+  ]);
+}
+
+/* ---------- Theme ripple ---------- */
+function applyThemeWithRipple(themeId, x, y, swatchBg) {
+  if (typeof x === 'number' && typeof y === 'number') {
+    const ripple = document.createElement('div');
+    ripple.className = 'theme-ripple';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    ripple.style.background = swatchBg || 'var(--accent-grad)';
+    document.body.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 720);
+  }
+  state.activeTheme = themeId;
+  applyTheme();
+  persist();
+}
+
+/* ---------- Tag-card hover preview ---------- */
+let _hoverTimer = null, _hoverPop = null;
+function attachHoverPreview(card, template) {
+  card.addEventListener('mouseenter', () => {
+    clearTimeout(_hoverTimer);
+    _hoverTimer = setTimeout(() => showHoverPreview(card, template), 220);
+  });
+  card.addEventListener('mouseleave', () => {
+    clearTimeout(_hoverTimer);
+    hideHoverPreview();
+  });
+}
+function showHoverPreview(card, template) {
+  hideHoverPreview();
+  const html = previewHTML(template);
+  if (!html) return;
+  const pop = document.createElement('div');
+  pop.className = 'tag-preview-pop'
+    + (state.formattedPreview ? ' formatted-preview' : '')
+    + (state.uppercaseText ? ' uppercase-text' : '');
+  pop.innerHTML = html;
+  document.body.appendChild(pop);
+  const rect = card.getBoundingClientRect();
+  // Default: anchor to the right of the card
+  let left = rect.right + 8;
+  let top = rect.top;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+  const popRect = pop.getBoundingClientRect();
+  if (popRect.right > window.innerWidth - 8) {
+    left = Math.max(8, rect.left - popRect.width - 8);
+    pop.style.left = left + 'px';
+  }
+  if (popRect.bottom > window.innerHeight - 8) {
+    top = Math.max(8, window.innerHeight - popRect.height - 8);
+    pop.style.top = top + 'px';
+  }
+  _hoverPop = pop;
+}
+function hideHoverPreview() {
+  if (_hoverPop) { _hoverPop.remove(); _hoverPop = null; }
+}
+
+/* ---------- Focus mode ---------- */
+function toggleFocusMode() {
+  state.focusMode = !state.focusMode;
+  applyTheme();  // re-applies the body class with focus-mode flag
+  const btn = $('#focusBtn');
+  if (btn) btn.classList.toggle('feature-on', state.focusMode);
+  toast(state.focusMode ? 'Focus mode on (⌘. to exit)' : 'Focus mode off');
+}
+
+/* ---------- Uppercase text ---------- */
+function toggleFormattedPreview() {
+  state.formattedPreview = !state.formattedPreview;
+  const btn = $('#formatBtn');
+  if (btn) btn.classList.toggle('feature-on', state.formattedPreview);
+  updatePreview();
+  hideHoverPreview();
+  persist();
+  toast(state.formattedPreview ? 'Formatted preview on' : 'Formatted preview off');
+}
+
+function toggleUppercaseText() {
+  state.uppercaseText = !state.uppercaseText;
+  const btn = $('#uppercaseBtn');
+  if (btn) btn.classList.toggle('feature-on', state.uppercaseText);
+  updatePreview();
+  hideHoverPreview();
+  persist();
+  toast(state.uppercaseText ? 'Uppercase on' : 'Uppercase off');
 }
 
 /* ---------- BOOT ---------- */
