@@ -2420,17 +2420,69 @@ function saveTemplate() {
     return;
   }
 
+  openModal('Save template', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `Do you want to create a new template named "${name}" or update the current template?`)
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-primary',
+      onclick: createNewTemplate
+    }, 'Create New'),
+    el('button', {
+      class: 'btn btn-primary',
+      onclick: updateCurrentTemplate
+    }, 'Update Current Tag')
+  ]);
+}
+
+function prepareCurrentTemplateForSave() {
+  const t = state.current;
+  const name = (t.templateName || '').trim();
+  if (!name) {
+    toast('Name the template first');
+    return null;
+  }
+
   t.templateName = name;
   t.type = currentTagType();
   t.carrotTemplateId = state.activeTab === 'NCOs' ? (state.selectedCarrotId || null) : null;
   t.createdAt = t.createdAt || Date.now();
   t.updatedAt = Date.now();
+  return t;
+}
+
+function updateCurrentTemplate() {
+  const t = prepareCurrentTemplateForSave();
+  if (!t) return;
   const idx = state.templates.findIndex(x => x.id === t.id);
   if (idx >= 0) state.templates[idx] = clone(t);
   else state.templates.unshift(clone(t));
   state.selectedId = t.id;
+  closeModal();
   persist();
   toast(idx >= 0 ? 'Template updated' : 'Template saved');
+  renderAll();
+}
+
+function createNewTemplate() {
+  const t = prepareCurrentTemplateForSave();
+  if (!t) return;
+
+  const fresh = clone(t);
+  fresh.id = blankTagForType(currentTagType()).id;
+  fresh.createdAt = Date.now();
+  fresh.updatedAt = Date.now();
+  state.templates.unshift(clone(fresh));
+  state.current = fresh;
+  state.selectedId = fresh.id;
+  state.previewSuppressed = false;
+  state.carrotPreviewSuppressed = false;
+  closeModal();
+  persist();
+  toast('Template created');
   renderAll();
 }
 
@@ -2483,23 +2535,7 @@ function duplicateTemplate() {
 }
 
 function confirmDuplicateTemplate() {
-  const fresh = clone(state.current);
-  fresh.id = blankTagForType(currentTagType()).id;
-  fresh.templateName = fresh.templateName
-    ? `${fresh.templateName} Copy`
-    : '';
-  fresh.type = currentTagType();
-  fresh.createdAt = Date.now();
-  fresh.updatedAt = Date.now();
-  state.templates.unshift(fresh);
-  state.current = fresh;
-  state.selectedId = fresh.id;
-  state.previewSuppressed = false;
-  state.carrotPreviewSuppressed = false;
-  closeModal();
-  persist();
-  toast('Template duplicated');
-  renderAll();
+  createNewTemplate();
 }
 
 function renameTemplate(templateId) {
