@@ -199,7 +199,7 @@ input, textarea, select { font: inherit; color: inherit; }
 .icon-btn svg { width: 16px; height: 16px; display: block; }
 .icon-btn:hover { background: var(--border); color: var(--text); }
 
-.main { display: grid; grid-template-columns: 280px 1fr 400px; height: 100%; overflow: hidden; }
+.main { display: grid; grid-template-columns: 250px minmax(0, 1fr) 500px; height: 100%; overflow: hidden; }
 
 /* ---------- SIDEBAR ---------- */
 .sidebar {
@@ -518,9 +518,10 @@ select {
   font-size: 11px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);
 }
-.preview-body { flex: 1; overflow-y: auto; padding: 14px; }
+.preview-body { flex: 1; overflow: auto; padding: 14px; }
 .preview-card {
   position: relative; overflow: hidden;
+  width: 100%;
   background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;
   padding: 18px 18px 16px;
   font-family: "SF Mono", "Menlo", "Consolas", monospace;
@@ -551,7 +552,14 @@ select {
 }
 .preview-card.formatted-preview,
 .tag-preview-pop.formatted-preview {
-  white-space: pre-wrap;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+.preview-card.formatted-preview {
+  min-width: 0;
+  max-width: 100%;
 }
 .preview-card.formatted-preview .preview-inline-label,
 .tag-preview-pop.formatted-preview .preview-inline-label {
@@ -968,6 +976,10 @@ body.theme-rosegold .section {
   pointer-events: none;
   animation: popIn .14s ease;
 }
+.tag-preview-pop.formatted-preview {
+  width: calc(51ch + 38px);
+  max-width: min(calc(100vw - 16px), calc(51ch + 38px));
+}
 .tag-preview-pop::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
   background: var(--accent-grad);
@@ -1342,7 +1354,7 @@ function renderMain() {
   }
 
   // NCRs and NCOs — full 3-column UI (same builder, different tag.type)
-  main.style.gridTemplateColumns = '280px 1fr 400px';
+  main.style.gridTemplateColumns = '250px minmax(0, 1fr) 500px';
   main.appendChild(renderSidebar());
   main.appendChild(renderBuilder());
   main.appendChild(renderPreview());
@@ -1509,8 +1521,9 @@ function renderTemplateCard(t, expectedType) {
 }
 
 function renderCarrotTemplateCard(t) {
+  const isActive = state.selectedCarrotId === t.id && !state.carrotPreviewSuppressed;
   const card = el('div', {
-    class: 'tag-card' + (state.selectedCarrotId === t.id ? ' active' : ''),
+    class: 'tag-card' + (isActive ? ' active' : ''),
     onclick: () => {
       if (state.selectedCarrotId === t.id) {
         state.current.carrotTemplateId = t.id;
@@ -2037,9 +2050,10 @@ function escapeHtml(s) {
 
 function joinPreviewTokens(tokens) {
   return tokens
-    .filter(token => token != null && token !== '')
+    .map(token => token == null ? '' : String(token))
+    .map(token => token.trim())
+    .filter(token => token !== '')
     .join(' ')
-    .replace(/[ \t]+/g, ' ')
     .trim();
 }
 
@@ -2190,7 +2204,7 @@ function renderPreviewRichText(text) {
   return escapeHtml(text).replace(/\*([^*]+)\*/g, '<em>*$1*</em>');
 }
 
-const FORMATTED_PREVIEW_WIDTH = 40;
+const FORMATTED_PREVIEW_WIDTH = 51;
 
 function renderPreviewClassic(blocks) {
   const lines = [];
@@ -2225,28 +2239,32 @@ function renderPreviewClassic(blocks) {
 }
 
 function wrapIndentedText(text, firstIndent, nextIndent, width = FORMATTED_PREVIEW_WIDTH) {
-  const source = String(text || '').trim();
-  if (!source) return [firstIndent.trimEnd()];
+  const source = String(text || '');
+  if (!source.trim()) return [firstIndent.trimEnd()];
 
-  const words = source.split(/\s+/).filter(Boolean);
+  const parts = source.match(/\S+\s*|\s+/g) || [];
   const lines = [];
   let current = firstIndent;
 
-  words.forEach(word => {
+  parts.forEach(part => {
     if (current === firstIndent || current === nextIndent) {
-      current += word;
+      current += part.replace(/^\n+|\n+$/g, '');
       return;
     }
-    if ((current + ' ' + word).length <= width) {
-      current += ' ' + word;
+    if ((current + part).length <= width) {
+      current += part;
       return;
     }
-    lines.push(current);
-    current = nextIndent + word;
+    lines.push(current.trimEnd());
+    current = nextIndent + part.replace(/^\s+/, '');
   });
 
-  lines.push(current);
+  lines.push(current.trimEnd());
   return lines;
+}
+
+function wrapPlainText(text, width = FORMATTED_PREVIEW_WIDTH) {
+  return wrapIndentedText(text, '', '', width).map(line => line.trimEnd());
 }
 
 function renderFormattedInlineBlock(block) {
@@ -2273,19 +2291,22 @@ function renderPreviewFormatted(blocks) {
       return;
     }
     if (block.type === 'heading') {
-      lines.push(`<span class="${block.className || 'meas-hdr'}">${escapeHtml(block.label)}</span>`);
+      wrapPlainText(block.label).forEach((line, idx) => {
+        if (idx === 0) lines.push(`<span class="${block.className || 'meas-hdr'}">${escapeHtml(line)}</span>`);
+        else lines.push(escapeHtml(line));
+      });
       return;
     }
     if (block.type === 'text') {
-      lines.push(escapeHtml(block.text));
+      wrapPlainText(block.text).forEach(line => lines.push(escapeHtml(line)));
       return;
     }
     if (block.type === 'multiline') {
-      block.lines.forEach(line => lines.push(escapeHtml(line)));
+      block.lines.forEach(line => wrapPlainText(line).forEach(wrapped => lines.push(escapeHtml(wrapped))));
       return;
     }
     if (block.type === 'emphasis') {
-      block.lines.forEach(line => lines.push(renderPreviewRichText(line)));
+      block.lines.forEach(line => wrapPlainText(line).forEach(wrapped => lines.push(renderPreviewRichText(wrapped))));
     }
   });
 
@@ -2308,15 +2329,15 @@ function previewText(blocks) {
         return;
       }
       if (block.type === 'heading') {
-        lines.push(block.label);
+        wrapPlainText(block.label).forEach(line => lines.push(line));
         return;
       }
       if (block.type === 'text') {
-        lines.push(String(block.text || ''));
+        wrapPlainText(block.text).forEach(line => lines.push(line));
         return;
       }
       if (block.type === 'multiline' || block.type === 'emphasis') {
-        block.lines.forEach(line => lines.push(String(line || '')));
+        block.lines.forEach(line => wrapPlainText(line).forEach(wrapped => lines.push(wrapped)));
       }
     });
 
