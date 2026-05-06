@@ -382,6 +382,11 @@ input, textarea, select { font: inherit; color: inherit; }
   height: 25px;
   display: block;
 }
+.sidebar-settings-glyph {
+  display: block;
+  line-height: 1;
+  transform: translateY(-1px);
+}
 .sidebar-collapse-btn {
   width: 34px;
   justify-content: center;
@@ -3051,9 +3056,7 @@ function renderSidebar() {
       state.activeTab = 'Settings';
       renderAll();
     }
-  }, el('span', {
-    html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.34 3.94c.09-.54.56-.94 1.11-.94h1.1c.55 0 1.02.4 1.11.94l.15.9c.07.42.35.78.74.96l.29.15c.38.21.82.23 1.22.07l.85-.34c.51-.2 1.1 0 1.37.49l.55.95c.28.48.19 1.08-.21 1.46l-.65.64c-.31.3-.43.74-.36 1.17a6.4 6.4 0 0 1 0 .31c-.07.42.05.87.36 1.17l.65.63c.4.39.49.99.21 1.47l-.55.95c-.27.48-.86.69-1.37.49l-.85-.34c-.4-.16-.84-.15-1.22.06l-.29.16c-.39.18-.67.54-.74.96l-.15.9c-.09.54-.56.94-1.11.94h-1.1c-.55 0-1.02-.4-1.11-.94l-.15-.9c-.07-.42-.35-.78-.74-.96l-.29-.16a1.4 1.4 0 0 0-1.22-.06l-.85.34c-.51.2-1.1 0-1.37-.49l-.55-.95c-.28-.48-.19-1.08.21-1.47l.65-.63c.31-.3.43-.75.36-1.17a6.4 6.4 0 0 1 0-.31c.07-.43-.05-.87-.36-1.17l-.65-.64a1.12 1.12 0 0 1-.21-1.46l.55-.95c.27-.49.86-.69 1.37-.49l.85.34c.4.16.84.14 1.22-.07l.29-.15c.39-.18.67-.54.74-.96l.15-.9Z"></path><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path></svg>'
-  })));
+  }, el('span', { class: 'sidebar-settings-glyph', 'aria-hidden': 'true' }, '⚙')));
   wrap.appendChild(foot);
 
   return wrap;
@@ -3796,7 +3799,7 @@ function renderItem(it, idx) {
       it.measSections.push(blankMeasSection('Section'));
       renderAll();
     }
-  }, '+ Add measurement section'));
+  }, '+ Add Section'));
 
   // S/B (What the Spec says it should be)
   sub.appendChild(textareaField('S/B (What the Spec says it should be)', it.sbText,
