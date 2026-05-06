@@ -148,6 +148,54 @@ body.theme-linen {
   --accent-grad: linear-gradient(135deg, #0d7377, #14b8a6);
   --shadow: 0 4px 24px rgba(13,115,119,0.15);
 }
+body.theme-highline {
+  --bg-grad: linear-gradient(135deg, #f6fbff 0%, #eef7ff 54%, #eefdf8 100%);
+  --bg: #f8fbff;  --surface: rgba(255,255,255,0.82);  --surface-2: #ffffff;
+  --text: #102033; --text-muted: #627086;
+  --border: #d9e7f5; --accent: #006bff; --accent-2: #00b894;
+  --accent-grad: linear-gradient(135deg, #006bff, #00b894);
+  --shadow: 0 4px 24px rgba(0,107,255,0.14);
+}
+body.theme-vapor {
+  --bg-grad: linear-gradient(135deg, #fff7fb 0%, #f2f0ff 52%, #ecfff9 100%);
+  --bg: #fffbff;  --surface: rgba(255,255,255,0.78);  --surface-2: #ffffff;
+  --text: #221735; --text-muted: #796b8e;
+  --border: #eadff4; --accent: #7c3aed; --accent-2: #06b6d4;
+  --accent-grad: linear-gradient(135deg, #7c3aed, #06b6d4);
+  --shadow: 0 4px 24px rgba(124,58,237,0.16);
+}
+body.theme-glacier {
+  --bg-grad: linear-gradient(135deg, #eef8ff 0%, #f7fffb 100%);
+  --bg: #f8fdff;  --surface: rgba(255,255,255,0.84);  --surface-2: #ffffff;
+  --text: #102a3a; --text-muted: #638091;
+  --border: #d7ebf4; --accent: #0ea5e9; --accent-2: #22c55e;
+  --accent-grad: linear-gradient(135deg, #0ea5e9, #22c55e);
+  --shadow: 0 4px 24px rgba(14,165,233,0.15);
+}
+body.theme-alloy {
+  --bg-grad: linear-gradient(135deg, #0d1117 0%, #1f2937 55%, #111827 100%);
+  --bg: #090d12;  --surface: rgba(31,41,55,0.72);  --surface-2: #17202c;
+  --text: #eef2f7; --text-muted: #96a3b5;
+  --border: #2d3748; --accent: #b8ff5c; --accent-2: #00d4ff;
+  --accent-grad: linear-gradient(135deg, #b8ff5c, #00d4ff);
+  --shadow: 0 4px 24px rgba(0,212,255,0.18);
+}
+body.theme-emberline {
+  --bg-grad: linear-gradient(135deg, #160f17 0%, #2b1326 48%, #2b1f0f 100%);
+  --bg: #100b11;  --surface: rgba(45,28,38,0.72);  --surface-2: #261824;
+  --text: #fff2eb; --text-muted: #c9a6a4;
+  --border: #432736; --accent: #ff6b6b; --accent-2: #ffd166;
+  --accent-grad: linear-gradient(135deg, #ff6b6b, #ffd166);
+  --shadow: 0 4px 24px rgba(255,107,107,0.18);
+}
+body.theme-command {
+  --bg-grad: linear-gradient(135deg, #06100c 0%, #101827 55%, #071b17 100%);
+  --bg: #050b09;  --surface: rgba(15,23,32,0.76);  --surface-2: #0f1720;
+  --text: #e8fff4; --text-muted: #8eb9a4;
+  --border: #19352c; --accent: #3cffb5; --accent-2: #8ab4ff;
+  --accent-grad: linear-gradient(135deg, #3cffb5, #8ab4ff);
+  --shadow: 0 4px 24px rgba(60,255,181,0.18);
+}
 
 /* ---------- BASE ---------- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -229,6 +277,7 @@ input, textarea, select { font: inherit; color: inherit; }
 .btn-ghost:hover { background: var(--border); color: var(--text); }
 .btn-danger { color: var(--accent-2); }
 .btn-block { width: 100%; justify-content: center; }
+.btn-new-tag { margin-bottom: 8px; }
 .filter-chips { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
 .chip {
   padding: 4px 10px; border-radius: 999px;
@@ -243,9 +292,20 @@ input, textarea, select { font: inherit; color: inherit; }
 .tag-list { flex: 1; overflow-y: auto; padding: 8px; }
 .tag-card {
   position: relative;
-  padding: 10px 64px 10px 12px; border-radius: 9px; margin-bottom: 4px;
+  padding: 8px 88px 8px 12px; border-radius: 9px; margin-bottom: 4px;
   cursor: pointer; transition: all 0.15s; border: 1px solid transparent;
 }
+.tag-card::after {
+  content: '';
+  position: absolute;
+  left: 12px; right: 12px; bottom: -3px;
+  height: 1px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--border));
+  opacity: .55;
+  pointer-events: none;
+}
+.tag-card.active::after,
+.tag-card:hover::after { opacity: 0; }
 .tag-pin {
   position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
   width: 24px; height: 24px;
@@ -266,7 +326,7 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 .tag-card.active .tag-card-meta { color: rgba(255,255,255,0.8); }
 .tag-card-title {
-  font-weight: 500; font-size: 13px; margin-bottom: 2px;
+  font-weight: 500; font-size: 13px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .tag-card-meta { font-size: 11px; color: var(--text-muted); }
@@ -300,13 +360,39 @@ input, textarea, select { font: inherit; color: inherit; }
   padding: 0 6px 8px;
   font-size: 12px; color: var(--text-muted);
 }
-.sidebar-foot { padding: 10px; border-top: 1px solid var(--border); display: flex; gap: 6px; }
+.sidebar-foot {
+  padding: 10px; border-top: 1px solid var(--border);
+  display: flex; gap: 6px; align-items: center;
+}
+.sidebar-foot-spacer { flex: 1; }
+.sidebar-settings-btn {
+  width: 48px;
+  height: 42px;
+  min-height: 42px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  font-size: 27px;
+  line-height: 1;
+}
+.sidebar-collapse-btn {
+  width: 34px;
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+}
 
 /* ---------- BUILDER ---------- */
-.builder { overflow-y: auto; padding: 16px 22px; }
+.builder { overflow-y: auto; padding: 12px 18px; }
 .builder-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 10px; gap: 8px; flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  margin-bottom: 10px; gap: 7px;
 }
 .builder-title {
   font-size: 22px; font-weight: 800; letter-spacing: -0.4px;
@@ -324,26 +410,71 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 .builder-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .builder-title-wrap {
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  display: flex; align-items: end; gap: 12px;
+  min-width: 0;
+}
+.builder-title-wrap .builder-actions {
+  flex: 0 0 auto;
+  align-self: stretch;
+  align-items: center;
 }
 .builder-title-input {
-  width: 190px;
-  padding: 6px 9px;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  transition: border 0.15s;
+  flex: 1;
+  min-width: 220px;
+  width: auto;
+  padding: 8px 11px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+  transition: border 0.15s, box-shadow .15s, background .15s;
   font: inherit; color: inherit;
+  font-weight: 650;
+  letter-spacing: .2px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
 .builder-title-input:focus {
   outline: none;
   border-color: var(--accent);
+  background: var(--bg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.builder-actions {
+  padding: 3px;
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface-2));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  justify-self: end;
+}
+.builder-action-btn {
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+.builder-action-duplicate {
+  color: var(--accent);
+}
+.builder-action-danger {
+  color: var(--accent-2);
+}
+.builder-action-save {
+  padding-inline: 10px;
+}
+.preview-template-actions {
+  justify-self: auto;
+  max-width: calc(100% - 100px);
+  justify-content: flex-end;
+}
+.preview-template-actions .builder-action-btn {
+  padding: 4px 7px;
 }
 
 .section {
   background: var(--surface); backdrop-filter: blur(10px);
   border: 1px solid var(--border); border-radius: 12px;
-  padding: 8px 10px; margin-bottom: 6px;
+  padding: 6px 8px; margin-bottom: 5px;
 }
 .section-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -405,19 +536,20 @@ input, textarea, select { font: inherit; color: inherit; }
   pointer-events: none;
 }
 
-.row { display: grid; gap: 6px; margin-bottom: 4px; }
+.row { display: grid; gap: 5px; margin-bottom: 3px; }
+.row > * { min-width: 0; }
 .row:last-child { margin-bottom: 0; }
 .row-2 { grid-template-columns: 1fr 1fr; }
-.row-3 { grid-template-columns: 1fr 1fr 1fr; }
+.row-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .row-rev { grid-template-columns: 1fr 1fr 2fr; }
 .row-att { grid-template-columns: auto 1fr; align-items: end; gap: 12px; }
 
-.field { display: flex; flex-direction: column; gap: 2px; }
+.field { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .field label { font-size: 11px; color: var(--accent-2); font-weight: 600; letter-spacing: 0.2px; }
 
-/* L/W/D labels — themed slightly differently from other field labels:
+/* Measurement labels — themed slightly differently from other field labels:
    small-caps tone with the accent gradient instead of solid accent-2. */
-.lwd-row .field label {
+.measurement-field .field label {
   background: var(--accent-grad);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -426,6 +558,8 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 .field input, .field textarea, .field select,
 .inner-group > textarea {
+  width: 100%;
+  min-width: 0;
   padding: 6px 9px; border-radius: 7px;
   border: 1px solid var(--border); background: var(--bg);
   transition: border 0.15s;
@@ -444,6 +578,8 @@ input, textarea, select { font: inherit; color: inherit; }
   min-height: 38px; resize: vertical;
 }
 .field textarea.lg, .inner-group > textarea.lg { min-height: 64px; }
+.field textarea.tag-paragraph,
+.inner-group > textarea.tag-paragraph { min-height: 108px; }
 .inner-group > textarea.tall { min-height: 56px; }
 .field-hint {
   padding: 6px 10px; color: var(--text-muted); font-size: 12px;
@@ -452,7 +588,7 @@ input, textarea, select { font: inherit; color: inherit; }
 
 .subsection {
   border: 1px solid var(--border); border-radius: 9px;
-  padding: 6px 8px 8px; margin-bottom: 4px; background: var(--surface-2);
+  padding: 5px 7px 6px; margin-bottom: 4px; background: var(--surface-2);
 }
 .subsection-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -521,7 +657,9 @@ select {
 .preview-body { flex: 1; overflow: auto; padding: 14px; }
 .preview-card {
   position: relative; overflow: hidden;
-  width: 100%;
+  width: calc(51ch + 38px);
+  min-width: calc(51ch + 38px);
+  max-width: none;
   background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;
   padding: 18px 18px 16px;
   font-family: "SF Mono", "Menlo", "Consolas", monospace;
@@ -558,8 +696,8 @@ select {
   overflow-x: auto;
 }
 .preview-card.formatted-preview {
-  min-width: 0;
-  max-width: 100%;
+  min-width: calc(51ch + 38px);
+  max-width: none;
 }
 .preview-card.formatted-preview .preview-inline-label,
 .tag-preview-pop.formatted-preview .preview-inline-label {
@@ -586,6 +724,8 @@ select {
 }
 .modal h3 { margin-bottom: 12px; font-size: 16px; }
 .modal-options { display: grid; gap: 6px; margin-bottom: 12px; max-height: 50vh; overflow-y: auto; }
+.modal:has(.theme-lab-layout) { width: auto; }
+.modal-options:has(.theme-lab-layout) { max-height: 72vh; }
 .modal-options button {
   text-align: left; padding: 10px 12px; border-radius: 9px;
   border: 1px solid var(--border); background: var(--bg);
@@ -826,7 +966,10 @@ body.theme-cosmos,
 body.theme-ocean,
 body.theme-midnight,
 body.theme-charcoal,
-body.theme-boeing-sky {
+body.theme-boeing-sky,
+body.theme-alloy,
+body.theme-emberline,
+body.theme-command {
   background-size: 220% 220%;
   animation: bgDrift 28s ease-in-out infinite alternate;
 }
@@ -839,7 +982,10 @@ body.theme-boeing-sky {
 body.theme-aurora .topbar::after,
 body.theme-cyberpunk .topbar::after,
 body.theme-cosmos .topbar::after,
-body.theme-ocean .topbar::after {
+body.theme-ocean .topbar::after,
+body.theme-alloy .topbar::after,
+body.theme-emberline .topbar::after,
+body.theme-command .topbar::after {
   background-size: 220% 100%;
   animation: stripeFlow 9s linear infinite;
   opacity: .7;
@@ -853,7 +999,10 @@ body.theme-cosmos .tab.active,
 body.theme-cyberpunk .tab.active,
 body.theme-aurora .tab.active,
 body.theme-ocean .tab.active,
-body.theme-boeing-sky .tab.active {
+body.theme-boeing-sky .tab.active,
+body.theme-alloy .tab.active,
+body.theme-emberline .tab.active,
+body.theme-command .tab.active {
   box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 50%, transparent),
               0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent);
 }
@@ -886,7 +1035,10 @@ body.theme-rosegold .section,
 body.theme-sage .section,
 body.theme-linen .section,
 body.theme-monochrome .section,
-body.theme-boeing-classic .section {
+body.theme-boeing-classic .section,
+body.theme-highline .section,
+body.theme-vapor .section,
+body.theme-glacier .section {
   background-image: linear-gradient(180deg, rgba(255,255,255,.45), transparent 55%);
 }
 
@@ -1017,15 +1169,897 @@ body.theme-rosegold .section {
 
 /* ---------- Focus mode ---------- */
 body.focus-mode .sidebar,
-body.focus-mode .preview-pane { display: none; }
-body.focus-mode .main { grid-template-columns: 1fr !important; }
-body.focus-mode .builder { max-width: 920px; margin: 0 auto; padding: 24px 28px; }
+body.focus-mode .resizer-left { display: none; }
+body.focus-mode .main { grid-template-columns: minmax(0, 1fr) 6px minmax(calc(51ch + 66px), 500px) !important; }
+body.focus-mode .builder { max-width: none; margin: 0; padding: 24px 28px; }
+.sidebar-restore-btn {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 75;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 13px;
+  border-radius: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: white;
+  background: var(--accent-grad);
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--accent) 28%, rgba(0,0,0,.18));
+  font-size: 18px;
+  font-weight: 850;
+  transition: transform .15s, box-shadow .15s;
+}
+.sidebar-restore-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--accent) 34%, rgba(0,0,0,.2));
+}
+.sidebar-restore-btn span {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
 .icon-btn.feature-on {
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 15%, transparent);
 }
+.builder-collapse-btn {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+  transition: transform .15s, background .15s, color .15s;
+}
+.builder-collapse-btn:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg));
+  color: var(--text);
+}
+
+body.custom-theme-vars .section,
+body.custom-theme-vars .settings-panel,
+body.custom-theme-vars .preview-card,
+body.custom-theme-vars .theme-card,
+body.custom-theme-vars .modal,
+body.custom-theme-vars .tag-preview-pop {
+  border-radius: var(--ui-radius, 12px);
+}
+body.custom-theme-vars .btn,
+body.custom-theme-vars .icon-btn,
+body.custom-theme-vars .field input,
+body.custom-theme-vars .field textarea,
+body.custom-theme-vars .field select,
+body.custom-theme-vars .search,
+body.custom-theme-vars .builder-title-input,
+body.custom-theme-vars .tag-card,
+body.custom-theme-vars .subsection,
+body.custom-theme-vars .meas-section,
+body.custom-theme-vars .meas-section-name-wrap {
+  border-radius: calc(var(--ui-radius, 12px) * .72);
+}
+body.custom-theme-vars .builder,
+body.custom-theme-vars .preview-body,
+body.custom-theme-vars .settings-page {
+  padding-top: calc(12px * var(--ui-density, 1));
+  padding-bottom: calc(12px * var(--ui-density, 1));
+}
+body.custom-theme-vars .section,
+body.custom-theme-vars .subsection {
+  padding: calc(6px * var(--ui-density, 1)) calc(8px * var(--ui-density, 1));
+}
 
 .uppercase-text { text-transform: uppercase; }
+
+/* ============================================================================
+   v3 FEATURE LAYER — measurement sections, otherBlocks, spec ref, tag chips,
+   sort, favorites, resizable panels, undo toast.
+   ============================================================================ */
+
+/* ---------- Measurement section card ---------- */
+.meas-section {
+  position: relative;
+  padding: 8px 10px;
+  margin: 6px 0;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--accent) 4%, var(--surface-2));
+  transition: border-color .2s ease, box-shadow .25s ease, background .2s;
+}
+.meas-section::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 8px; bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent-grad);
+  opacity: .55;
+}
+.meas-section:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.meas-section-head {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 4px;
+}
+.meas-section-name-wrap {
+  flex: 1;
+  display: flex; align-items: center; gap: 7px;
+  padding: 2px 6px 2px 9px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.meas-section-name-wrap:focus-within {
+  border-color: var(--accent);
+  background: var(--bg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.meas-section-edit-icon {
+  flex-shrink: 0;
+  width: 15px; height: 15px;
+  color: var(--accent-2);
+  opacity: .9;
+}
+.meas-section-name {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 2px;
+  font: inherit; color: inherit;
+  border: none;
+  background: transparent;
+  font-weight: 700; font-size: 13px; letter-spacing: 0.3px;
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.meas-section-name::placeholder {
+  -webkit-text-fill-color: var(--text-muted);
+  opacity: .6; font-weight: 500; letter-spacing: 0;
+}
+.meas-section-name:focus {
+  outline: none;
+  -webkit-text-fill-color: var(--text);
+}
+.meas-section-del {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.meas-section-del:hover { background: var(--border); color: var(--accent-2); }
+
+.add-btn-meas {
+  margin-top: 2px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+.add-btn-meas:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* ---------- Spec auto-reference button row ---------- */
+.spec-ref-row {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.spec-ref-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--accent-2); letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.spec-ref-chips {
+  display: flex; gap: 4px; flex-wrap: wrap;
+}
+.spec-ref-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  letter-spacing: 0.2px;
+  transition: all .15s;
+  max-width: 220px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.spec-ref-chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.spec-ref-chip.active {
+  background: var(--accent-grad);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.spec-ref-off { color: var(--text-muted); }
+.spec-ref-off.active { background: var(--text-muted); }
+
+/* ---------- Add Other footer button ---------- */
+.add-other-wrap { margin: 10px 0 4px; display: flex; justify-content: center; }
+.other-tags-spacer {
+  height: 1px;
+  margin: 12px auto 10px;
+  width: min(420px, 86%);
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--accent) 22%, transparent) 18%,
+    color-mix(in srgb, var(--accent-2) 48%, var(--accent)) 50%,
+    color-mix(in srgb, var(--accent) 22%, transparent) 82%,
+    transparent 100%
+  );
+  opacity: .78;
+}
+.btn-add-other {
+  padding: 7px 24px;
+  min-width: 240px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+  color: var(--accent-2);
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all .18s;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.btn-add-other:hover {
+  background: var(--accent-grad);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+.add-other-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  font-weight: 800;
+  font-size: 12px;
+  transition: background .2s;
+}
+.btn-add-other:hover .add-other-icon { background: rgba(255,255,255,0.25); }
+
+/* ---------- Other-block label + text inputs ---------- */
+.other-block { padding: 10px 12px 12px; }
+.other-block-head {
+  align-items: stretch;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.other-block-label-wrap {
+  flex: 1;
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 6px 4px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.other-block-label-wrap:focus-within {
+  border-color: var(--accent);
+  background: var(--bg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.other-block-label-tag {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  background: var(--accent-grad);
+  color: white;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.other-block-label-input {
+  flex: 1;
+  padding: 6px 4px;
+  border: none;
+  background: transparent;
+  font: inherit; color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+.other-block-label-input:focus { outline: none; }
+.other-block-label-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 500;
+  opacity: .7;
+}
+.other-block-text {
+  display: block;
+  width: 100%;
+  min-height: 90px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font: inherit; color: inherit;
+  resize: vertical;
+  transition: border-color .15s, box-shadow .15s;
+}
+.other-block-text:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* ---------- Tag chips (template tag system) ---------- */
+.tag-chips-edit {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 4px;
+  min-height: 36px;
+  border-radius: 9px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  align-items: center;
+  transition: border-color .15s;
+}
+.tag-chips-edit:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.tag-chip-edit {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 4px 4px 10px;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+  background: var(--accent-grad);
+  color: white;
+  letter-spacing: 0.2px;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+.tag-chip-x {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  color: white;
+  font-size: 14px; line-height: 1;
+  transition: background .15s;
+}
+.tag-chip-x:hover { background: rgba(255,255,255,0.4); }
+.tag-chip-input {
+  flex: 1;
+  min-width: 100px;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  font: inherit; color: inherit;
+}
+.tag-chip-input:focus { outline: none; }
+
+/* Sidebar tag-card chips */
+.tag-card-tags {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  margin-top: 4px;
+}
+.tag-card-tag {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px; font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  letter-spacing: 0.3px;
+  transition: background .15s, color .15s;
+  cursor: pointer;
+}
+.tag-card-tag:hover {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+.tag-card-tag.more {
+  cursor: default;
+  color: var(--text-muted);
+  background: transparent;
+}
+.tag-card.active .tag-card-tag {
+  background: rgba(255,255,255,0.22);
+  color: white;
+}
+
+/* Sidebar sort + tag filter */
+.sidebar-sort-row {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 8px;
+}
+.sidebar-sort-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--accent-2);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.sidebar-sort-select {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 12px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+.sidebar-sort-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.tag-filter-row {
+  display: flex; align-items: center; gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+}
+.tag-filter-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--accent-2);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.tag-filter-select {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 9px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+  color: var(--text);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.tag-filter-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+/* ---------- Colorful template titles ---------- */
+.tag-card-title {
+  font-weight: 700;
+  font-size: 13.5px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.1px;
+  filter: saturate(1.1);
+}
+.tag-card.active .tag-card-title {
+  -webkit-text-fill-color: white;
+  background: none;
+  filter: none;
+}
+.tag-card.pinned-card {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.tag-card.pinned-card:hover {
+  background: color-mix(in srgb, var(--accent) 12%, var(--border));
+}
+
+/* ---------- Favorite (★) button always visible when pinned ---------- */
+.tag-action-fav {
+  font-size: 14px;
+  line-height: 1;
+}
+.tag-action-fav.active-fav {
+  opacity: 1 !important;
+  color: #f59e0b;
+}
+.tag-card.active .tag-action-fav.active-fav {
+  color: #fde68a;
+}
+
+/* ---------- Resizable panel handles ---------- */
+.resizer {
+  position: relative;
+  cursor: col-resize;
+  user-select: none;
+  background: transparent;
+  transition: background .15s;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 5;
+}
+.resizer-grip {
+  width: 2px;
+  height: 40px;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background .15s, height .15s;
+}
+.resizer:hover .resizer-grip {
+  background: var(--accent);
+  height: 60px;
+}
+body.resizing { cursor: col-resize !important; }
+body.resizing * { user-select: none !important; }
+
+/* ---------- Undo toast action button ---------- */
+.toast.with-action {
+  padding: 8px 8px 8px 18px;
+  display: inline-flex; align-items: center; gap: 12px;
+}
+.toast-action {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.4px;
+  background: var(--accent-grad);
+  color: white;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: transform .12s ease, box-shadow .15s;
+}
+.toast-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.toast-action:active { transform: scale(.95); }
+
+/* ---------- Dimmer existing colorful section titles for NCO/NCR feel ---------- */
+.section-title {
+  font-size: 14px; font-weight: 800; letter-spacing: 0.6px;
+}
+
+/* ---------- Settings page ---------- */
+.settings-page {
+  overflow-y: auto;
+  padding: 22px 28px;
+}
+.settings-hero {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
+}
+.settings-title {
+  font-size: 26px;
+  font-weight: 850;
+  letter-spacing: -0.2px;
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.settings-subtitle {
+  max-width: 760px;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+  gap: 14px;
+}
+.settings-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+.settings-panel-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  margin-bottom: 8px;
+}
+.settings-feature-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 7px;
+}
+.settings-feature {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--border));
+}
+.settings-feature strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+.settings-feature span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 12%, var(--border));
+}
+.settings-row:first-of-type { border-top: none; }
+.settings-row-text strong {
+  display: block;
+  font-size: 13px;
+}
+.settings-row-text span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.settings-switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 42px; height: 24px;
+}
+.settings-switch input {
+  opacity: 0;
+  width: 0; height: 0;
+}
+.settings-switch span {
+  position: absolute; inset: 0;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background .15s;
+}
+.settings-switch span::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; top: 3px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: 0 1px 4px rgba(0,0,0,.22);
+  transition: transform .15s;
+}
+.settings-switch input:checked + span {
+  background: var(--accent-grad);
+}
+.settings-switch input:checked + span::after {
+  transform: translateX(18px);
+}
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.settings-theme-panel {
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.theme-studio-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.theme-studio-title {
+  font-size: 15px;
+  font-weight: 850;
+  letter-spacing: .2px;
+}
+.theme-studio-copy {
+  color: var(--text-muted);
+  font-size: 12px;
+  max-width: 660px;
+  line-height: 1.45;
+}
+.theme-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 9px;
+}
+.theme-card {
+  position: relative;
+  min-height: 96px;
+  overflow: hidden;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--border));
+  background: var(--surface-2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+  text-align: left;
+  transition: transform .15s, border-color .15s, box-shadow .15s;
+}
+.theme-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 44%, var(--border));
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--accent) 13%, transparent);
+}
+.theme-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent), var(--shadow);
+}
+.theme-card-bg {
+  position: absolute;
+  inset: 0;
+  opacity: .9;
+}
+.theme-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(0,0,0,.18));
+  pointer-events: none;
+}
+.theme-card-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+}
+.theme-card-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 850;
+  color: white;
+  text-shadow: 0 1px 8px rgba(0,0,0,.3);
+}
+.theme-card.active .theme-card-name::after {
+  content: 'Active';
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.22);
+  font-size: 9px;
+  letter-spacing: .45px;
+  text-transform: uppercase;
+}
+.theme-card-chips {
+  display: flex;
+  gap: 5px;
+}
+.theme-card-chip {
+  width: 26px;
+  height: 22px;
+  border-radius: 7px;
+  border: 1px solid rgba(255,255,255,.32);
+  box-shadow: 0 3px 10px rgba(0,0,0,.18);
+}
+.theme-card-kind {
+  color: rgba(255,255,255,.82);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .35px;
+  text-transform: uppercase;
+}
+.theme-lab-layout {
+  width: min(780px, calc(92vw - 36px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, .55fr);
+  gap: 12px;
+}
+.theme-lab-controls {
+  display: grid;
+  gap: 10px;
+}
+.theme-lab-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.theme-lab-field label,
+.theme-lab-slider label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--accent-2);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .3px;
+}
+.theme-lab-field input[type="text"],
+.theme-lab-field select {
+  width: 100%;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.theme-lab-field input[type="color"] {
+  width: 100%;
+  height: 38px;
+  padding: 3px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.theme-lab-slider input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.theme-lab-preview {
+  min-height: 230px;
+  border-radius: 16px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  background: var(--bg-grad);
+  box-shadow: var(--shadow);
+}
+.theme-lab-window {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 10px;
+  padding: 11px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.theme-lab-bar {
+  height: 8px;
+  width: 74%;
+  border-radius: 999px;
+  background: var(--accent-grad);
+}
+.theme-lab-card {
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 10px;
+}
+.theme-lab-line {
+  height: 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+  background: color-mix(in srgb, var(--text-muted) 34%, transparent);
+}
+.theme-lab-line.short { width: 58%; }
+.theme-lab-button {
+  width: 82px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--accent-grad);
+}
+@media (max-width: 900px) {
+  .theme-studio-head,
+  .theme-lab-layout { grid-template-columns: 1fr; display: grid; }
+  .theme-lab-row { grid-template-columns: 1fr; }
+}
+.settings-history-list {
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.settings-history-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 8px 0;
+}
+.settings-history-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, var(--border));
+}
+.settings-history-title {
+  font-weight: 700;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.settings-history-meta {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+@media (max-width: 900px) {
+  .settings-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body class="theme-midnight">
@@ -1035,6 +2069,8 @@ body.focus-mode .builder { max-width: 920px; margin: 0 auto; padding: 24px 28px;
     <div class="brand">✈ Red Tag Builder</div>
     <nav class="tabs" id="tabs"></nav>
     <div class="spacer"></div>
+    <button class="icon-btn" id="undoBtn" title="Undo (⌘Z)" aria-label="Undo">↶</button>
+    <button class="icon-btn" id="redoBtn" title="Redo (⌘⇧Z)" aria-label="Redo">↷</button>
     <button class="icon-btn" id="formatBtn" title="Toggle formatted preview layout" aria-label="Toggle formatted preview layout">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M4 6h16"></path>
@@ -1044,7 +2080,7 @@ body.focus-mode .builder { max-width: 920px; margin: 0 auto; padding: 24px 28px;
       </svg>
     </button>
     <button class="icon-btn" id="uppercaseBtn" title="Toggle uppercase tag text" aria-label="Toggle uppercase tag text">aA</button>
-    <button class="icon-btn" id="focusBtn" title="Focus mode (⌘.)">⛶</button>
+    <button class="icon-btn" id="focusBtn" title="Fullscreen (⌘.)">⛶</button>
     <button class="icon-btn" id="themeBtn" title="Theme">🎨</button>
   </header>
   <main class="main" id="main"></main>
@@ -1062,6 +2098,9 @@ body.focus-mode .builder { max-width: 920px; margin: 0 auto; padding: 24px 28px;
   <button class="theme-opt" data-theme="theme-rosegold"><span class="theme-swatch" style="background:linear-gradient(135deg,#d4796a,#c9a17a)"></span>Rose Gold</button>
   <button class="theme-opt" data-theme="theme-sage"><span class="theme-swatch" style="background:linear-gradient(135deg,#6a8e5e,#b59f6e)"></span>Sage</button>
   <button class="theme-opt" data-theme="theme-linen"><span class="theme-swatch" style="background:linear-gradient(135deg,#0d7377,#14b8a6)"></span>Linen</button>
+  <button class="theme-opt" data-theme="theme-highline"><span class="theme-swatch" style="background:linear-gradient(135deg,#006bff,#00b894)"></span>Highline</button>
+  <button class="theme-opt" data-theme="theme-vapor"><span class="theme-swatch" style="background:linear-gradient(135deg,#7c3aed,#06b6d4)"></span>Vapor</button>
+  <button class="theme-opt" data-theme="theme-glacier"><span class="theme-swatch" style="background:linear-gradient(135deg,#0ea5e9,#22c55e)"></span>Glacier</button>
   <button class="theme-opt" data-theme="theme-monochrome"><span class="theme-swatch" style="background:linear-gradient(135deg,#111111,#555555)"></span>Monochrome</button>
   <h4>Dark</h4>
   <button class="theme-opt" data-theme="theme-midnight"><span class="theme-swatch" style="background:linear-gradient(135deg,#38bdf8,#818cf8)"></span>Midnight</button>
@@ -1070,6 +2109,9 @@ body.focus-mode .builder { max-width: 920px; margin: 0 auto; padding: 24px 28px;
   <button class="theme-opt" data-theme="theme-aurora"><span class="theme-swatch" style="background:linear-gradient(135deg,#34d399,#60a5fa,#c084fc)"></span>Aurora</button>
   <button class="theme-opt" data-theme="theme-ocean"><span class="theme-swatch" style="background:linear-gradient(135deg,#00b4d8,#90e0ef)"></span>Ocean</button>
   <button class="theme-opt" data-theme="theme-cyberpunk"><span class="theme-swatch" style="background:linear-gradient(135deg,#00ffd5,#ff006e)"></span>Cyberpunk</button>
+  <button class="theme-opt" data-theme="theme-alloy"><span class="theme-swatch" style="background:linear-gradient(135deg,#b8ff5c,#00d4ff)"></span>Alloy</button>
+  <button class="theme-opt" data-theme="theme-emberline"><span class="theme-swatch" style="background:linear-gradient(135deg,#ff6b6b,#ffd166)"></span>Emberline</button>
+  <button class="theme-opt" data-theme="theme-command"><span class="theme-swatch" style="background:linear-gradient(135deg,#3cffb5,#8ab4ff)"></span>Command</button>
   <h4>Custom</h4>
   <div id="customThemesList"></div>
   <button class="theme-opt" id="createThemeBtn"><span class="theme-swatch" style="background:linear-gradient(135deg,var(--accent),var(--accent-2))"></span>+ Create theme</button>
@@ -1115,7 +2157,9 @@ const blankTag = () => ({
   carrotsText: '',
   attachmentsEnabled: true,
   attachmentsText: '*See Attachments*',
-  pinned: false,        // pin tags to the top of the sidebar
+  otherBlocks: [],      // [{ id, label, text }] free-form trailing notes
+  pinned: false,        // pin tags to the top of the sidebar (favorites)
+  tags: [],             // user tags (chips) for organization
   createdAt: Date.now(),
   updatedAt: Date.now()
 });
@@ -1127,16 +2171,31 @@ function blankTagForType(type = 'NCR') {
   return tag;
 }
 
+function blankMeasSection(name = 'Measurements') {
+  return {
+    id: 'ms_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    name,
+    text: ''
+  };
+}
+
+function blankOtherBlock(label = 'Note') {
+  return {
+    id: 'ob_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    label,
+    text: ''
+  };
+}
+
 function blankItem(itemNumber = '') {
   return {
     itemNumber: itemNumber ? String(itemNumber) : '',
     countOf: '', countTotal: '',
     partNumber: '', description: '',
     discrepancy: '',
-    measL: '', measW: '', measD: '',
-    measCustom: '',
+    measSections: [ blankMeasSection('Measurements') ],
     sbText: '',
-    sbAutoRef: true
+    sbAutoRefIndexes: [0]   // [] = off, otherwise indexes into processSpecs
   };
 }
 
@@ -1146,6 +2205,7 @@ const state = {
   tags: [],          // saved NCR tags
   templates: [],     // saved templates
   carrotTemplates: [], // saved NCO carrot templates
+  deletionHistory: [], // [{ id, title, bemsid, deletedAt, type }]
   current: blankTagForType('NCR'),
   selectedId: null,  // id of the currently-loaded template (null = new)
   selectedCarrotId: null,
@@ -1153,12 +2213,20 @@ const state = {
   carrotPreviewSuppressed: false,
   search: '',
   dateFilter: 'all', // 'all' | 'today' | 'week' | 'month'
+  tagFilter: '',     // filter by template tag (chip)
+  sortMode: 'updated', // 'updated' | 'created' | 'name' | 'name-desc'
   guides: [],        // [{name, url}] PDFs loaded via file picker (object URLs)
   activeGuideIdx: 0,
   customThemes: [],  // user-built themes [{id, name, base, accent, accent2}]
   focusMode: false,  // transient — not persisted
   formattedPreview: false,
-  uppercaseText: false
+  uppercaseText: false,
+  sidebarWidth: 250,
+  previewWidth: 500,
+  scanPrefixStrip: true,
+  settingsReturnTab: 'NCRs',
+  history: [],       // undo stack [{type, payload, label}]
+  redoStack: []
 };
 
 /* ---------- PERSISTENCE ----------
@@ -1171,9 +2239,14 @@ function persist() {
     tags: state.tags,
     templates: state.templates,
     carrotTemplates: state.carrotTemplates,
+    deletionHistory: state.deletionHistory,
     customThemes: state.customThemes,
     formattedPreview: state.formattedPreview,
-    uppercaseText: state.uppercaseText
+    uppercaseText: state.uppercaseText,
+    sidebarWidth: state.sidebarWidth,
+    previewWidth: state.previewWidth,
+    sortMode: state.sortMode,
+    scanPrefixStrip: state.scanPrefixStrip
   }));
 }
 function loadPersisted() {
@@ -1182,13 +2255,92 @@ function loadPersisted() {
     if (!raw) return;
     const data = JSON.parse(raw);
     state.activeTheme = data.activeTheme || state.activeTheme;
-    state.tags = data.tags || [];
-    state.templates = data.templates || [];
+    state.tags = (data.tags || []).map(migrateTag);
+    state.templates = (data.templates || []).map(migrateTag);
     state.carrotTemplates = data.carrotTemplates || [];
+    state.deletionHistory = Array.isArray(data.deletionHistory) ? data.deletionHistory : [];
     state.customThemes = data.customThemes || [];
     state.formattedPreview = !!data.formattedPreview;
     state.uppercaseText = !!data.uppercaseText;
+    if (typeof data.sidebarWidth === 'number') state.sidebarWidth = data.sidebarWidth;
+    if (typeof data.previewWidth === 'number') state.previewWidth = data.previewWidth;
+    if (typeof data.sortMode === 'string') state.sortMode = data.sortMode;
+    if (typeof data.scanPrefixStrip === 'boolean') state.scanPrefixStrip = data.scanPrefixStrip;
   } catch (e) { console.warn('Load failed', e); }
+}
+
+// Migrate legacy tag/template format -> new schema (measSections, otherBlocks, tags)
+function migrateTag(t) {
+  if (!t || typeof t !== 'object') return t;
+  if (!Array.isArray(t.otherBlocks)) t.otherBlocks = [];
+  if (!Array.isArray(t.tags)) t.tags = [];
+  if (Array.isArray(t.items)) {
+    t.items = t.items.map(it => migrateItem(it));
+  }
+  return t;
+}
+
+function migrateItem(it) {
+  if (!it || typeof it !== 'object') return it;
+  // Build measSections from any prior shape (legacy item-level L/W/D, or
+  // the earlier intermediate format that stored L/W/D inside each section).
+  const oldL = it.measL, oldW = it.measW, oldD = it.measD;
+  const oldCustom = it.measCustom;
+  const fmt = (v, suf) => {
+    const raw = String(v || '').trim();
+    if (!raw) return '';
+    if (/[′']$/.test(raw)) return raw.replace(/[′']$/, "'") + suf;
+    if (/["″]$/.test(raw)) return raw.replace(/["″]$/, '"') + suf;
+    return raw + '"' + suf;
+  };
+  const fold = (l, w, d) => {
+    const parts = [];
+    if (l) parts.push(fmt(l, 'L'));
+    if (w) parts.push(fmt(w, 'W'));
+    if (d) parts.push(fmt(d, 'D'));
+    return parts.length ? parts.join(' x ') : '';
+  };
+
+  if (!Array.isArray(it.measSections)) {
+    const measLine = fold(oldL, oldW, oldD);
+    const sections = [];
+    sections.push({
+      id: 'ms_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      name: 'Measurements',
+      text: [measLine, measLine && oldCustom ? oldCustom : ''].filter(Boolean).join('\n')
+        || (oldCustom && !measLine ? '' : '')
+    });
+    if (oldCustom && !measLine) {
+      sections.push({
+        id: 'ms_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + 'b',
+        name: '',
+        text: oldCustom
+      });
+    }
+    it.measSections = sections;
+  } else {
+    // Earlier intermediate format had measL/W/D inside each section. Fold them.
+    it.measSections = it.measSections.map(sec => {
+      const line = fold(sec.measL, sec.measW, sec.measD);
+      const folded = {
+        id: sec.id || ('ms_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6)),
+        name: sec.name || '',
+        text: [line, sec.text].filter(Boolean).join(line && sec.text ? '\n' : '')
+      };
+      return folded;
+    });
+  }
+  // Migrate sbAutoRef boolean / sbAutoRefIndex int -> sbAutoRefIndexes array
+  if (!Array.isArray(it.sbAutoRefIndexes)) {
+    if (typeof it.sbAutoRefIndex === 'number') {
+      it.sbAutoRefIndexes = it.sbAutoRefIndex >= 0 ? [it.sbAutoRefIndex] : [];
+    } else {
+      it.sbAutoRefIndexes = it.sbAutoRef === false ? [] : [0];
+    }
+  }
+  delete it.measL; delete it.measW; delete it.measD; delete it.measCustom;
+  delete it.sbAutoRef; delete it.sbAutoRefIndex;
+  return it;
 }
 
 /* On first run, seed a sample "Sharp Dent" template so users can see what a
@@ -1211,9 +2363,12 @@ function seedDefaults() {
       countOf: '1', countTotal: '8',
       partNumber: '123Q1234-1', description: 'Tube Assy',
       discrepancy: 'has a sharp dent C/T the AS56942 Fitting',
-      measL: '0.172', measW: '0.086', measD: '0.007',
-      measCustom: '',
-      sbText: 'No blah blah on the tube'
+      measSections: [{
+        id: 'ms_seed_1', name: 'Measurements',
+        text: '0.172"L x 0.086"W x 0.007"D'
+      }],
+      sbText: 'No blah blah on the tube',
+      sbAutoRefIndexes: [0]
     }],
     lso: '100/010',
     lio: '110/010',
@@ -1222,6 +2377,9 @@ function seedDefaults() {
     carrotsText: '',
     attachmentsEnabled: true,
     attachmentsText: '*See Attachments*',
+    otherBlocks: [],
+    tags: ['example', 'tube'],
+    pinned: false,
     createdAt: Date.now(),
     updatedAt: Date.now()
   });
@@ -1255,13 +2413,128 @@ function el(tag, attrs = {}, children = []) {
 
 function toast(msg) {
   const t = $('#toast');
-  t.textContent = msg;
+  t.innerHTML = '';
+  t.appendChild(document.createTextNode(msg));
   t.classList.add('show');
+  t.classList.remove('with-action');
   clearTimeout(toast._t);
   toast._t = setTimeout(() => t.classList.remove('show'), 1800);
 }
 
+/* ---------- Undo / Redo ----------
+   Tracks structural history events (template/caret create + delete) so a user
+   can roll back an accidental click. The toast surfaces an Undo button for
+   ~6 seconds; ⌘Z / ⌘⇧Z work globally. */
+const HISTORY_LIMIT = 25;
+function pushHistory(entry) {
+  state.history.push(entry);
+  if (state.history.length > HISTORY_LIMIT) state.history.shift();
+  state.redoStack.length = 0;
+  renderUndoButton();
+}
+function actionToast(msg, label, action) {
+  const t = $('#toast');
+  t.innerHTML = '';
+  t.appendChild(document.createTextNode(msg));
+  const btn = el('button', {
+    class: 'toast-action',
+    onclick: e => { e.stopPropagation(); action(); t.classList.remove('show'); }
+  }, label);
+  t.appendChild(btn);
+  t.classList.add('show', 'with-action');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => {
+    t.classList.remove('show'); t.classList.remove('with-action');
+  }, 6000);
+}
+function performUndo() {
+  const entry = state.history.pop();
+  if (!entry) { toast('Nothing to undo'); return; }
+  state.redoStack.push(applyHistoryReverse(entry));
+  renderUndoButton();
+  persist();
+  renderAll();
+  toast('Undid: ' + entry.label);
+}
+function performRedo() {
+  const entry = state.redoStack.pop();
+  if (!entry) { toast('Nothing to redo'); return; }
+  state.history.push(applyHistoryReverse(entry));
+  renderUndoButton();
+  persist();
+  renderAll();
+  toast('Redid: ' + entry.label);
+}
+function applyHistoryReverse(entry) {
+  // Returns the inverse entry to push onto the opposite stack.
+  const reverse = { type: '', label: entry.label, payload: null };
+  switch (entry.type) {
+    case 'create-template': {
+      // Undo a creation = remove it; reverse = re-create
+      const idx = state.templates.findIndex(x => x.id === entry.payload.id);
+      const removed = idx >= 0 ? state.templates.splice(idx, 1)[0] : entry.payload;
+      if (state.selectedId === entry.payload.id) {
+        state.selectedId = null;
+        state.current = blankTagForType(currentTagType());
+      }
+      reverse.type = 'delete-template';
+      reverse.payload = { template: clone(removed), index: idx };
+      return reverse;
+    }
+    case 'delete-template': {
+      // Undo a deletion = re-insert; reverse = re-delete
+      const tpl = clone(entry.payload.template);
+      const insertAt = Math.min(entry.payload.index ?? 0, state.templates.length);
+      state.templates.splice(insertAt, 0, tpl);
+      reverse.type = 'create-template';
+      reverse.payload = clone(tpl);
+      return reverse;
+    }
+    case 'create-caret': {
+      const idx = state.carrotTemplates.findIndex(x => x.id === entry.payload.id);
+      const removed = idx >= 0 ? state.carrotTemplates.splice(idx, 1)[0] : entry.payload;
+      reverse.type = 'delete-caret';
+      reverse.payload = { template: clone(removed), index: idx };
+      return reverse;
+    }
+    case 'delete-caret': {
+      const tpl = clone(entry.payload.template);
+      const insertAt = Math.min(entry.payload.index ?? 0, state.carrotTemplates.length);
+      state.carrotTemplates.splice(insertAt, 0, tpl);
+      reverse.type = 'create-caret';
+      reverse.payload = clone(tpl);
+      return reverse;
+    }
+  }
+  return reverse;
+}
+function renderUndoButton() {
+  const btn = $('#undoBtn');
+  const rbtn = $('#redoBtn');
+  if (btn) btn.classList.toggle('feature-on', state.history.length > 0);
+  if (rbtn) rbtn.classList.toggle('feature-on', state.redoStack.length > 0);
+}
+
 const clone = o => JSON.parse(JSON.stringify(o));
+
+/* ---------- Scan prefix stripping ----------
+   Barcode scanners frequently prepend marker prefixes (1K, 1P, K606, K 606,
+   bare 606) to the scanned content. Strip them on input so the form value is
+   the meaningful number. We only strip when the prefix sits at the start of
+   the value AND has at least one alphanumeric character after it — that way
+   a user typing the literal "606" still works. */
+const SCAN_PREFIX_RE = /^(?:1K|1P|K\s?606|606)(?=[\s:\-]?[A-Za-z0-9])/i;
+function stripScanPrefix(value) {
+  if (!state.scanPrefixStrip || typeof value !== 'string') return value;
+  let v = value;
+  let prev;
+  // Repeat in case multiple prefixes were concatenated by the scanner.
+  do {
+    prev = v;
+    v = v.replace(SCAN_PREFIX_RE, '').replace(/^[\s:\-]+/, '');
+  } while (v !== prev);
+  return v;
+}
 
 function formatDate(ms) {
   const d = new Date(ms);
@@ -1301,26 +2574,42 @@ function renderTabs() {
 
 function applyTheme() {
   // Reset any inline custom-theme variables before applying the next theme.
-  ['--accent', '--accent-2', '--accent-grad', '--shadow'].forEach(p =>
+  [
+    '--bg-grad', '--bg', '--surface', '--surface-2', '--text', '--text-muted',
+    '--border', '--accent', '--accent-2', '--accent-grad', '--shadow',
+    '--ui-radius', '--ui-density'
+  ].forEach(p =>
     document.body.style.removeProperty(p));
 
   let cls = state.activeTheme;
+  let customClass = '';
   if (cls && cls.startsWith('custom:')) {
     const id = cls.slice(7);
     const ct = state.customThemes.find(t => t.id === id);
     if (ct) {
       cls = ct.base || 'theme-midnight';
+      customClass = ' custom-theme-vars';
+      if (ct.bg) document.body.style.setProperty('--bg', ct.bg);
+      if (ct.bg2) document.body.style.setProperty('--bg-grad',
+        `linear-gradient(${ct.angle || 135}deg, ${ct.bg || '#0b1020'}, ${ct.bg2 || ct.bg || '#1e293b'})`);
+      if (ct.surface) document.body.style.setProperty('--surface', hexToRgba(ct.surface, ct.surfaceAlpha || 0.74));
+      if (ct.surface2) document.body.style.setProperty('--surface-2', ct.surface2);
+      if (ct.text) document.body.style.setProperty('--text', ct.text);
+      if (ct.muted) document.body.style.setProperty('--text-muted', ct.muted);
+      if (ct.border) document.body.style.setProperty('--border', ct.border);
       document.body.style.setProperty('--accent', ct.accent);
       document.body.style.setProperty('--accent-2', ct.accent2);
       document.body.style.setProperty('--accent-grad',
-        `linear-gradient(135deg, ${ct.accent}, ${ct.accent2})`);
+        `linear-gradient(${ct.angle || 135}deg, ${ct.accent}, ${ct.accent2})`);
       document.body.style.setProperty('--shadow',
-        `0 4px 24px ${hexToRgba(ct.accent, 0.2)}`);
+        `0 4px ${Math.round(18 + (ct.glow || 22) * .6)}px ${hexToRgba(ct.accent, (ct.glow || 22) / 100)}`);
+      document.body.style.setProperty('--ui-radius', (ct.radius || 12) + 'px');
+      document.body.style.setProperty('--ui-density', String(ct.density || 1));
     } else {
       cls = 'theme-midnight';
     }
   }
-  document.body.className = cls + (state.focusMode ? ' focus-mode' : '');
+  document.body.className = cls + customClass + (state.focusMode ? ' focus-mode' : '');
 }
 
 // Convert #rrggbb (or #rgb) to rgba(r,g,b,alpha) string.
@@ -1353,11 +2642,87 @@ function renderMain() {
     return;
   }
 
+  if (state.activeTab === 'Settings') {
+    main.style.gridTemplateColumns = '1fr';
+    main.appendChild(renderSettingsPage());
+    return;
+  }
+
   // NCRs and NCOs — full 3-column UI (same builder, different tag.type)
-  main.style.gridTemplateColumns = '250px minmax(0, 1fr) 500px';
+  // Layout: sidebar | drag-handle | builder | drag-handle | preview
+  main.style.gridTemplateColumns =
+    `${state.sidebarWidth}px 6px minmax(0, 1fr) 6px ${state.previewWidth}px`;
   main.appendChild(renderSidebar());
+  main.appendChild(renderResizer('left'));
   main.appendChild(renderBuilder());
+  main.appendChild(renderResizer('right'));
   main.appendChild(renderPreview());
+  if (state.focusMode) main.appendChild(renderSidebarRestoreButton());
+}
+
+function renderResizer(side) {
+  const r = el('div', {
+    class: 'resizer resizer-' + side,
+    'data-side': side,
+    title: 'Drag to resize',
+    onmousedown: e => startResize(e, side)
+  });
+  r.appendChild(el('div', { class: 'resizer-grip' }));
+  return r;
+}
+
+function renderSidebarRestoreButton() {
+  return el('button', {
+    class: 'sidebar-restore-btn',
+    title: 'Show template list',
+    'aria-label': 'Show template list',
+    onclick: () => toggleFocusMode()
+  }, ['›', el('span', {}, 'Templates')]);
+}
+
+function startResize(e, side) {
+  e.preventDefault();
+  const main = $('#main');
+  if (!main) return;
+  const mainRect = main.getBoundingClientRect();
+  const startX = e.clientX;
+  const startSidebar = state.sidebarWidth;
+  const startPreview = state.previewWidth;
+  const minPreview = getPreviewMinWidth();
+  document.body.classList.add('resizing');
+
+  function onMove(ev) {
+    const dx = ev.clientX - startX;
+    if (side === 'left') {
+      const next = Math.max(180, Math.min(520, startSidebar + dx));
+      state.sidebarWidth = next;
+    } else {
+      const next = Math.max(minPreview, Math.min(900, startPreview - dx));
+      state.previewWidth = next;
+    }
+    main.style.gridTemplateColumns =
+      `${state.sidebarWidth}px 6px minmax(0, 1fr) 6px ${state.previewWidth}px`;
+    const sb = main.querySelector('.sidebar');
+    if (sb) sb.style.width = state.sidebarWidth + 'px';
+  }
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    document.body.classList.remove('resizing');
+    persist();
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function getPreviewMinWidth() {
+  const card = document.querySelector('.preview-card');
+  const body = document.querySelector('.preview-body');
+  const cardWidth = card ? Math.ceil(card.getBoundingClientRect().width) : 470;
+  const bodyStyle = body ? getComputedStyle(body) : null;
+  const padLeft = bodyStyle ? parseFloat(bodyStyle.paddingLeft) || 0 : 14;
+  const padRight = bodyStyle ? parseFloat(bodyStyle.paddingRight) || 0 : 14;
+  return Math.ceil(cardWidth + padLeft + padRight + 2);
 }
 
 // Map active tab → tag.type ("NCR" or "NCO")
@@ -1374,23 +2739,219 @@ function renderComingSoon(label) {
   ]);
 }
 
+function settingsToggle(title, detail, checked, onChange) {
+  const row = el('div', { class: 'settings-row' });
+  row.appendChild(el('div', { class: 'settings-row-text' }, [
+    el('strong', {}, title),
+    el('span', {}, detail)
+  ]));
+  const input = el('input', {
+    type: 'checkbox',
+    onchange: e => onChange(e.target.checked)
+  });
+  if (checked) input.checked = true;
+  row.appendChild(el('label', { class: 'settings-switch' }, [
+    input,
+    el('span', {})
+  ]));
+  return row;
+}
+
+function featureCard(title, detail) {
+  return el('div', { class: 'settings-feature' }, [
+    el('strong', {}, title),
+    el('span', {}, detail)
+  ]);
+}
+
+function themeCard(themeId, meta, customTheme) {
+  const card = el('button', {
+    class: 'theme-card' + (state.activeTheme === themeId ? ' active' : ''),
+    title: customTheme ? 'Apply theme. Double-click to edit.' : 'Apply theme',
+    ondblclick: e => {
+      if (!customTheme) return;
+      e.preventDefault();
+      openThemeBuilder(customTheme);
+    },
+    onclick: e => {
+      applyThemeWithRipple(themeId, e.clientX, e.clientY, meta.bg || `linear-gradient(135deg,${meta.a},${meta.b})`);
+      if (state.activeTab === 'Settings') renderAll();
+    }
+  });
+  card.appendChild(el('div', {
+    class: 'theme-card-bg',
+    style: `background:${meta.bg || `linear-gradient(135deg,${meta.a},${meta.b})`}`
+  }));
+  card.appendChild(el('div', { class: 'theme-card-content' }, [
+    el('div', { class: 'theme-card-name' }, meta.name),
+    el('div', { class: 'theme-card-chips' }, [
+      el('span', { class: 'theme-card-chip', style: `background:${meta.a}` }),
+      el('span', { class: 'theme-card-chip', style: `background:${meta.b}` }),
+      el('span', { class: 'theme-card-chip', style: `background:${meta.surface2 || 'rgba(255,255,255,.82)'}` })
+    ]),
+    el('div', { class: 'theme-card-kind' }, meta.kind || (customTheme ? 'Custom' : 'Theme'))
+  ]));
+  if (customTheme) {
+    card.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      openThemeBuilder(customTheme);
+    });
+  }
+  return card;
+}
+
+function renderThemeStudioPanel() {
+  const panel = el('div', { class: 'settings-panel settings-theme-panel' });
+  const activeName = activeThemeName();
+  panel.appendChild(el('div', { class: 'theme-studio-head' }, [
+    el('div', {}, [
+      el('div', { class: 'settings-panel-title' }, 'Theme Studio'),
+      el('div', { class: 'theme-studio-title' }, activeName),
+      el('div', { class: 'theme-studio-copy' },
+        'Pick a polished theme, then build custom palettes with accents, surfaces, background gradients, radius, density, and glow.')
+    ]),
+    el('div', { class: 'settings-actions', style: 'margin-top:0' }, [
+      el('button', { class: 'btn btn-primary', onclick: () => openThemeBuilder(null) }, 'Create Custom Theme'),
+      el('button', { class: 'btn btn-ghost', onclick: () => { $('#themePicker').classList.add('show'); } }, 'Compact Picker')
+    ])
+  ]));
+
+  const cards = el('div', { class: 'theme-card-grid' });
+  BUILTIN_THEMES.forEach(t => cards.appendChild(themeCard(t.cls, t)));
+  (state.customThemes || []).forEach(ct => {
+    const meta = {
+      name: ct.name || 'Custom Theme',
+      kind: 'Custom',
+      bg: `linear-gradient(${ct.angle || 135}deg, ${ct.bg || '#0b1020'}, ${ct.bg2 || '#1e293b'})`,
+      a: ct.accent || '#38bdf8',
+      b: ct.accent2 || '#818cf8',
+      surface2: ct.surface2 || ct.surface || '#1e293b'
+    };
+    cards.appendChild(themeCard('custom:' + ct.id, meta, ct));
+  });
+  panel.appendChild(cards);
+  return panel;
+}
+
+function activeThemeName() {
+  if (state.activeTheme && state.activeTheme.startsWith('custom:')) {
+    const ct = state.customThemes.find(t => 'custom:' + t.id === state.activeTheme);
+    return ct ? ct.name : 'Custom Theme';
+  }
+  const builtIn = BUILTIN_THEMES.find(t => t.cls === state.activeTheme);
+  return builtIn ? builtIn.name : 'Theme';
+}
+
+function renderSettingsPage() {
+  const wrap = el('section', { class: 'settings-page' });
+  wrap.appendChild(el('div', { class: 'settings-hero' }, [
+    el('div', { class: 'settings-title' }, 'Settings'),
+    el('div', { class: 'settings-subtitle' },
+      'A quick map of what this tag builder can do, plus the small switches that shape how it writes and previews tags.')
+  ]));
+  wrap.appendChild(renderThemeStudioPanel());
+
+  const grid = el('div', { class: 'settings-grid' });
+  const features = el('div', { class: 'settings-panel' });
+  features.appendChild(el('div', { class: 'settings-panel-title' }, 'Features'));
+  features.appendChild(el('div', { class: 'settings-feature-list' }, [
+    featureCard('NCR and NCO templates', 'Build, save, duplicate, rename, delete, favorite, import, and export reusable tag templates.'),
+    featureCard('Live preview', 'Preview formatted tag text as you type, then copy it directly to the clipboard.'),
+    featureCard('Process spec references', 'Select one or more process specs for S/B auto-reference text.'),
+    featureCard('Custom measurement sections', 'Add editable measurement/custom text sections with named headings.'),
+    featureCard('Other notes', 'Append custom labeled blocks after the main tag fields.'),
+    featureCard('Caret templates', 'Save reusable NCO caret/work-instruction text.'),
+    featureCard('Tags and filtering', 'Organize templates with tags and filter them from the sidebar dropdown.'),
+    featureCard('PDF guides', 'Load local guide PDFs into tabs for side-by-side reference.'),
+    featureCard('Themes and custom themes', 'Switch built-in themes or create a custom accent palette.'),
+    featureCard('Undo and redo', 'Recover template and caret create/delete actions from the toolbar or keyboard.')
+  ]));
+  grid.appendChild(features);
+
+  const settings = el('div', { class: 'settings-panel' });
+  settings.appendChild(el('div', { class: 'settings-panel-title' }, 'Preferences'));
+  settings.appendChild(settingsToggle(
+    'Strip scanner prefixes',
+    'Remove common scan prefixes from text fields while typing.',
+    state.scanPrefixStrip,
+    checked => { state.scanPrefixStrip = checked; persist(); toast(checked ? 'Scanner prefix stripping on' : 'Scanner prefix stripping off'); }
+  ));
+  settings.appendChild(settingsToggle(
+    'Formatted preview',
+    'Use aligned preview output for easier inspection before copying.',
+    state.formattedPreview,
+    checked => { state.formattedPreview = checked; persist(); renderAll(); }
+  ));
+  settings.appendChild(settingsToggle(
+    'Uppercase copied text',
+    'Convert copied preview text to uppercase.',
+    state.uppercaseText,
+    checked => { state.uppercaseText = checked; persist(); renderAll(); }
+  ));
+  settings.appendChild(settingsToggle(
+    'Collapse template list',
+    'Hide the template sidebar while keeping the live preview visible.',
+    state.focusMode,
+    checked => { state.focusMode = checked; renderAll(); }
+  ));
+  settings.appendChild(el('div', { class: 'settings-actions' }, [
+    el('button', {
+      class: 'btn btn-primary',
+      onclick: () => { state.activeTab = state.settingsReturnTab || 'NCRs'; renderAll(); }
+    }, 'Back to Tags'),
+    el('button', {
+      class: 'btn btn-ghost',
+      onclick: () => { $('#themePicker').classList.add('show'); }
+    }, 'Theme Picker'),
+    el('button', {
+      class: 'btn btn-ghost',
+      onclick: () => {
+        state.sidebarWidth = 250;
+        state.previewWidth = 500;
+        persist();
+        toast('Panel widths reset');
+        renderAll();
+      }
+    }, 'Reset Panel Widths')
+  ]));
+  grid.appendChild(settings);
+
+  const history = el('div', { class: 'settings-panel' });
+  history.appendChild(el('div', { class: 'settings-panel-title' }, 'Delete History'));
+  const list = el('div', { class: 'settings-history-list' });
+  const rows = (state.deletionHistory || [])
+    .slice()
+    .sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+  if (rows.length === 0) {
+    list.appendChild(el('div', { class: 'settings-history-empty' }, 'No deleted templates yet.'));
+  } else {
+    rows.forEach(row => {
+      list.appendChild(el('div', { class: 'settings-history-item' }, [
+        el('div', {}, [
+          el('div', { class: 'settings-history-title' }, row.title || 'Untitled'),
+          el('div', { class: 'settings-history-meta' }, 'BEMSID ' + (row.bemsid || 'N/A'))
+        ]),
+        el('div', { class: 'settings-history-meta' }, formatDate(row.deletedAt || Date.now()))
+      ]));
+    });
+  }
+  history.appendChild(list);
+  grid.appendChild(history);
+  wrap.appendChild(grid);
+  return wrap;
+}
+
 /* ============================================================================
    RENDER — SIDEBAR (saved templates + import/export)
    ============================================================================ */
 function renderSidebar() {
   const wrap = el('aside', { class: 'sidebar' });
+  wrap.style.width = state.sidebarWidth + 'px';
 
-  // Search + New template
+  // New template + search + sort
   const head = el('div', { class: 'sidebar-head' });
-  const search = el('input', {
-    class: 'search', type: 'search',
-    placeholder: state.activeTab === 'NCOs' ? 'Search NCO tags and caret templates…' : 'Search templates…',
-    value: state.search,
-    oninput: e => { state.search = e.target.value; replaceTemplateList(); }
-  });
-  head.appendChild(search);
   head.appendChild(el('button', {
-    class: 'btn btn-primary btn-block',
+    class: 'btn btn-primary btn-block btn-new-tag',
     onclick: () => {
       state.current = blankTagForType(currentTagType());
       state.selectedId = null;
@@ -1400,6 +2961,42 @@ function renderSidebar() {
       renderAll();
     }
   }, '+ New Tag (Clear Forms)'));
+
+  const search = el('input', {
+    class: 'search', type: 'search',
+    placeholder: state.activeTab === 'NCOs' ? 'Search NCO tags and caret templates…' : 'Search templates…',
+    value: state.search,
+    oninput: e => { state.search = e.target.value; replaceTemplateList(); }
+  });
+  head.appendChild(search);
+
+  // Sort row
+  const sortRow = el('div', { class: 'sidebar-sort-row' });
+  sortRow.appendChild(el('span', { class: 'sidebar-sort-label' }, 'Sort:'));
+  const sortSel = el('select', {
+    class: 'sidebar-sort-select',
+    onchange: e => {
+      state.sortMode = e.target.value;
+      persist();
+      replaceTemplateList();
+    }
+  });
+  [
+    ['updated', 'Recent'],
+    ['created', 'Created'],
+    ['name', 'Name (A→Z)'],
+    ['name-desc', 'Name (Z→A)']
+  ].forEach(([val, label]) => {
+    const o = el('option', { value: val }, label);
+    if (state.sortMode === val) o.selected = true;
+    sortSel.appendChild(o);
+  });
+  sortRow.appendChild(sortSel);
+  head.appendChild(sortRow);
+
+  // Tag filter dropdown
+  const tagFilterWrap = renderTagFilterChips();
+  if (tagFilterWrap) head.appendChild(tagFilterWrap);
 
   wrap.appendChild(head);
 
@@ -1411,14 +3008,79 @@ function renderSidebar() {
   // Import / Export
   const foot = el('div', { class: 'sidebar-foot' });
   foot.appendChild(el('button', {
+    class: 'btn btn-ghost sidebar-collapse-btn',
+    title: 'Collapse template list',
+    'aria-label': 'Collapse template list',
+    onclick: () => toggleFocusMode()
+  }, '‹'));
+  foot.appendChild(el('button', {
     class: 'btn btn-ghost', onclick: () => $('#fileImport').click()
   }, 'Import'));
   foot.appendChild(el('button', {
     class: 'btn btn-ghost', onclick: exportAll
   }, 'Export'));
+  foot.appendChild(el('div', { class: 'sidebar-foot-spacer' }));
+  foot.appendChild(el('button', {
+    class: 'btn btn-ghost sidebar-settings-btn',
+    title: 'Settings',
+    'aria-label': 'Settings',
+    onclick: () => {
+      state.settingsReturnTab = state.activeTab === 'NCOs' ? 'NCOs' : 'NCRs';
+      state.activeTab = 'Settings';
+      renderAll();
+    }
+  }, '⚙'));
   wrap.appendChild(foot);
 
   return wrap;
+}
+
+function renderTagFilterChips() {
+  const expectedType = currentTagType();
+  const allTags = new Set();
+  state.templates
+    .filter(t => (t.type || 'NCR') === expectedType)
+    .forEach(t => (t.tags || []).forEach(tg => {
+      const clean = String(tg || '').trim();
+      if (clean) allTags.add(clean);
+    }));
+  if (allTags.size === 0) {
+    state.tagFilter = '';
+    return null;
+  }
+
+  const tags = Array.from(allTags).sort((a, b) =>
+    a.localeCompare(b, undefined, { sensitivity: 'base' }));
+  if (state.tagFilter && !allTags.has(state.tagFilter)) state.tagFilter = '';
+
+  const wrap = el('div', { class: 'tag-filter-row' });
+  wrap.appendChild(el('label', { class: 'tag-filter-label', for: 'tagFilterSelect' }, 'Tags:'));
+  const select = el('select', {
+    class: 'tag-filter-select',
+    id: 'tagFilterSelect',
+    value: state.tagFilter,
+    onchange: e => {
+      state.tagFilter = e.target.value;
+      replaceTemplateList();
+    }
+  });
+  select.appendChild(el('option', { value: '' }, 'All tags'));
+  tags.forEach(tg => {
+    select.appendChild(el('option', {
+      value: tg,
+      selected: state.tagFilter === tg ? 'selected' : null
+    }, '#' + tg));
+  });
+  wrap.appendChild(select);
+  return wrap;
+}
+
+function renderTagFilterRefresh() {
+  const old = document.querySelector('.tag-filter-row');
+  if (!old) return;
+  const fresh = renderTagFilterChips();
+  if (fresh) old.replaceWith(fresh);
+  else old.remove();
 }
 
 function buildTemplateList() {
@@ -1429,7 +3091,8 @@ function buildTemplateList() {
   const visible = state.templates
     .filter(t => (t.type || 'NCR') === expectedType)
     .filter(t => !q || textIndex(t).includes(q))
-    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    .filter(t => !state.tagFilter || (t.tags || []).includes(state.tagFilter))
+    .sort(templateComparator);
 
   if (state.activeTab !== 'NCOs') {
     if (visible.length === 0) {
@@ -1474,12 +3137,35 @@ function renderSidebarGroup(title, items, emptyMessage, renderItem) {
   return group;
 }
 
+function templateComparator(a, b) {
+  // Pinned/favorited templates always float to the top.
+  if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+  switch (state.sortMode) {
+    case 'created':
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    case 'name':
+      return String(a.templateName || '').localeCompare(String(b.templateName || ''));
+    case 'name-desc':
+      return String(b.templateName || '').localeCompare(String(a.templateName || ''));
+    case 'updated':
+    default:
+      return (b.updatedAt || 0) - (a.updatedAt || 0);
+  }
+}
+
 function renderTemplateCard(t, expectedType) {
   const card = el('div', {
-    class: 'tag-card' + (state.selectedId === t.id ? ' active' : ''),
+    class: 'tag-card'
+      + (state.selectedId === t.id ? ' active' : '')
+      + (t.pinned ? ' pinned-card' : ''),
     onclick: () => {
       if (state.selectedId === t.id) {
-        state.previewSuppressed = !state.previewSuppressed;
+        // Click again on focused template -> unfocus (clear selection + builder)
+        state.current = blankTagForType(currentTagType());
+        state.selectedId = null;
+        state.selectedCarrotId = null;
+        state.previewSuppressed = false;
+        state.carrotPreviewSuppressed = false;
         renderAll();
         return;
       }
@@ -1491,12 +3177,43 @@ function renderTemplateCard(t, expectedType) {
       renderAll();
     }
   });
+
+  // Title (colorful gradient via CSS class)
   card.appendChild(el('div', { class: 'tag-card-title' },
     t.templateName || tagSummary(t) || 'Untitled'));
-  card.appendChild(el('div', { class: 'tag-card-meta' },
-    `${t.type || expectedType} template • ${formatDate(t.updatedAt || t.createdAt || Date.now())}`));
+
+  // Inline tags display
+  if ((t.tags || []).length) {
+    const tagsRow = el('div', { class: 'tag-card-tags' });
+    t.tags.slice(0, 4).forEach(tg => {
+      tagsRow.appendChild(el('span', {
+        class: 'tag-card-tag',
+        onclick: e => {
+          e.stopPropagation();
+          state.tagFilter = state.tagFilter === tg ? '' : tg;
+          renderAll();
+        }
+      }, '#' + tg));
+    });
+    if (t.tags.length > 4) {
+      tagsRow.appendChild(el('span', { class: 'tag-card-tag more' }, '+' + (t.tags.length - 4)));
+    }
+    card.appendChild(tagsRow);
+  }
 
   const actions = el('div', { class: 'tag-card-actions' });
+  // Favorite (pin) toggle — sits inside the actions row, but always visible when pinned
+  actions.appendChild(el('button', {
+    class: 'tag-action tag-action-fav' + (t.pinned ? ' active-fav' : ''),
+    title: t.pinned ? 'Unfavorite' : 'Favorite',
+    onclick: e => {
+      e.stopPropagation();
+      t.pinned = !t.pinned;
+      t.updatedAt = Date.now();
+      persist();
+      renderAll();
+    }
+  }, t.pinned ? '★' : '☆'));
   actions.appendChild(el('button', {
     class: 'tag-action',
     title: 'Rename template',
@@ -1541,8 +3258,6 @@ function renderCarrotTemplateCard(t) {
     }
   });
   card.appendChild(el('div', { class: 'tag-card-title' }, t.name || 'Untitled'));
-  card.appendChild(el('div', { class: 'tag-card-meta' },
-    `Caret template • ${formatDate(t.updatedAt || t.createdAt || Date.now())}`));
 
   const actions = el('div', { class: 'tag-card-actions' });
   actions.appendChild(el('button', {
@@ -1592,15 +3307,20 @@ function replaceTemplateList() {
 
 function textIndex(t) {
   // Searchable string for a tag — combine all text fields.
+  const measText = (i) => (i.measSections || []).flatMap(s =>
+    [s.name, s.text]);
   const parts = [
     t.templateName,
+    ...(t.tags || []),
     ...(t.drawings || []).flatMap(d => [d.number, d.sheet, d.rev, d.location, d.custom, d.type]),
     ...(t.processSpecs || []).flatMap(s => [s.number, s.section, s.rev]),
     ...(t.items || []).flatMap(i => [
       i.partNumber, i.description, i.discrepancy,
-      i.measCustom, i.sbText
+      ...measText(i),
+      i.sbText
     ]),
     t.lso, t.lio,
+    ...(t.otherBlocks || []).flatMap(o => [o.label, o.text]),
     t.carrotTemplateName, t.carrotsText
   ];
   return parts.filter(Boolean).join(' ').toLowerCase();
@@ -1628,8 +3348,6 @@ function renderBuilder() {
   // Header
   const head = el('div', { class: 'builder-head' });
   const titleWrap = el('div', { class: 'builder-title-wrap' });
-  titleWrap.appendChild(el('div', { class: 'builder-title' },
-    state.selectedId ? 'Edit Template' : ('New ' + currentTagType() + ' Template')));
   if (['NCRs', 'NCOs'].includes(state.activeTab)) {
     titleWrap.appendChild(el('input', {
       class: 'builder-title-input',
@@ -1640,26 +3358,9 @@ function renderBuilder() {
       oninput: e => { t.templateName = e.target.value; }
     }));
   }
+  titleWrap.appendChild(renderTemplateActions());
   head.appendChild(titleWrap);
 
-  const actions = el('div', { class: 'builder-actions' });
-  actions.appendChild(el('button', {
-    class: 'btn btn-ghost',
-    onclick: duplicateTemplate,
-    title: '⌘D'
-  }, 'Duplicate'));
-  if (state.selectedId) {
-    actions.appendChild(el('button', {
-      class: 'btn btn-ghost btn-danger',
-      onclick: () => confirmTemplateDelete(state.selectedId)
-    }, 'Delete'));
-  }
-  actions.appendChild(el('button', {
-    class: 'btn btn-primary',
-    onclick: saveTemplate,
-    title: '⌘S'
-  }, 'Save Template'));
-  head.appendChild(actions);
   wrap.appendChild(head);
 
   if (state.activeTab !== 'NCOs') {
@@ -1728,12 +3429,110 @@ function renderBuilder() {
   footSec.appendChild(attRow);
   wrap.appendChild(footSec);
 
+  // ----- Other (free-form trailing notes) -----
+  if (!Array.isArray(t.otherBlocks)) t.otherBlocks = [];
+  if (t.otherBlocks.length > 0) {
+    const otherSec = section('Other Notes');
+    t.otherBlocks.forEach((o, i) => otherSec.appendChild(renderOtherBlock(o, i)));
+    wrap.appendChild(otherSec);
+  }
+  const addOtherWrap = el('div', { class: 'add-other-wrap' });
+  addOtherWrap.appendChild(el('button', {
+    class: 'btn btn-add-other',
+    onclick: () => {
+      t.otherBlocks.push(blankOtherBlock(''));
+      renderAll();
+    }
+  }, [
+    el('span', { class: 'add-other-icon' }, '+'),
+    el('span', {}, 'Add Other Text')
+  ]));
+  wrap.appendChild(addOtherWrap);
+
+  // ----- Tags (chips) -----
+  if (['NCRs', 'NCOs'].includes(state.activeTab)) {
+    wrap.appendChild(el('div', { class: 'other-tags-spacer', 'aria-hidden': 'true' }));
+    wrap.appendChild(renderTagsEditor(t));
+  }
+
   if (state.activeTab === 'NCOs') {
     wrap.appendChild(el('div', { class: 'builder-divider', 'aria-hidden': 'true' }));
     wrap.appendChild(renderCarrotsSection(t));
   }
 
   return wrap;
+}
+
+function renderOtherBlock(o, idx) {
+  const t = state.current;
+  const sub = el('div', { class: 'subsection other-block' });
+  const head = el('div', { class: 'subsection-head other-block-head' });
+  const labelWrap = el('div', { class: 'other-block-label-wrap' });
+  labelWrap.appendChild(el('label', { class: 'other-block-label-tag' }, 'Label'));
+  labelWrap.appendChild(el('input', {
+    class: 'other-block-label-input',
+    type: 'text',
+    value: o.label || '',
+    placeholder: 'e.g. Notes',
+    'aria-label': 'Other block label',
+    oninput: e => { o.label = e.target.value; updatePreview(); }
+  }));
+  head.appendChild(labelWrap);
+  head.appendChild(el('button', {
+    class: 'del-btn meas-section-del',
+    title: 'Remove block',
+    onclick: () => { t.otherBlocks.splice(idx, 1); renderAll(); }
+  }, '×'));
+  sub.appendChild(head);
+
+  const ta = el('textarea', {
+    class: 'other-block-text',
+    placeholder: 'Type any additional notes here…',
+    oninput: e => { o.text = e.target.value; updatePreview(); }
+  });
+  ta.value = o.text || '';
+  sub.appendChild(ta);
+  return sub;
+}
+
+function renderTagsEditor(t) {
+  const sec = section('Tags');
+  if (!Array.isArray(t.tags)) t.tags = [];
+  const chips = el('div', { class: 'tag-chips-edit' });
+  t.tags.forEach((tg, i) => {
+    const chip = el('span', { class: 'tag-chip-edit' });
+    chip.appendChild(el('span', {}, tg));
+    chip.appendChild(el('button', {
+      class: 'tag-chip-x',
+      title: 'Remove tag',
+      onclick: () => { t.tags.splice(i, 1); renderAll(); }
+    }, '×'));
+    chips.appendChild(chip);
+  });
+  const input = el('input', {
+    class: 'tag-chip-input',
+    type: 'text',
+    placeholder: 'Add tag and press Enter…',
+    onkeydown: e => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const v = (e.target.value || '').trim().replace(/^#/, '');
+        if (v && !t.tags.includes(v)) {
+          t.tags.push(v);
+          e.target.value = '';
+          renderAll();
+        } else {
+          e.target.value = '';
+        }
+      } else if (e.key === 'Backspace' && !e.target.value && t.tags.length) {
+        t.tags.pop();
+        renderAll();
+      }
+    }
+  });
+  chips.appendChild(input);
+  sec.appendChild(chips);
+  return sec;
 }
 
 // Helper to build a section card with a title.
@@ -1748,12 +3547,19 @@ function section(title) {
 // Generic input field — labeled input with an oninput callback.
 function field(labelText, type, value, onInput, extra = {}) {
   const f = el('div', { class: 'field' });
-  f.appendChild(el('label', {}, labelText));
+  if (labelText) f.appendChild(el('label', {}, labelText));
   const input = el('input', {
     type, value: value ?? '',
     placeholder: extra.placeholder || '',
     min: extra.min, max: extra.max,
-    oninput: e => onInput(e.target.value)
+    oninput: e => {
+      // Auto-strip scanner prefixes on text inputs (number fields untouched).
+      if (type === 'text' && state.scanPrefixStrip) {
+        const stripped = stripScanPrefix(e.target.value);
+        if (stripped !== e.target.value) e.target.value = stripped;
+      }
+      onInput(e.target.value);
+    }
   });
   f.appendChild(input);
   return f;
@@ -1764,21 +3570,13 @@ function textareaField(labelText, value, onInput, extra = {}) {
   const f = el('div', { class: 'field' });
   f.appendChild(el('label', {}, labelText));
   const ta = el('textarea', {
-    class: extra.size === 'lg' ? 'lg' : null,
+    class: extra.size === 'paragraph' ? 'tag-paragraph' : (extra.size === 'lg' ? 'lg' : null),
     placeholder: extra.placeholder || '',
     oninput: e => onInput(e.target.value)
   });
   ta.value = value || '';
   f.appendChild(ta);
   return f;
-}
-
-function formatMeasurementToken(value, suffix) {
-  const raw = String(value || '').trim();
-  if (!raw) return '';
-  if (/[′']$/.test(raw)) return `${raw.replace(/[′']$/, "'")}${suffix}`;
-  if (/["″]$/.test(raw)) return `${raw.replace(/["″]$/, '"')}${suffix}`;
-  return `${raw}"${suffix}`;
 }
 
 function renderCarrotsSection(t) {
@@ -1875,24 +3673,38 @@ function renderSpec(s, idx) {
   const sub = el('div', { class: 'subsection' });
   const head = el('div', { class: 'subsection-head' });
   head.appendChild(el('div', { class: 'subsection-title' },
-    'Process Spec ' + (idx + 1) + (idx === 0 ? '  (used in S/B references)' : '')));
+    'Process Spec ' + (idx + 1)));
   if (t.processSpecs.length > 1) {
     head.appendChild(el('button', {
       class: 'del-btn',
-      onclick: () => { t.processSpecs.splice(idx, 1); renderAll(); }
+      onclick: () => removeProcessSpec(idx)
     }, 'Remove'));
   }
   sub.appendChild(head);
 
   const row = el('div', { class: 'row row-3' });
   row.appendChild(field('Number', 'text', s.number,
-    v => { s.number = v; updatePreview(); }, { placeholder: 'BAC1234' }));
+    v => { s.number = v; updatePreview(); updateSpecRefControls(); }, { placeholder: 'BAC1234' }));
   row.appendChild(field('Section', 'text', s.section,
-    v => { s.section = v; updatePreview(); }, { placeholder: '11.1a' }));
+    v => { s.section = v; updatePreview(); updateSpecRefControls(); }, { placeholder: '11.1a' }));
   row.appendChild(field('Rev', 'text', s.rev,
     v => { s.rev = v; updatePreview(); }, { placeholder: 'A' }));
   sub.appendChild(row);
   return sub;
+}
+
+function removeProcessSpec(idx) {
+  const t = state.current;
+  (t.items || []).forEach(it => {
+    it.sbAutoRefIndexes = normalizedAutoRefIndexes(it, t)
+      .filter(refIdx => refIdx !== idx)
+      .map(refIdx => refIdx > idx ? refIdx - 1 : refIdx);
+  });
+  t.processSpecs.splice(idx, 1);
+  (t.items || []).forEach(it => {
+    it.sbAutoRefIndexes = normalizedAutoRefIndexes(it, t);
+  });
+  renderAll();
 }
 
 function renderItem(it, idx) {
@@ -1937,7 +3749,7 @@ function renderItem(it, idx) {
   const discGroup = el('div', { class: 'inner-group' });
   discGroup.appendChild(el('div', { class: 'inner-group-title' }, 'Discrepancy'));
   const discTa = el('textarea', {
-    class: 'lg',
+    class: 'tag-paragraph',
     placeholder: 'has a sharp dent C/T the AS56942 Fitting',
     oninput: e => { it.discrepancy = e.target.value; updatePreview(); }
   });
@@ -1945,47 +3757,122 @@ function renderItem(it, idx) {
   discGroup.appendChild(discTa);
   sub.appendChild(discGroup);
 
-  // Measurements (L/W/D)
-  const measGroup = el('div', { class: 'inner-group' });
-  measGroup.appendChild(el('div', { class: 'inner-group-title' }, 'Measurements'));
-  const meas = el('div', { class: 'row row-3 lwd-row' });
-  meas.appendChild(field('Length (L)', 'text', it.measL,
-    v => { it.measL = v; updatePreview(); }, { placeholder: '0.172' }));
-  meas.appendChild(field('Width (W)', 'text', it.measW,
-    v => { it.measW = v; updatePreview(); }, { placeholder: '0.086' }));
-  meas.appendChild(field('Depth (D)', 'text', it.measD,
-    v => { it.measD = v; updatePreview(); }, { placeholder: '0.007' }));
-  measGroup.appendChild(meas);
-  sub.appendChild(measGroup);
-
-  // Defect Description Other (sibling of Measurements, not nested)
-  const customBox = el('div', { class: 'inner-group' });
-  customBox.appendChild(el('div', { class: 'inner-group-title' }, 'Defect Description Other'));
-  const customTa = el('textarea', {
-    class: 'tall',
-    placeholder: 'is missing alodine C/T the 123A4321-1 Flange',
-    oninput: e => { it.measCustom = e.target.value; updatePreview(); }
+  // Measurement sections (editable heading + one free-form measurement field).
+  if (!Array.isArray(it.measSections) || it.measSections.length === 0) {
+    it.measSections = [ blankMeasSection('Measurements') ];
+  }
+  it.measSections.forEach((sec, sIdx) => {
+    sub.appendChild(renderMeasSection(it, sec, sIdx));
   });
-  customTa.value = it.measCustom || '';
-  customBox.appendChild(customTa);
-  sub.appendChild(customBox);
+  sub.appendChild(el('button', {
+    class: 'add-btn add-btn-meas',
+    onclick: () => {
+      it.measSections.push(blankMeasSection('Section'));
+      renderAll();
+    }
+  }, '+ Add measurement section'));
 
   // S/B (What the Spec says it should be)
   sub.appendChild(textareaField('S/B (What the Spec says it should be)', it.sbText,
-    v => { it.sbText = v; updatePreview(); }, { placeholder: 'No dents on the tube' }));
-  const sbToggle = el('label', {
-    style: 'display:flex;gap:6px;align-items:center;font-size:12px;color:var(--text-muted);margin-top:4px'
-  });
-  const sbCb = el('input', {
-    type: 'checkbox',
-    onchange: e => { it.sbAutoRef = e.target.checked; updatePreview(); }
-  });
-  if (it.sbAutoRef !== false) sbCb.checked = true;
-  sbToggle.appendChild(sbCb);
-  sbToggle.appendChild(document.createTextNode(' Auto-reference first process spec'));
-  sub.appendChild(sbToggle);
+    v => { it.sbText = v; updatePreview(); }, {
+      size: 'paragraph',
+      placeholder: 'No dents on the tube'
+    }));
+  sub.appendChild(renderSpecRefControl(it, t));
 
   return sub;
+}
+
+function renderMeasSection(it, sec, sIdx) {
+  const wrap = el('div', { class: 'meas-section' });
+  const head = el('div', { class: 'meas-section-head' });
+  const nameWrap = el('div', { class: 'meas-section-name-wrap' });
+  nameWrap.appendChild(el('span', {
+    class: 'meas-section-edit-icon',
+    title: 'Editable title',
+    html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>'
+  }));
+  nameWrap.appendChild(el('input', {
+    class: 'meas-section-name',
+    type: 'text',
+    value: '',
+    placeholder: sec.name || 'Measurements',
+    'aria-label': 'Editable measurement section title',
+    oninput: e => { sec.name = e.target.value; updatePreview(); }
+  }));
+  head.appendChild(nameWrap);
+  if ((it.measSections || []).length > 1) {
+    head.appendChild(el('button', {
+      class: 'del-btn meas-section-del',
+      title: 'Remove section',
+      onclick: () => { it.measSections.splice(sIdx, 1); renderAll(); }
+    }, '×'));
+  }
+  wrap.appendChild(head);
+
+  const meas = el('div', { class: 'row measurement-field' });
+  meas.appendChild(field('', 'text', sec.text,
+    v => { sec.text = v; updatePreview(); },
+    { placeholder: '0.172"L x 0.086"W x 0.007"D' }));
+  wrap.appendChild(meas);
+
+  return wrap;
+}
+
+function renderSpecRefControl(it, t) {
+  const wrap = el('div', { class: 'spec-ref-row' });
+  wrap.appendChild(el('div', { class: 'spec-ref-label' }, 'Auto-reference Process Spec:'));
+
+  const chips = el('div', { class: 'spec-ref-chips' });
+  const specs = (t.processSpecs || []);
+  const selected = normalizedAutoRefIndexes(it, t);
+
+  specs.forEach((s, i) => {
+    chips.appendChild(el('button', {
+      class: 'spec-ref-chip' + (selected.includes(i) ? ' active' : ''),
+      title: 'Toggle auto-reference for this spec',
+      'aria-pressed': selected.includes(i) ? 'true' : 'false',
+      'data-spec-ref-index': String(i),
+      onclick: () => {
+        const next = new Set(normalizedAutoRefIndexes(it, t));
+        if (next.has(i)) next.delete(i);
+        else next.add(i);
+        it.sbAutoRefIndexes = Array.from(next).sort((a, b) => a - b);
+        updatePreview();
+        renderAll();
+      }
+    }, processSpecChipLabel(s, i)));
+  });
+  chips.appendChild(el('button', {
+    class: 'spec-ref-chip spec-ref-off' + (selected.length === 0 ? ' active' : ''),
+    title: 'Disable auto-reference',
+    'aria-pressed': selected.length === 0 ? 'true' : 'false',
+    onclick: () => { it.sbAutoRefIndexes = []; updatePreview(); renderAll(); }
+  }, 'Off'));
+
+  wrap.appendChild(chips);
+  return wrap;
+}
+
+function renderTemplateActions() {
+  const actions = el('div', { class: 'builder-actions' });
+  actions.appendChild(el('button', {
+    class: 'btn btn-primary builder-action-btn builder-action-save',
+    onclick: saveTemplate,
+    title: '⌘S'
+  }, 'Save Template'));
+  if (state.selectedId) {
+    actions.appendChild(el('button', {
+      class: 'btn btn-ghost builder-action-btn builder-action-danger',
+      onclick: () => confirmTemplateDelete(state.selectedId)
+    }, 'Delete'));
+  }
+  actions.appendChild(el('button', {
+    class: 'btn btn-ghost builder-action-btn builder-action-duplicate',
+    onclick: duplicateTemplate,
+    title: '⌘D'
+  }, 'Duplicate Template'));
+  return actions;
 }
 
 /* ============================================================================
@@ -1996,8 +3883,6 @@ function renderPreview() {
 
   const head = el('div', { class: 'preview-head' });
   head.appendChild(el('div', { class: 'preview-title' }, 'Live Preview'));
-  head.appendChild(el('div', { class: 'tag-card-meta' },
-    'Type: ' + (state.current.type || 'NCR')));
   wrap.appendChild(head);
 
   const body = el('div', { class: 'preview-body' });
@@ -2057,17 +3942,76 @@ function joinPreviewTokens(tokens) {
     .trim();
 }
 
+function joinWithAnd(parts) {
+  const clean = parts.map(p => String(p || '').trim()).filter(Boolean);
+  if (clean.length <= 1) return clean[0] || '';
+  if (clean.length === 2) return clean.join(' and ');
+  return clean.slice(0, -1).join(', ') + ', and ' + clean[clean.length - 1];
+}
+
+function processSpecChipLabel(spec, index) {
+  if (spec && (spec.number || spec.section)) {
+    return [spec.number, spec.section ? 'Sec.' + spec.section : ''].filter(Boolean).join(' ');
+  }
+  return `Spec ${index + 1}`;
+}
+
+function processSpecReferenceText(spec) {
+  if (!spec || (!spec.number && !spec.section && !spec.rev)) return '';
+  return joinPreviewTokens([
+    spec.number,
+    spec.section ? `Sec.${spec.section}` : '',
+    spec.rev ? `Rev.${spec.rev}` : ''
+  ]);
+}
+
+function normalizedAutoRefIndexes(it, t = state.current) {
+  if (!Array.isArray(it.sbAutoRefIndexes)) {
+    if (typeof it.sbAutoRefIndex === 'number') {
+      it.sbAutoRefIndexes = it.sbAutoRefIndex >= 0 ? [it.sbAutoRefIndex] : [];
+    } else {
+      it.sbAutoRefIndexes = it.sbAutoRef === false ? [] : [0];
+    }
+    delete it.sbAutoRef;
+    delete it.sbAutoRefIndex;
+  }
+  const specs = t.processSpecs || [];
+  const seen = new Set();
+  const indexes = it.sbAutoRefIndexes
+    .filter(idx => Number.isInteger(idx) && idx >= 0 && idx < specs.length)
+    .filter(idx => {
+      if (seen.has(idx)) return false;
+      seen.add(idx);
+      return true;
+    })
+    .sort((a, b) => a - b);
+  if (indexes.length !== it.sbAutoRefIndexes.length ||
+      indexes.some((idx, pos) => idx !== it.sbAutoRefIndexes[pos])) {
+    it.sbAutoRefIndexes = indexes;
+  }
+  return indexes;
+}
+
+function updateSpecRefControls() {
+  document.querySelectorAll('.spec-ref-chip[data-spec-ref-index]').forEach(btn => {
+    const index = Number(btn.dataset.specRefIndex);
+    btn.textContent = processSpecChipLabel((state.current.processSpecs || [])[index], index);
+  });
+}
+
 function hasPreviewInput(t) {
+  const itemHasMeas = i =>
+    (i.measSections || []).some(s => s.text);
   return (
     (t.revisionNumber || 0) > 0 ||
     (t.drawings || []).some(d => d.number || d.sheet || d.rev || d.location || d.custom) ||
     (t.processSpecs || []).some(s => s.number || s.section || s.rev) ||
     (t.items || []).some(i =>
       i.countOf || i.countTotal || i.partNumber || i.description ||
-      i.discrepancy || i.measL || i.measW || i.measD ||
-      i.measCustom || i.sbText
+      i.discrepancy || itemHasMeas(i) || i.sbText
     ) ||
-    t.lso || t.lio || t.carrotsText
+    t.lso || t.lio || t.carrotsText ||
+    (t.otherBlocks || []).some(o => o.text || o.label)
   );
 }
 
@@ -2116,11 +4060,12 @@ function buildPreviewBlocks(t) {
   });
 
   (t.items || []).forEach((it, i) => {
+    const sections = it.measSections || [];
+    const hasMeasContent = sections.some(s => s.text);
     const hasContent =
       it.countOf || it.countTotal ||
       it.partNumber || it.description || it.discrepancy ||
-      it.measL || it.measW || it.measD ||
-      it.measCustom || it.sbText;
+      hasMeasContent || it.sbText;
     if (!hasContent) return;
 
     if (blocks.length) blocks.push({ type: 'spacer' });
@@ -2146,30 +4091,25 @@ function buildPreviewBlocks(t) {
       });
     }
 
-    if (it.measL || it.measW || it.measD) {
-      const parts = [];
-      if (it.measL) parts.push(formatMeasurementToken(it.measL, 'L'));
-      if (it.measW) parts.push(formatMeasurementToken(it.measW, 'W'));
-      if (it.measD) parts.push(formatMeasurementToken(it.measD, 'D'));
-      blocks.push({ type: 'spacer' });
-      blocks.push({ type: 'heading', className: 'meas-hdr', label: 'Measurements:' });
-      blocks.push({ type: 'text', text: parts.join(' x ') });
-    }
+    sections.forEach(sec => {
+      const hasText = !!(sec.text && String(sec.text).trim());
+      if (!hasText) return;
+      const sectionName = String(sec.name || '').trim();
 
-    if (it.measCustom) {
       blocks.push({ type: 'spacer' });
-      blocks.push({ type: 'multiline', lines: String(it.measCustom).split('\n') });
-    }
+      if (sectionName) {
+        blocks.push({ type: 'heading', className: 'meas-hdr', label: sectionName });
+      }
+      blocks.push({ type: 'multiline', lines: String(sec.text).split('\n') });
+    });
 
     if (it.sbText) {
       let ref = '';
-      if (it.sbAutoRef !== false) {
-        const firstSpec = t.processSpecs[0];
-        if (firstSpec && (firstSpec.number || firstSpec.section || firstSpec.rev)) {
-          ref = ` per ${firstSpec.number || ''}`;
-          if (firstSpec.section) ref += ` Sec.${firstSpec.section}`;
-          if (firstSpec.rev) ref += ` Rev.${firstSpec.rev}`;
-        }
+      const refs = normalizedAutoRefIndexes(it, t)
+        .map(idx => processSpecReferenceText((t.processSpecs || [])[idx]))
+        .filter(Boolean);
+      if (refs.length) {
+        ref = ` per ${joinWithAnd(refs)}`;
       }
       blocks.push({ type: 'spacer' });
       blocks.push({
@@ -2191,6 +4131,18 @@ function buildPreviewBlocks(t) {
     blocks.push({ type: 'spacer' });
     blocks.push({ type: 'emphasis', lines: String(t.attachmentsText).split('\n') });
   }
+
+  (t.otherBlocks || []).forEach(o => {
+    if (!o || (!o.text && !o.label)) return;
+    blocks.push({ type: 'spacer' });
+    const label = String(o.label || '').trim();
+    if (label) {
+      blocks.push({ type: 'heading', className: 'meas-hdr', label });
+    }
+    if (o.text) {
+      blocks.push({ type: 'multiline', lines: String(o.text).split('\n') });
+    }
+  });
 
   if (t.type === 'NCO' && t.carrotsText && !isCaretPreviewSuppressed(t)) {
     blocks.push({ type: 'spacer' });
@@ -2314,36 +4266,6 @@ function renderPreviewFormatted(blocks) {
 }
 
 function previewText(blocks) {
-  if (state.formattedPreview) {
-    const lines = [];
-
-    blocks.forEach(block => {
-      if (block.type === 'spacer') {
-        lines.push('');
-        return;
-      }
-      if (block.type === 'inline') {
-        const firstIndent = String(block.label || '') + ' ';
-        const nextIndent = ' '.repeat(firstIndent.length);
-        wrapIndentedText(block.text, firstIndent, nextIndent).forEach(line => lines.push(line));
-        return;
-      }
-      if (block.type === 'heading') {
-        wrapPlainText(block.label).forEach(line => lines.push(line));
-        return;
-      }
-      if (block.type === 'text') {
-        wrapPlainText(block.text).forEach(line => lines.push(line));
-        return;
-      }
-      if (block.type === 'multiline' || block.type === 'emphasis') {
-        block.lines.forEach(line => wrapPlainText(line).forEach(wrapped => lines.push(wrapped)));
-      }
-    });
-
-    return lines.join('\n');
-  }
-
   const lines = [];
   blocks.forEach(block => {
     if (block.type === 'spacer') {
@@ -2351,19 +4273,21 @@ function previewText(blocks) {
       return;
     }
     if (block.type === 'inline') {
-      lines.push(joinPreviewTokens([block.label, block.text]));
+      const firstIndent = String(block.label || '') + ' ';
+      const nextIndent = ' '.repeat(firstIndent.length);
+      wrapIndentedText(block.text, firstIndent, nextIndent).forEach(line => lines.push(line));
       return;
     }
     if (block.type === 'heading') {
-      lines.push(block.label);
+      wrapPlainText(block.label).forEach(line => lines.push(line));
       return;
     }
     if (block.type === 'text') {
-      lines.push(String(block.text || ''));
+      wrapPlainText(block.text).forEach(line => lines.push(line));
       return;
     }
     if (block.type === 'multiline' || block.type === 'emphasis') {
-      block.lines.forEach(line => lines.push(String(line || '')));
+      block.lines.forEach(line => wrapPlainText(line).forEach(wrapped => lines.push(wrapped)));
     }
   });
   return lines.join('\n');
@@ -2480,10 +4404,15 @@ function createNewTemplate() {
   state.selectedId = fresh.id;
   state.previewSuppressed = false;
   state.carrotPreviewSuppressed = false;
+  pushHistory({
+    type: 'create-template',
+    label: 'Create "' + (fresh.templateName || 'Untitled') + '"',
+    payload: clone(fresh)
+  });
   closeModal();
   persist();
-  toast('Template created');
   renderAll();
+  actionToast('Template created', 'Undo', performUndo);
 }
 
 function saveCarrotTemplate() {
@@ -2508,14 +4437,23 @@ function saveCarrotTemplate() {
     updatedAt: Date.now()
   };
   const idx = state.carrotTemplates.findIndex(x => x.id === id);
+  const wasNew = idx < 0;
   if (idx >= 0) state.carrotTemplates[idx] = next;
   else state.carrotTemplates.unshift(next);
   state.selectedCarrotId = id;
   state.current.carrotTemplateId = id;
   state.current.carrotTemplateName = name;
+  if (wasNew) {
+    pushHistory({
+      type: 'create-caret',
+      label: 'Create caret "' + name + '"',
+      payload: clone(next)
+    });
+  }
   persist();
-  toast(idx >= 0 ? 'Caret template updated' : 'Caret template saved');
   renderAll();
+  if (wasNew) actionToast('Caret template saved', 'Undo', performUndo);
+  else toast('Caret template updated');
 }
 
 function duplicateTemplate() {
@@ -2585,7 +4523,19 @@ function renameCarrotTemplate(templateId) {
   renderAll();
 }
 
-function deleteTemplateById(templateId) {
+function recordTemplateDeletion(template, bemsid) {
+  state.deletionHistory.unshift({
+    id: 'del_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    title: template.templateName || tagSummary(template) || 'Untitled',
+    bemsid: String(bemsid || '').trim(),
+    deletedAt: Date.now(),
+    type: template.type || currentTagType()
+  });
+}
+
+function deleteTemplateById(templateId, bemsid = '') {
+  const idx = state.templates.findIndex(x => x.id === templateId);
+  const removed = idx >= 0 ? clone(state.templates[idx]) : null;
   state.templates = state.templates.filter(x => x.id !== templateId);
   if (state.selectedId === templateId) {
     state.current = blankTagForType(currentTagType());
@@ -2594,13 +4544,27 @@ function deleteTemplateById(templateId) {
     state.previewSuppressed = false;
     state.carrotPreviewSuppressed = false;
   }
+  if (removed) {
+    recordTemplateDeletion(removed, bemsid);
+    pushHistory({
+      type: 'delete-template',
+      label: 'Delete "' + (removed.templateName || 'Untitled') + '"',
+      payload: { template: removed, index: idx }
+    });
+  }
   closeModal();
   persist();
-  toast('Template deleted');
   renderAll();
+  if (removed) {
+    actionToast('Template deleted', 'Undo', performUndo);
+  } else {
+    toast('Template deleted');
+  }
 }
 
 function deleteCarrotTemplateById(templateId) {
+  const idx = state.carrotTemplates.findIndex(x => x.id === templateId);
+  const removed = idx >= 0 ? clone(state.carrotTemplates[idx]) : null;
   state.carrotTemplates = state.carrotTemplates.filter(x => x.id !== templateId);
   if (state.selectedCarrotId === templateId) {
     state.selectedCarrotId = null;
@@ -2608,10 +4572,21 @@ function deleteCarrotTemplateById(templateId) {
     state.current.carrotTemplateName = '';
     state.carrotPreviewSuppressed = false;
   }
+  if (removed) {
+    pushHistory({
+      type: 'delete-caret',
+      label: 'Delete caret "' + (removed.name || 'Untitled') + '"',
+      payload: { template: removed, index: idx }
+    });
+  }
   closeModal();
   persist();
-  toast('Caret template deleted');
   renderAll();
+  if (removed) {
+    actionToast('Caret template deleted', 'Undo', performUndo);
+  } else {
+    toast('Caret template deleted');
+  }
 }
 
 function confirmTemplateDelete(templateId) {
@@ -2659,19 +4634,55 @@ function confirmTemplateDeleteFinal(templateId) {
     return;
   }
   const name = template.templateName || 'Untitled';
+  const passwordId = 'deletePassword_' + templateId;
+  const bemsidId = 'deleteBemsid_' + templateId;
 
   openModal('Final confirmation', [
     el('div', {
       class: 'field-hint',
       style: 'white-space:normal;line-height:1.5'
-    }, `"${name}" will be permanently deleted. This cannot be undone.`)
+    }, `"${name}" will be permanently deleted. Enter the delete password and your BEMSID to continue.`),
+    el('div', { class: 'field' }, [
+      el('label', { for: passwordId }, 'Password'),
+      el('input', {
+        id: passwordId,
+        type: 'password',
+        placeholder: 'Delete password',
+        autocomplete: 'off'
+      })
+    ]),
+    el('div', { class: 'field' }, [
+      el('label', { for: bemsidId }, 'BEMSID'),
+      el('input', {
+        id: bemsidId,
+        type: 'number',
+        inputmode: 'numeric',
+        pattern: '[0-9]*',
+        placeholder: 'BEMSID',
+        oninput: e => { e.target.value = String(e.target.value || '').replace(/\D/g, ''); }
+      })
+    ])
   ], [
     el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
     el('button', {
       class: 'btn btn-danger',
-      onclick: () => deleteTemplateById(templateId)
+      onclick: () => authorizeTemplateDelete(templateId, passwordId, bemsidId)
     }, 'Delete template')
   ]);
+}
+
+function authorizeTemplateDelete(templateId, passwordId, bemsidId) {
+  const password = ($(passwordId)?.value || '').trim();
+  const bemsid = ($(bemsidId)?.value || '').trim();
+  if (password !== 'TDRCQA') {
+    toast('Incorrect delete password');
+    return;
+  }
+  if (!/^\d+$/.test(bemsid)) {
+    toast('Enter a numeric BEMSID');
+    return;
+  }
+  deleteTemplateById(templateId, bemsid);
 }
 
 function confirmCarrotTemplateDeleteFinal(templateId) {
@@ -2703,9 +4714,12 @@ function exportAll() {
   const data = {
     version: 1,
     savedAt: new Date().toISOString(),
+    activeTheme: state.activeTheme,
+    customThemes: state.customThemes,
     tags: state.tags,
     templates: state.templates,
-    carrotTemplates: state.carrotTemplates
+    carrotTemplates: state.carrotTemplates,
+    deletionHistory: state.deletionHistory
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -2723,6 +4737,8 @@ function importFile(file) {
       const incoming = data.tags || [];
       const incomingTpl = data.templates || [];
       const incomingCarrots = data.carrotTemplates || [];
+      const incomingDeleteHistory = data.deletionHistory || [];
+      const incomingCustomThemes = data.customThemes || [];
       // Merge by id (incoming wins on conflict).
       const byId = new Map(state.tags.map(t => [t.id, t]));
       incoming.forEach(t => byId.set(t.id, t));
@@ -2733,6 +4749,28 @@ function importFile(file) {
       const carrotById = new Map(state.carrotTemplates.map(t => [t.id, t]));
       incomingCarrots.forEach(t => carrotById.set(t.id, t));
       state.carrotTemplates = Array.from(carrotById.values());
+      const deleteById = new Map((state.deletionHistory || []).map(t => [t.id, t]));
+      incomingDeleteHistory.forEach((t, i) => {
+        const row = {
+          id: t.id || ('imported_del_' + Date.now() + '_' + i),
+          title: t.title || 'Untitled',
+          bemsid: t.bemsid || '',
+          deletedAt: t.deletedAt || Date.now(),
+          type: t.type || ''
+        };
+        deleteById.set(row.id, row);
+      });
+      state.deletionHistory = Array.from(deleteById.values());
+      const customById = new Map((state.customThemes || []).map(t => [t.id, t]));
+      incomingCustomThemes.forEach((t, i) => {
+        const theme = normalizeCustomTheme({
+          ...t,
+          id: t.id || ('imported_theme_' + Date.now() + '_' + i)
+        });
+        customById.set(theme.id, theme);
+      });
+      state.customThemes = Array.from(customById.values());
+      if (data.activeTheme) state.activeTheme = data.activeTheme;
       persist();
       toast(`Imported ${incoming.length} tags, ${incomingTpl.length} templates, and ${incomingCarrots.length} caret templates`);
       renderAll();
@@ -2866,12 +4904,17 @@ function setupGlobalEvents() {
     if (e.target === $('#modalBackdrop')) closeModal();
   });
 
-  // Focus mode + uppercase text toggle
-  $('#focusBtn').addEventListener('click', toggleFocusMode);
+  // Fullscreen + preview text toggles
+  $('#focusBtn').addEventListener('click', toggleFullscreen);
   $('#formatBtn').addEventListener('click', toggleFormattedPreview);
   $('#uppercaseBtn').addEventListener('click', toggleUppercaseText);
   if (state.formattedPreview) $('#formatBtn').classList.add('feature-on');
   if (state.uppercaseText) $('#uppercaseBtn').classList.add('feature-on');
+
+  // Undo / Redo buttons
+  $('#undoBtn').addEventListener('click', performUndo);
+  $('#redoBtn').addEventListener('click', performRedo);
+  renderUndoButton();
 
   // Hidden file input is triggered from the sidebar Import button.
   $('#fileImport').addEventListener('change', e => {
@@ -2926,6 +4969,7 @@ function setupGlobalEvents() {
     }
     importFile(file);
   });
+  document.addEventListener('fullscreenchange', syncFeatureButtons);
 
   // Keyboard shortcuts (works great with BetterTouchTool gestures too):
   //   ⌘/Ctrl + S      Save
@@ -2933,8 +4977,22 @@ function setupGlobalEvents() {
   //   ⌘/Ctrl + Enter  Copy preview to clipboard
   document.addEventListener('keydown', e => {
     const meta = e.metaKey || e.ctrlKey;
-    // ⌘. — focus mode (works on any tab)
-    if (meta && e.key === '.') { e.preventDefault(); toggleFocusMode(); return; }
+    // ⌘Z / ⌘⇧Z — undo / redo (works on any tab)
+    if (meta && (e.key === 'z' || e.key === 'Z')) {
+      // Don't fight typed undo inside an editable field
+      const target = e.target;
+      const inEditable = target && (
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      );
+      if (!inEditable) {
+        e.preventDefault();
+        if (e.shiftKey) performRedo(); else performUndo();
+        return;
+      }
+    }
+    // ⌘. — browser fullscreen (works on any tab)
+    if (meta && e.key === '.') { e.preventDefault(); toggleFullscreen(); return; }
     if (!['NCRs', 'NCOs'].includes(state.activeTab)) return;
     if (meta && e.key.toLowerCase() === 's') { e.preventDefault(); saveTemplate(); }
     else if (meta && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateTemplate(); }
@@ -2944,11 +5002,48 @@ function setupGlobalEvents() {
 
 /* ============================================================================
    RENDER LOOP — call this any time state changes structurally
+   Preserves scroll positions on the builder, sidebar, and preview pane so
+   clicking a template (or any other re-render trigger) doesn't snap to top.
    ============================================================================ */
+function captureScrollPositions() {
+  const builder = document.querySelector('.builder');
+  const list = document.querySelector('.tag-list');
+  const preview = document.querySelector('.preview-body');
+  return {
+    builder: builder ? builder.scrollTop : 0,
+    list: list ? list.scrollTop : 0,
+    preview: preview ? preview.scrollTop : 0
+  };
+}
+function restoreScrollPositions(saved) {
+  if (!saved) return;
+  requestAnimationFrame(() => {
+    const builder = document.querySelector('.builder');
+    const list = document.querySelector('.tag-list');
+    const preview = document.querySelector('.preview-body');
+    if (builder) builder.scrollTop = saved.builder;
+    if (list) list.scrollTop = saved.list;
+    if (preview) preview.scrollTop = saved.preview;
+  });
+}
+
 function renderAll() {
+  const savedScroll = captureScrollPositions();
   applyTheme();
   renderTabs();
   renderMain();
+  renderUndoButton();
+  syncFeatureButtons();
+  restoreScrollPositions(savedScroll);
+}
+
+function syncFeatureButtons() {
+  const focusBtn = $('#focusBtn');
+  const formatBtn = $('#formatBtn');
+  const uppercaseBtn = $('#uppercaseBtn');
+  if (focusBtn) focusBtn.classList.toggle('feature-on', !!document.fullscreenElement);
+  if (formatBtn) formatBtn.classList.toggle('feature-on', state.formattedPreview);
+  if (uppercaseBtn) uppercaseBtn.classList.toggle('feature-on', state.uppercaseText);
 }
 
 /* ============================================================================
@@ -2958,21 +5053,27 @@ function renderAll() {
 
 /* ---------- Custom theme builder ---------- */
 const BUILTIN_THEMES = [
-  { cls: 'theme-boeing-classic', name: 'Boeing Classic' },
-  { cls: 'theme-boeing-sky',     name: 'Boeing Sky' },
-  { cls: 'theme-sunrise',        name: 'Sunrise' },
-  { cls: 'theme-mint',           name: 'Mint' },
-  { cls: 'theme-lavender',       name: 'Lavender' },
-  { cls: 'theme-rosegold',       name: 'Rose Gold' },
-  { cls: 'theme-sage',           name: 'Sage' },
-  { cls: 'theme-linen',          name: 'Linen' },
-  { cls: 'theme-monochrome',     name: 'Monochrome' },
-  { cls: 'theme-midnight',       name: 'Midnight' },
-  { cls: 'theme-charcoal',       name: 'Charcoal' },
-  { cls: 'theme-cosmos',         name: 'Cosmos' },
-  { cls: 'theme-aurora',         name: 'Aurora' },
-  { cls: 'theme-ocean',          name: 'Ocean' },
-  { cls: 'theme-cyberpunk',      name: 'Cyberpunk' }
+  { cls: 'theme-boeing-classic', name: 'Boeing Classic', kind: 'Boeing', bg: 'linear-gradient(135deg,#E8F0FA,#F5F8FC)', a: '#0033A0', b: '#1E64C8' },
+  { cls: 'theme-boeing-sky',     name: 'Boeing Sky',     kind: 'Boeing', bg: 'linear-gradient(135deg,#001a40,#0a2d6b)', a: '#4ea8ff', b: '#00d4ff' },
+  { cls: 'theme-sunrise',        name: 'Sunrise',        kind: 'Light',  bg: 'linear-gradient(135deg,#FFE5D9,#FFD6E0)', a: '#ff7a59', b: '#ff4f87' },
+  { cls: 'theme-mint',           name: 'Mint',           kind: 'Light',  bg: 'linear-gradient(135deg,#E0F7F4,#D6E9FF)', a: '#14b8a6', b: '#3b82f6' },
+  { cls: 'theme-lavender',       name: 'Lavender',       kind: 'Light',  bg: 'linear-gradient(135deg,#ECE5FF,#E5F0FF)', a: '#8b5cf6', b: '#6366f1' },
+  { cls: 'theme-rosegold',       name: 'Rose Gold',      kind: 'Light',  bg: 'linear-gradient(135deg,#FFF1EE,#FCE4DA)', a: '#d4796a', b: '#c9a17a' },
+  { cls: 'theme-sage',           name: 'Sage',           kind: 'Light',  bg: 'linear-gradient(135deg,#EDF4E8,#F4EEE0)', a: '#6a8e5e', b: '#b59f6e' },
+  { cls: 'theme-linen',          name: 'Linen',          kind: 'Light',  bg: 'linear-gradient(135deg,#FAF6ED,#F2EAD3)', a: '#0d7377', b: '#14b8a6' },
+  { cls: 'theme-highline',       name: 'Highline',       kind: 'Modern', bg: 'linear-gradient(135deg,#f6fbff,#eefdf8)', a: '#006bff', b: '#00b894' },
+  { cls: 'theme-vapor',          name: 'Vapor',          kind: 'Modern', bg: 'linear-gradient(135deg,#fff7fb,#ecfff9)', a: '#7c3aed', b: '#06b6d4' },
+  { cls: 'theme-glacier',        name: 'Glacier',        kind: 'Modern', bg: 'linear-gradient(135deg,#eef8ff,#f7fffb)', a: '#0ea5e9', b: '#22c55e' },
+  { cls: 'theme-monochrome',     name: 'Monochrome',     kind: 'Light',  bg: 'linear-gradient(135deg,#fafafa,#ececec)', a: '#111111', b: '#555555' },
+  { cls: 'theme-midnight',       name: 'Midnight',       kind: 'Dark',   bg: 'linear-gradient(135deg,#0f172a,#1e1b4b)', a: '#38bdf8', b: '#818cf8' },
+  { cls: 'theme-charcoal',       name: 'Charcoal',       kind: 'Dark',   bg: 'linear-gradient(135deg,#1c1c1e,#2c2c2e)', a: '#fbbf24', b: '#f87171' },
+  { cls: 'theme-cosmos',         name: 'Cosmos',         kind: 'Dark',   bg: 'linear-gradient(135deg,#1a0b2e,#2e0b4a)', a: '#ec4899', b: '#a855f7' },
+  { cls: 'theme-aurora',         name: 'Aurora',         kind: 'Dark',   bg: 'linear-gradient(135deg,#0a0e1a,#1a0a2e)', a: '#34d399', b: '#c084fc' },
+  { cls: 'theme-ocean',          name: 'Ocean',          kind: 'Dark',   bg: 'linear-gradient(135deg,#001f3f,#003d5b)', a: '#00b4d8', b: '#90e0ef' },
+  { cls: 'theme-cyberpunk',      name: 'Cyberpunk',      kind: 'Dark',   bg: 'linear-gradient(135deg,#0a0014,#1a0033)', a: '#00ffd5', b: '#ff006e' },
+  { cls: 'theme-alloy',          name: 'Alloy',          kind: 'Modern', bg: 'linear-gradient(135deg,#0d1117,#1f2937)', a: '#b8ff5c', b: '#00d4ff' },
+  { cls: 'theme-emberline',      name: 'Emberline',      kind: 'Modern', bg: 'linear-gradient(135deg,#160f17,#2b1f0f)', a: '#ff6b6b', b: '#ffd166' },
+  { cls: 'theme-command',        name: 'Command',        kind: 'Modern', bg: 'linear-gradient(135deg,#06100c,#101827)', a: '#3cffb5', b: '#8ab4ff' }
 ];
 
 function renderCustomThemes() {
@@ -3031,6 +5132,7 @@ function renderCustomThemes() {
         }
         persist();
         renderCustomThemes();
+        if (state.activeTab === 'Settings') renderAll();
         toast('Theme deleted');
       }
     }));
@@ -3040,61 +5142,123 @@ function renderCustomThemes() {
 
 function openThemeBuilder(existing) {
   const isEdit = !!existing;
-  const draft = existing
-    ? { ...existing }
-    : { id: 'ct_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-        name: 'My Theme', base: 'theme-midnight', accent: '#38bdf8', accent2: '#818cf8' };
+  const draft = normalizeCustomTheme(existing);
 
-  const wrap = el('div', { class: 'theme-builder' });
+  const wrap = el('div', { class: 'theme-builder theme-lab-layout' });
+  const controls = el('div', { class: 'theme-lab-controls' });
 
-  const nameRow = el('div');
+  function colorField(label, key) {
+    const field = el('div', { class: 'theme-lab-field' });
+    field.appendChild(el('label', {}, label));
+    field.appendChild(el('input', {
+      type: 'color',
+      value: draft[key],
+      oninput: e => { draft[key] = e.target.value; updatePreviewSwatch(); }
+    }));
+    return field;
+  }
+  function sliderField(label, key, min, max, step) {
+    const field = el('div', { class: 'theme-lab-slider' });
+    const value = el('span', {}, String(draft[key]));
+    field.appendChild(el('label', {}, [label, ' ', value]));
+    field.appendChild(el('input', {
+      type: 'range',
+      min,
+      max,
+      step,
+      value: draft[key],
+      oninput: e => {
+        draft[key] = Number(e.target.value);
+        value.textContent = String(draft[key]);
+        updatePreviewSwatch();
+      }
+    }));
+    return field;
+  }
+
+  const nameRow = el('div', { class: 'theme-lab-field' });
   nameRow.appendChild(el('label', {}, 'Theme name'));
-  const nameInput = el('input', {
-    type: 'text', value: draft.name,
+  nameRow.appendChild(el('input', {
+    type: 'text',
+    value: draft.name,
     oninput: e => { draft.name = e.target.value; }
-  });
-  nameRow.appendChild(nameInput);
+  }));
 
-  const baseRow = el('div');
-  baseRow.appendChild(el('label', {}, 'Base palette (light or dark)'));
+  const baseRow = el('div', { class: 'theme-lab-field' });
+  baseRow.appendChild(el('label', {}, 'Base behavior'));
   const baseSel = el('select', {
     onchange: e => { draft.base = e.target.value; updatePreviewSwatch(); }
   });
   BUILTIN_THEMES.forEach(b => {
-    const o = el('option', { value: b.cls }, b.name);
+    const o = el('option', { value: b.cls }, `${b.name} (${b.kind})`);
     if (b.cls === draft.base) o.selected = true;
     baseSel.appendChild(o);
   });
   baseRow.appendChild(baseSel);
 
-  const colorRow = el('div', { class: 'tb-row' });
-  const c1 = el('div');
-  c1.appendChild(el('label', {}, 'Accent color'));
-  const c1Input = el('input', {
-    type: 'color', value: draft.accent,
-    oninput: e => { draft.accent = e.target.value; updatePreviewSwatch(); }
-  });
-  c1.appendChild(c1Input);
-  const c2 = el('div');
-  c2.appendChild(el('label', {}, 'Secondary accent'));
-  const c2Input = el('input', {
-    type: 'color', value: draft.accent2,
-    oninput: e => { draft.accent2 = e.target.value; updatePreviewSwatch(); }
-  });
-  c2.appendChild(c2Input);
-  colorRow.appendChild(c1);
-  colorRow.appendChild(c2);
+  controls.appendChild(nameRow);
+  controls.appendChild(baseRow);
+  controls.appendChild(el('div', { class: 'theme-lab-row' }, [
+    colorField('Accent', 'accent'),
+    colorField('Accent 2', 'accent2')
+  ]));
+  controls.appendChild(el('div', { class: 'theme-lab-row' }, [
+    colorField('Background start', 'bg'),
+    colorField('Background end', 'bg2')
+  ]));
+  controls.appendChild(el('div', { class: 'theme-lab-row' }, [
+    colorField('Panel glass', 'surface'),
+    colorField('Solid panel', 'surface2')
+  ]));
+  controls.appendChild(el('div', { class: 'theme-lab-row' }, [
+    colorField('Text', 'text'),
+    colorField('Muted text', 'muted')
+  ]));
+  controls.appendChild(el('div', { class: 'theme-lab-row' }, [
+    colorField('Border', 'border'),
+    sliderField('Gradient angle', 'angle', 0, 180, 5)
+  ]));
+  controls.appendChild(el('div', { class: 'theme-lab-row' }, [
+    sliderField('Radius', 'radius', 6, 22, 1),
+    sliderField('Density', 'density', .82, 1.2, .02)
+  ]));
+  controls.appendChild(sliderField('Glow', 'glow', 8, 45, 1));
 
-  const preview = el('div', { class: 'tb-preview' }, 'Live theme preview');
+  const preview = el('div', { class: 'theme-lab-preview' }, [
+    el('div', { class: 'theme-lab-window' }, [
+      el('div', { class: 'theme-lab-bar' }),
+      el('div', { class: 'theme-lab-card' }, [
+        el('div', { class: 'theme-lab-line' }),
+        el('div', { class: 'theme-lab-line' }),
+        el('div', { class: 'theme-lab-line short' })
+      ]),
+      el('div', { class: 'theme-lab-button' })
+    ])
+  ]);
+
   function updatePreviewSwatch() {
-    preview.style.background =
-      `linear-gradient(135deg, ${draft.accent}, ${draft.accent2})`;
+    preview.style.setProperty('--bg-grad',
+      `linear-gradient(${draft.angle}deg, ${draft.bg}, ${draft.bg2})`);
+    preview.style.setProperty('--surface', hexToRgba(draft.surface, draft.surfaceAlpha));
+    preview.style.setProperty('--surface-2', draft.surface2);
+    preview.style.setProperty('--text', draft.text);
+    preview.style.setProperty('--text-muted', draft.muted);
+    preview.style.setProperty('--border', draft.border);
+    preview.style.setProperty('--accent', draft.accent);
+    preview.style.setProperty('--accent-2', draft.accent2);
+    preview.style.setProperty('--accent-grad',
+      `linear-gradient(${draft.angle}deg, ${draft.accent}, ${draft.accent2})`);
+    preview.style.setProperty('--shadow',
+      `0 4px ${Math.round(18 + draft.glow * .6)}px ${hexToRgba(draft.accent, draft.glow / 100)}`);
+    preview.style.setProperty('--ui-radius', draft.radius + 'px');
+    preview.style.setProperty('--ui-density', String(draft.density));
+    preview.querySelector('.theme-lab-window').style.borderRadius = draft.radius + 'px';
+    preview.querySelector('.theme-lab-card').style.borderRadius = Math.max(7, draft.radius - 2) + 'px';
+    preview.querySelector('.theme-lab-button').style.borderRadius = draft.radius + 'px';
   }
   updatePreviewSwatch();
 
-  wrap.appendChild(nameRow);
-  wrap.appendChild(baseRow);
-  wrap.appendChild(colorRow);
+  wrap.appendChild(controls);
   wrap.appendChild(preview);
 
   openModal(isEdit ? 'Edit theme' : 'Create theme', [wrap], [
@@ -3109,16 +5273,39 @@ function openThemeBuilder(existing) {
         } else {
           state.customThemes.unshift(draft);
         }
+        state.activeTheme = 'custom:' + draft.id;
         persist();
         renderCustomThemes();
-        // Apply immediately if active or new
-        state.activeTheme = 'custom:' + draft.id;
         applyTheme();
+        renderAll();
         closeModal();
         toast(isEdit ? 'Theme updated' : 'Theme created');
       }
     }, isEdit ? 'Save changes' : 'Create')
   ]);
+}
+
+function normalizeCustomTheme(existing) {
+  const base = existing ? { ...existing } : {};
+  return {
+    id: base.id || ('ct_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6)),
+    name: base.name || 'My Theme',
+    base: base.base || 'theme-midnight',
+    accent: base.accent || '#38bdf8',
+    accent2: base.accent2 || '#818cf8',
+    bg: base.bg || '#0b1020',
+    bg2: base.bg2 || '#1e1b4b',
+    surface: base.surface || '#1e293b',
+    surfaceAlpha: typeof base.surfaceAlpha === 'number' ? base.surfaceAlpha : 0.74,
+    surface2: base.surface2 || '#1e293b',
+    text: base.text || '#e2e8f0',
+    muted: base.muted || '#94a3b8',
+    border: base.border || '#1e293b',
+    angle: typeof base.angle === 'number' ? base.angle : 135,
+    radius: typeof base.radius === 'number' ? base.radius : 12,
+    density: typeof base.density === 'number' ? base.density : 1,
+    glow: typeof base.glow === 'number' ? base.glow : 22
+  };
 }
 
 /* ---------- Theme ripple ---------- */
@@ -3183,10 +5370,23 @@ function hideHoverPreview() {
 /* ---------- Focus mode ---------- */
 function toggleFocusMode() {
   state.focusMode = !state.focusMode;
-  applyTheme();  // re-applies the body class with focus-mode flag
-  const btn = $('#focusBtn');
-  if (btn) btn.classList.toggle('feature-on', state.focusMode);
-  toast(state.focusMode ? 'Focus mode on (⌘. to exit)' : 'Focus mode off');
+  renderAll();
+  toast(state.focusMode ? 'Template list collapsed' : 'Template list shown');
+}
+
+async function toggleFullscreen() {
+  try {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen();
+      toast('Fullscreen on (⌘. to exit)');
+    } else {
+      await document.exitFullscreen();
+      toast('Fullscreen off');
+    }
+    syncFeatureButtons();
+  } catch (err) {
+    toast('Fullscreen unavailable');
+  }
 }
 
 /* ---------- Uppercase text ---------- */
