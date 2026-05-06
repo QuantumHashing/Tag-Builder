@@ -377,6 +377,11 @@ input, textarea, select { font: inherit; color: inherit; }
   font-size: 27px;
   line-height: 1;
 }
+.sidebar-settings-btn svg {
+  width: 25px;
+  height: 25px;
+  display: block;
+}
 .sidebar-collapse-btn {
   width: 34px;
   justify-content: center;
@@ -1717,6 +1722,7 @@ body.resizing * { user-select: none !important; }
 .settings-page {
   overflow-y: auto;
   padding: 22px 28px;
+  position: relative;
 }
 .settings-hero {
   margin-bottom: 14px;
@@ -1736,6 +1742,21 @@ body.resizing * { user-select: none !important; }
   margin-top: 4px;
   color: var(--text-muted);
   font-size: 13px;
+}
+.settings-credit {
+  position: fixed;
+  right: 16px;
+  bottom: 12px;
+  z-index: 12;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+  color: var(--text-muted);
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .2px;
 }
 .settings-grid {
   display: grid;
@@ -2938,6 +2959,7 @@ function renderSettingsPage() {
   history.appendChild(list);
   grid.appendChild(history);
   wrap.appendChild(grid);
+  wrap.appendChild(el('div', { class: 'settings-credit' }, 'Made by Josh Ferry - 3495411'));
   return wrap;
 }
 
@@ -3029,7 +3051,9 @@ function renderSidebar() {
       state.activeTab = 'Settings';
       renderAll();
     }
-  }, '⚙'));
+  }, el('span', {
+    html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.34 3.94c.09-.54.56-.94 1.11-.94h1.1c.55 0 1.02.4 1.11.94l.15.9c.07.42.35.78.74.96l.29.15c.38.21.82.23 1.22.07l.85-.34c.51-.2 1.1 0 1.37.49l.55.95c.28.48.19 1.08-.21 1.46l-.65.64c-.31.3-.43.74-.36 1.17a6.4 6.4 0 0 1 0 .31c-.07.42.05.87.36 1.17l.65.63c.4.39.49.99.21 1.47l-.55.95c-.27.48-.86.69-1.37.49l-.85-.34c-.4-.16-.84-.15-1.22.06l-.29.16c-.39.18-.67.54-.74.96l-.15.9c-.09.54-.56.94-1.11.94h-1.1c-.55 0-1.02-.4-1.11-.94l-.15-.9c-.07-.42-.35-.78-.74-.96l-.29-.16a1.4 1.4 0 0 0-1.22-.06l-.85.34c-.51.2-1.1 0-1.37-.49l-.55-.95c-.28-.48-.19-1.08.21-1.47l.65-.63c.31-.3.43-.75.36-1.17a6.4 6.4 0 0 1 0-.31c.07-.43-.05-.87-.36-1.17l-.65-.64a1.12 1.12 0 0 1-.21-1.46l.55-.95c.27-.49.86-.69 1.37-.49l.85.34c.4.16.84.14 1.22-.07l.29-.15c.39-.18.67-.54.74-.96l.15-.9Z"></path><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path></svg>'
+  })));
   wrap.appendChild(foot);
 
   return wrap;
@@ -3450,7 +3474,7 @@ function renderBuilder() {
   wrap.appendChild(addOtherWrap);
 
   // ----- Tags (chips) -----
-  if (['NCRs', 'NCOs'].includes(state.activeTab)) {
+  if (state.activeTab === 'NCRs') {
     wrap.appendChild(el('div', { class: 'other-tags-spacer', 'aria-hidden': 'true' }));
     wrap.appendChild(renderTagsEditor(t));
   }
@@ -3458,6 +3482,8 @@ function renderBuilder() {
   if (state.activeTab === 'NCOs') {
     wrap.appendChild(el('div', { class: 'builder-divider', 'aria-hidden': 'true' }));
     wrap.appendChild(renderCarrotsSection(t));
+    wrap.appendChild(el('div', { class: 'other-tags-spacer', 'aria-hidden': 'true' }));
+    wrap.appendChild(renderTagsEditor(t));
   }
 
   return wrap;
@@ -4672,14 +4698,14 @@ function confirmTemplateDeleteFinal(templateId) {
 }
 
 function authorizeTemplateDelete(templateId, passwordId, bemsidId) {
-  const password = ($(passwordId)?.value || '').trim();
-  const bemsid = ($(bemsidId)?.value || '').trim();
-  if (password !== 'TDRCQA') {
-    toast('Incorrect delete password');
+  const password = (document.getElementById(passwordId)?.value || '').trim();
+  const bemsid = (document.getElementById(bemsidId)?.value || '').trim();
+  if (!/^\d+$/.test(bemsid)) {
+    toast('Enter a numeric BEMSID with the password');
     return;
   }
-  if (!/^\d+$/.test(bemsid)) {
-    toast('Enter a numeric BEMSID');
+  if (password !== 'TDRCQA') {
+    toast('Incorrect delete password');
     return;
   }
   deleteTemplateById(templateId, bemsid);
