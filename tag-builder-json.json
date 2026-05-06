@@ -1,0 +1,5500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red Tag Builder</title>
+<style>
+/* ============================================================================
+   TAG BUILDER — single-file app (HTML + CSS + vanilla JS)
+   ----------------------------------------------------------------------------
+   Beginner notes:
+   - Everything lives in this one .html file. No installs, no admin access.
+   - State is held in one JS object called `state`. UI is rebuilt with render()
+     functions whenever state changes — a tiny reactive pattern.
+   - localStorage saves your tags between sessions (per-machine, per-browser).
+     Use Export / Import (top right) to move them between computers.
+   ============================================================================ */
+
+/* ---------- THEME TOKENS ----------------------------------------------------
+   Each theme = a set of CSS variables. Switching theme = swap class on <body>.
+   Modify a value here and it cascades through the whole UI.
+---------------------------------------------------------------------------- */
+body.theme-sunrise {
+  --bg-grad: linear-gradient(135deg, #FFE5D9 0%, #FFD6E0 100%);
+  --bg: #fff8f5;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #2b1d2e; --text-muted: #8a7682;
+  --border: #ecd9d3; --accent: #ff7a59; --accent-2: #ff4f87;
+  --accent-grad: linear-gradient(135deg, #ff7a59, #ff4f87);
+  --shadow: 0 4px 24px rgba(255,122,89,0.15);
+}
+body.theme-mint {
+  --bg-grad: linear-gradient(135deg, #E0F7F4 0%, #D6E9FF 100%);
+  --bg: #f3fbf9;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #1d2e2b; --text-muted: #768a86;
+  --border: #d3ecdf; --accent: #14b8a6; --accent-2: #3b82f6;
+  --accent-grad: linear-gradient(135deg, #14b8a6, #3b82f6);
+  --shadow: 0 4px 24px rgba(20,184,166,0.15);
+}
+body.theme-lavender {
+  --bg-grad: linear-gradient(135deg, #ECE5FF 0%, #E5F0FF 100%);
+  --bg: #f7f4ff;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #2a1d4e; --text-muted: #7a6f9a;
+  --border: #e0d3ec; --accent: #8b5cf6; --accent-2: #6366f1;
+  --accent-grad: linear-gradient(135deg, #8b5cf6, #6366f1);
+  --shadow: 0 4px 24px rgba(139,92,246,0.15);
+}
+body.theme-midnight {
+  --bg-grad: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  --bg: #0b1020;  --surface: rgba(30,41,59,0.7);  --surface-2: #1e293b;
+  --text: #e2e8f0; --text-muted: #94a3b8;
+  --border: #1e293b; --accent: #38bdf8; --accent-2: #818cf8;
+  --accent-grad: linear-gradient(135deg, #38bdf8, #818cf8);
+  --shadow: 0 4px 24px rgba(56,189,248,0.2);
+}
+body.theme-charcoal {
+  --bg-grad: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%);
+  --bg: #18181b;  --surface: rgba(39,39,42,0.75); --surface-2: #27272a;
+  --text: #f4f4f5; --text-muted: #a1a1aa;
+  --border: #3f3f46; --accent: #fbbf24; --accent-2: #f87171;
+  --accent-grad: linear-gradient(135deg, #fbbf24, #f87171);
+  --shadow: 0 4px 24px rgba(251,191,36,0.15);
+}
+body.theme-cosmos {
+  --bg-grad: linear-gradient(135deg, #1a0b2e 0%, #2e0b4a 100%);
+  --bg: #14082a;  --surface: rgba(46,11,74,0.65);  --surface-2: #2e0b4a;
+  --text: #f3e8ff; --text-muted: #c4b5fd;
+  --border: #3b0764; --accent: #ec4899; --accent-2: #a855f7;
+  --accent-grad: linear-gradient(135deg, #ec4899, #a855f7);
+  --shadow: 0 4px 24px rgba(236,72,153,0.2);
+}
+
+/* ---------- BOEING-THEMED ----------
+   Inspired by Boeing's brand palette: Pantone 286 navy + sky blues.
+   Boeing Classic = light/professional. Boeing Sky = dark cockpit-style. */
+body.theme-boeing-classic {
+  --bg-grad: linear-gradient(135deg, #E8F0FA 0%, #F5F8FC 100%);
+  --bg: #f8fbff;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #0a1f44; --text-muted: #5a6b8a;
+  --border: #d4dfee; --accent: #0033A0;  --accent-2: #1E64C8;
+  --accent-grad: linear-gradient(135deg, #0033A0, #1E64C8);
+  --shadow: 0 4px 24px rgba(0,51,160,0.18);
+}
+body.theme-boeing-sky {
+  --bg-grad: linear-gradient(135deg, #001a40 0%, #0a2d6b 100%);
+  --bg: #00102b;  --surface: rgba(10,45,107,0.65);  --surface-2: #0a2d6b;
+  --text: #e6f1ff; --text-muted: #8eaed4;
+  --border: #1a3a7a; --accent: #4ea8ff; --accent-2: #00d4ff;
+  --accent-grad: linear-gradient(135deg, #4ea8ff, #00d4ff);
+  --shadow: 0 4px 24px rgba(78,168,255,0.25);
+}
+
+/* ---------- MORE CREATIVE THEMES ---------- */
+body.theme-aurora {
+  --bg-grad: linear-gradient(135deg, #0a0e1a 0%, #1a0a2e 100%);
+  --bg: #060912;  --surface: rgba(20,25,45,0.7);  --surface-2: #141930;
+  --text: #e8ffec; --text-muted: #94c5a8;
+  --border: #1f2945; --accent: #34d399; --accent-2: #c084fc;
+  --accent-grad: linear-gradient(135deg, #34d399 0%, #60a5fa 50%, #c084fc 100%);
+  --shadow: 0 4px 24px rgba(52,211,153,0.2);
+}
+body.theme-rosegold {
+  --bg-grad: linear-gradient(135deg, #FFF1EE 0%, #FCE4DA 100%);
+  --bg: #fff8f4;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #4a2230; --text-muted: #a08088;
+  --border: #f0d9d0; --accent: #d4796a; --accent-2: #c9a17a;
+  --accent-grad: linear-gradient(135deg, #d4796a, #c9a17a);
+  --shadow: 0 4px 24px rgba(212,121,106,0.18);
+}
+body.theme-cyberpunk {
+  --bg-grad: linear-gradient(135deg, #0a0014 0%, #1a0033 100%);
+  --bg: #06000d;  --surface: rgba(26,0,51,0.7);  --surface-2: #1a0033;
+  --text: #f0e6ff; --text-muted: #b78cd9;
+  --border: #2d0a52; --accent: #00ffd5; --accent-2: #ff006e;
+  --accent-grad: linear-gradient(135deg, #00ffd5, #ff006e);
+  --shadow: 0 4px 24px rgba(255,0,110,0.3);
+}
+body.theme-sage {
+  --bg-grad: linear-gradient(135deg, #EDF4E8 0%, #F4EEE0 100%);
+  --bg: #f8faf3;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #2a3a26; --text-muted: #7a8a72;
+  --border: #d8e3cf; --accent: #6a8e5e; --accent-2: #b59f6e;
+  --accent-grad: linear-gradient(135deg, #6a8e5e, #b59f6e);
+  --shadow: 0 4px 24px rgba(106,142,94,0.15);
+}
+body.theme-ocean {
+  --bg-grad: linear-gradient(135deg, #001f3f 0%, #003d5b 100%);
+  --bg: #001428;  --surface: rgba(0,61,91,0.7);  --surface-2: #003d5b;
+  --text: #d6f1ff; --text-muted: #7aa8c0;
+  --border: #02466a; --accent: #00b4d8; --accent-2: #90e0ef;
+  --accent-grad: linear-gradient(135deg, #00b4d8, #90e0ef);
+  --shadow: 0 4px 24px rgba(0,180,216,0.2);
+}
+body.theme-monochrome {
+  --bg-grad: linear-gradient(135deg, #fafafa 0%, #ececec 100%);
+  --bg: #ffffff;  --surface: #ffffffcc;  --surface-2: #ffffff;
+  --text: #111111; --text-muted: #777777;
+  --border: #e0e0e0; --accent: #111111; --accent-2: #555555;
+  --accent-grad: linear-gradient(135deg, #111111, #555555);
+  --shadow: 0 4px 24px rgba(0,0,0,0.10);
+}
+/* Warm cream ("paper-notebook") palette with a deep teal-to-jade accent —
+   feels professional and easy on the eyes for long writing sessions. */
+body.theme-linen {
+  --bg-grad: linear-gradient(135deg, #FAF6ED 0%, #F2EAD3 100%);
+  --bg: #fdfaf3;  --surface: #fffdf6cc;  --surface-2: #fffdf6;
+  --text: #1f2e2e; --text-muted: #7a8285;
+  --border: #e6dec8; --accent: #0d7377; --accent-2: #14b8a6;
+  --accent-grad: linear-gradient(135deg, #0d7377, #14b8a6);
+  --shadow: 0 4px 24px rgba(13,115,119,0.15);
+}
+body.theme-highline {
+  --bg-grad: linear-gradient(135deg, #f6fbff 0%, #eef7ff 54%, #eefdf8 100%);
+  --bg: #f8fbff;  --surface: rgba(255,255,255,0.82);  --surface-2: #ffffff;
+  --text: #102033; --text-muted: #627086;
+  --border: #d9e7f5; --accent: #006bff; --accent-2: #00b894;
+  --accent-grad: linear-gradient(135deg, #006bff, #00b894);
+  --shadow: 0 4px 24px rgba(0,107,255,0.14);
+}
+body.theme-vapor {
+  --bg-grad: linear-gradient(135deg, #fff7fb 0%, #f2f0ff 52%, #ecfff9 100%);
+  --bg: #fffbff;  --surface: rgba(255,255,255,0.78);  --surface-2: #ffffff;
+  --text: #221735; --text-muted: #796b8e;
+  --border: #eadff4; --accent: #7c3aed; --accent-2: #06b6d4;
+  --accent-grad: linear-gradient(135deg, #7c3aed, #06b6d4);
+  --shadow: 0 4px 24px rgba(124,58,237,0.16);
+}
+body.theme-glacier {
+  --bg-grad: linear-gradient(135deg, #eef8ff 0%, #f7fffb 100%);
+  --bg: #f8fdff;  --surface: rgba(255,255,255,0.84);  --surface-2: #ffffff;
+  --text: #102a3a; --text-muted: #638091;
+  --border: #d7ebf4; --accent: #0ea5e9; --accent-2: #22c55e;
+  --accent-grad: linear-gradient(135deg, #0ea5e9, #22c55e);
+  --shadow: 0 4px 24px rgba(14,165,233,0.15);
+}
+body.theme-alloy {
+  --bg-grad: linear-gradient(135deg, #0d1117 0%, #1f2937 55%, #111827 100%);
+  --bg: #090d12;  --surface: rgba(31,41,55,0.72);  --surface-2: #17202c;
+  --text: #eef2f7; --text-muted: #96a3b5;
+  --border: #2d3748; --accent: #b8ff5c; --accent-2: #00d4ff;
+  --accent-grad: linear-gradient(135deg, #b8ff5c, #00d4ff);
+  --shadow: 0 4px 24px rgba(0,212,255,0.18);
+}
+body.theme-emberline {
+  --bg-grad: linear-gradient(135deg, #160f17 0%, #2b1326 48%, #2b1f0f 100%);
+  --bg: #100b11;  --surface: rgba(45,28,38,0.72);  --surface-2: #261824;
+  --text: #fff2eb; --text-muted: #c9a6a4;
+  --border: #432736; --accent: #ff6b6b; --accent-2: #ffd166;
+  --accent-grad: linear-gradient(135deg, #ff6b6b, #ffd166);
+  --shadow: 0 4px 24px rgba(255,107,107,0.18);
+}
+body.theme-command {
+  --bg-grad: linear-gradient(135deg, #06100c 0%, #101827 55%, #071b17 100%);
+  --bg: #050b09;  --surface: rgba(15,23,32,0.76);  --surface-2: #0f1720;
+  --text: #e8fff4; --text-muted: #8eb9a4;
+  --border: #19352c; --accent: #3cffb5; --accent-2: #8ab4ff;
+  --accent-grad: linear-gradient(135deg, #3cffb5, #8ab4ff);
+  --shadow: 0 4px 24px rgba(60,255,181,0.18);
+}
+
+/* ---------- BASE ---------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  background: var(--bg-grad); color: var(--text);
+  font-size: 14px; line-height: 1.5; overflow: hidden;
+  transition: background 0.4s ease, color 0.2s ease;
+}
+button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font: inherit; color: inherit; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ---------- LAYOUT ---------- */
+.app { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+
+.topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 18px;
+  background: var(--surface); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  position: relative; z-index: 10;
+}
+.brand {
+  font-weight: 700; font-size: 15px; letter-spacing: -0.2px;
+  background: var(--accent-grad); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+  padding-right: 4px;
+}
+.tabs { display: flex; gap: 4px; }
+.tab {
+  padding: 7px 14px; border-radius: 999px;
+  font-size: 13px; font-weight: 500; color: var(--text-muted);
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--text); background: var(--border); }
+.tab.active {
+  background: var(--accent-grad); color: white; box-shadow: var(--shadow);
+}
+.spacer { flex: 1; }
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); transition: all 0.15s; font-size: 15px;
+}
+.icon-btn svg { width: 16px; height: 16px; display: block; }
+.icon-btn:hover { background: var(--border); color: var(--text); }
+
+.main { display: grid; grid-template-columns: 250px minmax(0, 1fr) 500px; height: 100%; overflow: hidden; }
+
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+  background: var(--surface); backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sidebar-head { padding: 14px; border-bottom: 1px solid var(--border); }
+.search {
+  width: 100%; padding: 8px 12px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--bg);
+  margin-bottom: 8px; transition: border 0.15s;
+}
+.search:focus { outline: none; border-color: var(--accent); }
+.btn {
+  padding: 8px 14px; border-radius: 9px;
+  font-weight: 500; font-size: 13px;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.15s; white-space: nowrap;
+}
+.btn-primary {
+  background: var(--accent-grad); color: white;
+  box-shadow: var(--shadow);
+}
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-ghost { color: var(--text-muted); border: 1px solid transparent; }
+.btn-ghost:hover { background: var(--border); color: var(--text); }
+.btn-danger { color: var(--accent-2); }
+.btn-block { width: 100%; justify-content: center; }
+.btn-new-tag { margin-bottom: 8px; }
+.filter-chips { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 500;
+  background: var(--bg); border: 1px solid var(--border);
+  color: var(--text-muted); transition: all 0.15s;
+}
+.chip:hover { color: var(--text); }
+.chip.active {
+  background: var(--accent-grad); color: white; border-color: transparent;
+}
+.tag-list { flex: 1; overflow-y: auto; padding: 8px; }
+.tag-card {
+  position: relative;
+  padding: 8px 88px 8px 12px; border-radius: 9px; margin-bottom: 4px;
+  cursor: pointer; transition: all 0.15s; border: 1px solid transparent;
+}
+.tag-card::after {
+  content: '';
+  position: absolute;
+  left: 12px; right: 12px; bottom: -3px;
+  height: 1px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--border));
+  opacity: .55;
+  pointer-events: none;
+}
+.tag-card.active::after,
+.tag-card:hover::after { opacity: 0; }
+.tag-pin {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  font-size: 14px; line-height: 1;
+}
+.tag-card:hover .tag-pin { opacity: 0.5; }
+.tag-pin:hover { opacity: 1 !important; background: var(--border); }
+.tag-pin.pinned { opacity: 1; color: #f59e0b; }
+.tag-card.active .tag-pin { color: white; }
+.tag-card.active .tag-pin.pinned { color: #fde68a; }
+.tag-card:hover { background: var(--border); }
+.tag-card.active {
+  background: var(--accent-grad); color: white;
+  border-color: transparent;
+}
+.tag-card.active .tag-card-meta { color: rgba(255,255,255,0.8); }
+.tag-card-title {
+  font-weight: 500; font-size: 13px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tag-card-meta { font-size: 11px; color: var(--text-muted); }
+.tag-card-actions {
+  position: absolute; top: 8px; right: 8px;
+  display: flex; gap: 4px;
+}
+.tag-action {
+  width: 24px; height: 24px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  font-size: 13px; line-height: 1;
+}
+.tag-card:hover .tag-action,
+.tag-card.active .tag-action { opacity: 1; }
+.tag-card.active .tag-action { color: rgba(255,255,255,0.82); }
+.tag-action:hover { background: var(--border); color: var(--text); }
+.tag-card.active .tag-action:hover { color: white; }
+.tag-action.delete:hover { color: var(--accent-2); }
+.tag-action svg { display: block; }
+.tag-list-group { margin-bottom: 12px; }
+.tag-list-group:last-child { margin-bottom: 0; }
+.tag-list-group-title {
+  padding: 6px 6px 8px;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  color: var(--text-muted);
+}
+.tag-list-group-empty {
+  padding: 0 6px 8px;
+  font-size: 12px; color: var(--text-muted);
+}
+.sidebar-foot {
+  padding: 10px; border-top: 1px solid var(--border);
+  display: flex; gap: 6px; align-items: center;
+}
+.sidebar-foot-spacer { flex: 1; }
+.sidebar-settings-btn {
+  width: 48px;
+  height: 42px;
+  min-height: 42px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  font-size: 27px;
+  line-height: 1;
+}
+.sidebar-settings-btn svg {
+  width: 25px;
+  height: 25px;
+  display: block;
+}
+.sidebar-settings-glyph {
+  display: block;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+.sidebar-collapse-btn {
+  width: 34px;
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+/* ---------- BUILDER ---------- */
+.builder { overflow-y: auto; padding: 12px 18px; }
+.builder-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  margin-bottom: 10px; gap: 7px;
+}
+.builder-title {
+  font-size: 22px; font-weight: 800; letter-spacing: -0.4px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative; display: inline-block;
+  padding-bottom: 5px;
+}
+.builder-title::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 3px; border-radius: 999px;
+  background: var(--accent-grad);
+  opacity: 0.85;
+}
+.builder-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.builder-title-wrap {
+  display: flex; align-items: end; gap: 12px;
+  min-width: 0;
+}
+.builder-title-wrap .builder-actions {
+  flex: 0 0 auto;
+  align-self: stretch;
+  align-items: center;
+}
+.builder-title-input {
+  flex: 1;
+  min-width: 220px;
+  width: auto;
+  padding: 8px 11px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+  transition: border 0.15s, box-shadow .15s, background .15s;
+  font: inherit; color: inherit;
+  font-weight: 650;
+  letter-spacing: .2px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.builder-title-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.builder-actions {
+  padding: 3px;
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface-2));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  justify-self: end;
+}
+.builder-action-btn {
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+.builder-action-duplicate {
+  color: var(--accent);
+}
+.builder-action-danger {
+  color: var(--accent-2);
+}
+.builder-action-save {
+  padding-inline: 10px;
+}
+.preview-template-actions {
+  justify-self: auto;
+  max-width: calc(100% - 100px);
+  justify-content: flex-end;
+}
+.preview-template-actions .builder-action-btn {
+  padding: 4px 7px;
+}
+
+.section {
+  background: var(--surface); backdrop-filter: blur(10px);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 6px 8px; margin-bottom: 5px;
+}
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.section-title {
+  font-size: 14px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.section-head-inline {
+  justify-content: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.section-head-input {
+  width: 190px;
+  padding: 6px 9px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  transition: border 0.15s;
+  font: inherit;
+  color: inherit;
+}
+.section-head-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.builder-divider {
+  position: relative;
+  height: 1px;
+  margin: 8px 2px 10px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--accent) 22%, var(--border)) 18%,
+    color-mix(in srgb, var(--accent-2) 28%, var(--accent)) 50%,
+    color-mix(in srgb, var(--accent) 22%, var(--border)) 82%,
+    transparent 100%
+  );
+  opacity: 0.75;
+}
+.builder-divider::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 84px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--accent) 18%, transparent) 0%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
+
+.row { display: grid; gap: 5px; margin-bottom: 3px; }
+.row > * { min-width: 0; }
+.row:last-child { margin-bottom: 0; }
+.row-2 { grid-template-columns: 1fr 1fr; }
+.row-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.row-rev { grid-template-columns: 1fr 1fr 2fr; }
+.row-att { grid-template-columns: auto 1fr; align-items: end; gap: 12px; }
+
+.field { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.field label { font-size: 11px; color: var(--accent-2); font-weight: 600; letter-spacing: 0.2px; }
+
+/* Measurement labels — themed slightly differently from other field labels:
+   small-caps tone with the accent gradient instead of solid accent-2. */
+.measurement-field .field label {
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+  font-size: 10px;
+}
+.field input, .field textarea, .field select,
+.inner-group > textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 9px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--bg);
+  transition: border 0.15s;
+  font: inherit; color: inherit;
+}
+.field input:focus, .field textarea:focus, .field select:focus,
+.inner-group > textarea:focus {
+  outline: none; border-color: var(--accent);
+}
+.field input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+.field input[type="number"]::-webkit-inner-spin-button,
+.field input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none; margin: 0;
+}
+.field textarea, .inner-group > textarea {
+  min-height: 38px; resize: vertical;
+}
+.field textarea.lg, .inner-group > textarea.lg { min-height: 64px; }
+.field textarea.tag-paragraph,
+.inner-group > textarea.tag-paragraph { min-height: 108px; }
+.inner-group > textarea.tall { min-height: 56px; }
+.field-hint {
+  padding: 6px 10px; color: var(--text-muted); font-size: 12px;
+  background: var(--bg); border-radius: 7px; border: 1px dashed var(--border);
+}
+
+.subsection {
+  border: 1px solid var(--border); border-radius: 9px;
+  padding: 5px 7px 6px; margin-bottom: 4px; background: var(--surface-2);
+}
+.subsection-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px; gap: 8px;
+}
+.subsection-title {
+  font-size: 13px; font-weight: 700;
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.subsection-title-wrap {
+  display: flex; align-items: center; gap: 6px; min-width: 0;
+}
+.subsection-mini-input {
+  width: 52px;
+  padding: 4px 7px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  transition: border 0.15s;
+  font: inherit; color: inherit;
+}
+.subsection-mini-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Grouped fields inside an Item — flush with the surrounding rows
+   so contents align with the part-number row above. */
+.inner-group {
+  margin: 4px 0; display: flex; flex-direction: column; gap: 2px;
+}
+.inner-group-title {
+  font-size: 12px; font-weight: 600; color: var(--accent-2); letter-spacing: 0.2px;
+}
+.del-btn { color: var(--text-muted); font-size: 12px; padding: 3px 8px; border-radius: 6px; }
+.del-btn:hover { background: var(--border); color: var(--accent-2); }
+
+.add-btn {
+  border: 1px dashed var(--border); padding: 6px 14px; border-radius: 8px;
+  font-size: 12px; font-weight: 500; color: var(--text-muted);
+  width: 100%; text-align: center; transition: all 0.15s;
+}
+.add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+select {
+  padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+/* ---------- PREVIEW PANE ---------- */
+.preview-pane {
+  background: var(--surface); backdrop-filter: blur(20px);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.preview-head {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.preview-title {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);
+}
+.preview-body { flex: 1; overflow: auto; padding: 14px; }
+.preview-card {
+  position: relative; overflow: hidden;
+  width: calc(51ch + 38px);
+  min-width: calc(51ch + 38px);
+  max-width: none;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px 18px 16px;
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 13px; line-height: 1.6;
+  white-space: pre-wrap; word-break: break-word;
+  box-shadow: var(--shadow);
+}
+.preview-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--accent-grad);
+}
+.preview-card em { color: var(--accent-2); font-style: italic; }
+.preview-card .preview-placeholder {
+  color: var(--text-muted); font-style: italic; opacity: 0.85;
+}
+.preview-card .lbl {
+  color: var(--accent); font-weight: 600;
+}
+.preview-card .item-hdr {
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+.preview-card .meas-hdr {
+  color: var(--accent-2); font-weight: 600;
+  text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;
+}
+.preview-card.formatted-preview,
+.tag-preview-pop.formatted-preview {
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+.preview-card.formatted-preview {
+  min-width: calc(51ch + 38px);
+  max-width: none;
+}
+.preview-card.formatted-preview .preview-inline-label,
+.tag-preview-pop.formatted-preview .preview-inline-label {
+  white-space: pre-wrap;
+}
+.preview-foot {
+  padding: 10px 14px; border-top: 1px solid var(--border);
+  display: flex; gap: 6px;
+}
+
+/* ---------- MODAL ---------- */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: none; align-items: center; justify-content: center;
+  z-index: 100; backdrop-filter: blur(6px);
+}
+.modal-backdrop.show { display: flex; }
+.modal {
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 14px;
+  padding: 18px; width: min(420px, 92vw);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.modal h3 { margin-bottom: 12px; font-size: 16px; }
+.modal-options { display: grid; gap: 6px; margin-bottom: 12px; max-height: 50vh; overflow-y: auto; }
+.modal:has(.theme-lab-layout) { width: auto; }
+.modal-options:has(.theme-lab-layout) { max-height: 72vh; }
+.modal-options button {
+  text-align: left; padding: 10px 12px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--bg);
+  font-weight: 500; transition: all 0.15s;
+}
+.modal-options button:hover { border-color: var(--accent); }
+.modal-foot { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ---------- THEME PICKER ---------- */
+.theme-picker {
+  position: absolute; top: 50px; right: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  display: none; z-index: 50; width: 220px;
+  max-height: calc(100vh - 80px); overflow-y: auto;
+}
+.theme-picker.show { display: block; }
+.theme-picker h4 {
+  font-size: 10px; text-transform: uppercase;
+  color: var(--text-muted); padding: 6px 8px; letter-spacing: 0.5px;
+}
+.theme-opt {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px; border-radius: 8px; width: 100%;
+  font-size: 13px; transition: background 0.15s;
+}
+.theme-opt:hover { background: var(--border); }
+.theme-swatch { width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); }
+
+/* ---------- TOAST ---------- */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border);
+  padding: 10px 18px; border-radius: 999px; font-size: 13px;
+  box-shadow: var(--shadow);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 200;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+/* ---------- DRAG IMPORT ---------- */
+.drop-overlay {
+  position: fixed; inset: 0;
+  display: none; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--bg) 42%, rgba(0,0,0,0.34));
+  backdrop-filter: blur(10px);
+  z-index: 250;
+  pointer-events: none;
+}
+body.drag-importing .drop-overlay { display: flex; }
+.drop-overlay-card {
+  min-width: min(420px, calc(100vw - 40px));
+  max-width: 520px;
+  padding: 22px 26px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--accent) 18%, rgba(0,0,0,0.18));
+  text-align: center;
+}
+.drop-overlay-title {
+  font-size: 18px; font-weight: 800; margin-bottom: 4px;
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.drop-overlay-copy {
+  font-size: 13px; color: var(--text-muted); line-height: 1.5;
+}
+
+/* ---------- GUIDES ---------- */
+.guides { display: grid; grid-template-rows: auto 1fr; height: 100%; }
+.guides-tabs {
+  display: flex; gap: 6px; padding: 12px 16px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.guide-tab {
+  padding: 6px 12px; border-radius: 8px; font-size: 13px;
+  background: var(--bg); border: 1px solid var(--border);
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+}
+.guide-tab.active {
+  background: var(--accent-grad); color: white; border-color: transparent;
+}
+.guide-tab .x {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 4px; font-size: 14px;
+  opacity: 0.7;
+}
+.guide-tab .x:hover { background: rgba(255,255,255,0.25); opacity: 1; }
+.guide-viewer { padding: 12px 16px; overflow: hidden; }
+.guide-viewer iframe {
+  width: 100%; height: 100%; border: 1px solid var(--border);
+  border-radius: 12px; background: var(--bg);
+}
+
+/* ---------- EMPTY / COMING-SOON ---------- */
+.empty-state {
+  text-align: center; padding: 40px 16px;
+  color: var(--text-muted); font-size: 13px;
+}
+.coming-soon {
+  display: flex; align-items: center; justify-content: center;
+  height: 100%; flex-direction: column; gap: 10px;
+  color: var(--text-muted); text-align: center; padding: 40px;
+}
+.coming-soon h2 {
+  font-size: 28px;
+  background: var(--accent-grad); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+kbd {
+  font-family: monospace; background: var(--border);
+  padding: 1px 5px; border-radius: 4px; font-size: 11px;
+}
+
+/* ============================================================================
+   POLISH LAYER — micro-interactions, focus halos, themed touches.
+   Universal first, then per-theme "it factor" overrides.
+   ============================================================================ */
+
+/* Themed text selection + caret */
+::selection { background: var(--accent); color: #fff; }
+input, textarea { caret-color: var(--accent); }
+
+/* Soft focus halo on every editable surface */
+.field input:focus, .field textarea:focus, .field select:focus,
+.inner-group > textarea:focus, .search:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* Brand wordmark — slow drifting sheen along the gradient */
+.brand {
+  background-size: 220% 100%;
+  animation: brandSheen 7s ease-in-out infinite;
+}
+@keyframes brandSheen {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* Topbar — subtle accent rule under the bottom border */
+.topbar { position: relative; }
+.topbar::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: var(--accent-grad); opacity: 0.4; pointer-events: none;
+}
+
+/* Tabs — gentle lift on active */
+.tab { transition: transform .18s cubic-bezier(.4,0,.2,1), background .18s, color .18s, box-shadow .2s; }
+.tab.active { transform: translateY(-1px); }
+
+/* Buttons — pressable feel + sweep on primary hover */
+.btn { transition: transform .12s ease, box-shadow .18s ease, background .18s ease, color .15s ease; }
+.btn:active { transform: scale(.97); }
+.btn-primary { position: relative; overflow: hidden; isolation: isolate; }
+.btn-primary::after {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(120deg, transparent 25%, rgba(255,255,255,.28) 50%, transparent 75%);
+  transform: translateX(-110%);
+  transition: transform .65s ease;
+}
+.btn-primary:hover::after { transform: translateX(110%); }
+.btn-primary:hover {
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 35%, transparent),
+              0 1px 3px rgba(0,0,0,.12);
+}
+
+/* Icon buttons — tiny scale pop */
+.icon-btn { transition: background .15s, color .15s, transform .15s; }
+.icon-btn:hover { transform: scale(1.08); }
+.icon-btn:active { transform: scale(.92); }
+
+/* Section cards — accent border on hover */
+.section { transition: border-color .25s ease, box-shadow .25s ease; }
+.section:hover {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+
+/* Subsections — light up when focused */
+.subsection { transition: border-color .2s ease, box-shadow .25s ease; }
+.subsection:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* Sidebar tag cards — accent stripe + lift */
+.tag-card {
+  border-left: 3px solid transparent;
+  transition: transform .18s ease, background .18s, border-left-color .2s, box-shadow .2s;
+}
+.tag-card:hover { transform: translateX(2px); border-left-color: var(--accent); }
+.tag-card.active {
+  border-left-color: transparent;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+/* Preview card — soft glow on hover, deepen when copying */
+.preview-card { transition: box-shadow .25s ease, transform .25s ease; }
+.preview-card:hover {
+  box-shadow: 0 10px 32px color-mix(in srgb, var(--accent) 18%, transparent),
+              0 2px 6px rgba(0,0,0,.08);
+}
+
+/* Toast — accent-tinted ring */
+.toast { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+
+/* Modal — pop entry */
+.modal-backdrop.show .modal { animation: modalIn .24s cubic-bezier(.2,.9,.3,1.2); }
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(10px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Scrollbar — accent on hover */
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Theme picker swatches — subtle ring on hover */
+.theme-opt:hover .theme-swatch {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+/* ---------- THEME "IT FACTOR" ----------
+   Exotic / dark themes get a slow background drift + animated topbar accent
+   for atmosphere. Crisp light themes stay still for that "professional" feel. */
+
+body.theme-aurora,
+body.theme-cyberpunk,
+body.theme-cosmos,
+body.theme-ocean,
+body.theme-midnight,
+body.theme-charcoal,
+body.theme-boeing-sky,
+body.theme-alloy,
+body.theme-emberline,
+body.theme-command {
+  background-size: 220% 220%;
+  animation: bgDrift 28s ease-in-out infinite alternate;
+}
+@keyframes bgDrift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+/* Animated flowing topbar accent on the most expressive themes */
+body.theme-aurora .topbar::after,
+body.theme-cyberpunk .topbar::after,
+body.theme-cosmos .topbar::after,
+body.theme-ocean .topbar::after,
+body.theme-alloy .topbar::after,
+body.theme-emberline .topbar::after,
+body.theme-command .topbar::after {
+  background-size: 220% 100%;
+  animation: stripeFlow 9s linear infinite;
+  opacity: .7;
+}
+@keyframes stripeFlow { to { background-position: 220% 0; } }
+
+/* Glow under active tabs on dark themes */
+body.theme-midnight .tab.active,
+body.theme-charcoal .tab.active,
+body.theme-cosmos .tab.active,
+body.theme-cyberpunk .tab.active,
+body.theme-aurora .tab.active,
+body.theme-ocean .tab.active,
+body.theme-boeing-sky .tab.active,
+body.theme-alloy .tab.active,
+body.theme-emberline .tab.active,
+body.theme-command .tab.active {
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 50%, transparent),
+              0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* Cyberpunk — neon glow on focus + primary text */
+body.theme-cyberpunk .btn-primary {
+  text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+body.theme-cyberpunk .field input:focus,
+body.theme-cyberpunk .field textarea:focus,
+body.theme-cyberpunk .field select:focus,
+body.theme-cyberpunk .inner-group > textarea:focus {
+  box-shadow: 0 0 0 1px var(--accent),
+              0 0 18px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* Aurora — preview gets a multi-stop animated border-top */
+body.theme-aurora .preview-card::before,
+body.theme-cyberpunk .preview-card::before,
+body.theme-cosmos .preview-card::before {
+  background-size: 220% 100%;
+  animation: stripeFlow 10s linear infinite;
+}
+
+/* Light themes — soft top-down sheen inside section cards */
+body.theme-sunrise .section,
+body.theme-mint .section,
+body.theme-lavender .section,
+body.theme-rosegold .section,
+body.theme-sage .section,
+body.theme-linen .section,
+body.theme-monochrome .section,
+body.theme-boeing-classic .section,
+body.theme-highline .section,
+body.theme-vapor .section,
+body.theme-glacier .section {
+  background-image: linear-gradient(180deg, rgba(255,255,255,.45), transparent 55%);
+}
+
+/* Boeing Classic — crisp navy top accent under the topbar */
+body.theme-boeing-classic .topbar::after { opacity: .9; height: 2px; }
+
+/* Cosmos / Aurora / Cyberpunk — radial accent halo behind the brand */
+body.theme-cosmos .brand,
+body.theme-aurora .brand,
+body.theme-cyberpunk .brand {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 35%, transparent));
+}
+
+/* Linen / Sage / Rosegold — paper-y fine inner border on cards */
+body.theme-linen .section,
+body.theme-sage .section,
+body.theme-rosegold .section {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 1px 0 rgba(0,0,0,.02);
+}
+
+/* Reduced motion — disable animated bg + sheens */
+@media (prefers-reduced-motion: reduce) {
+  body, .brand, .preview-card::before, .topbar::after { animation: none !important; }
+  .btn-primary::after { display: none; }
+  .modal-backdrop.show .modal { animation: none !important; }
+}
+
+/* ============================================================================
+   FEATURE LAYER — custom themes, hover preview,
+   theme ripple, focus mode, uppercase text.
+   ============================================================================ */
+
+/* ---------- Theme builder modal ---------- */
+.theme-builder { display: grid; gap: 12px; }
+.theme-builder .tb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.theme-builder label {
+  font-size: 11px; color: var(--accent-2); font-weight: 600;
+  letter-spacing: 0.2px; display: block; margin-bottom: 4px;
+}
+.theme-builder input[type="color"] {
+  width: 100%; height: 38px; padding: 2px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg); cursor: pointer;
+}
+.theme-builder input[type="text"], .theme-builder select {
+  width: 100%; padding: 7px 9px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--bg);
+  font: inherit; color: inherit;
+}
+.theme-builder .tb-preview {
+  height: 56px; border-radius: 10px; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: white; letter-spacing: 0.4px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+
+/* Custom themes section in theme picker */
+.theme-picker .ct-row {
+  display: flex; align-items: center; gap: 4px;
+}
+.theme-picker .ct-row .theme-opt { flex: 1; min-width: 0; }
+.theme-picker .ct-row .theme-opt span:not(.theme-swatch) {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.theme-picker .ct-mini-btn {
+  width: 22px; height: 22px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); font-size: 12px; transition: all .15s;
+}
+.theme-picker .ct-mini-btn:hover { background: var(--border); color: var(--text); }
+.theme-picker .ct-mini-btn.del:hover { color: var(--accent-2); }
+.theme-picker .ct-mini-btn svg { width: 12px; height: 12px; display: block; }
+.theme-picker .ct-empty {
+  padding: 6px 8px; font-size: 11px; color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ---------- Tag-card hover preview popover ---------- */
+.tag-preview-pop {
+  position: fixed; z-index: 80;
+  width: 360px; max-height: 360px; overflow-y: auto;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px;
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 12px; line-height: 1.55;
+  white-space: pre-wrap; word-break: break-word;
+  box-shadow: 0 16px 40px rgba(0,0,0,.28), 0 2px 8px rgba(0,0,0,.1);
+  pointer-events: none;
+  animation: popIn .14s ease;
+}
+.tag-preview-pop.formatted-preview {
+  width: calc(51ch + 38px);
+  max-width: min(calc(100vw - 16px), calc(51ch + 38px));
+}
+.tag-preview-pop::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--accent-grad);
+  border-radius: 12px 12px 0 0;
+}
+.tag-preview-pop em { color: var(--accent-2); font-style: italic; }
+.tag-preview-pop .lbl { color: var(--accent); font-weight: 600; }
+.tag-preview-pop .item-hdr {
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; font-weight: 700;
+}
+.tag-preview-pop .meas-hdr {
+  color: var(--accent-2); font-weight: 700;
+  text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;
+}
+.tag-preview-pop .preview-placeholder { color: var(--text-muted); font-style: italic; }
+@keyframes popIn {
+  from { opacity: 0; transform: translateX(-6px) scale(.98); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ---------- Theme ripple ---------- */
+.theme-ripple {
+  position: fixed; pointer-events: none; z-index: 9999;
+  border-radius: 50%; width: 0; height: 0;
+  transform: translate(-50%, -50%);
+  animation: themeRipple .7s cubic-bezier(.2,.6,.3,1) forwards;
+}
+@keyframes themeRipple {
+  0%   { width: 0; height: 0; opacity: .8; }
+  60%  { opacity: .55; }
+  100% { width: 260vmax; height: 260vmax; opacity: 0; }
+}
+
+/* ---------- Focus mode ---------- */
+body.focus-mode .sidebar,
+body.focus-mode .resizer-left { display: none; }
+body.focus-mode .main { grid-template-columns: minmax(0, 1fr) 6px minmax(calc(51ch + 66px), 500px) !important; }
+body.focus-mode .builder { max-width: none; margin: 0; padding: 24px 28px; }
+.sidebar-restore-btn {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 75;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 13px;
+  border-radius: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: white;
+  background: var(--accent-grad);
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--accent) 28%, rgba(0,0,0,.18));
+  font-size: 18px;
+  font-weight: 850;
+  transition: transform .15s, box-shadow .15s;
+}
+.sidebar-restore-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--accent) 34%, rgba(0,0,0,.2));
+}
+.sidebar-restore-btn span {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.icon-btn.feature-on {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.builder-collapse-btn {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+  transition: transform .15s, background .15s, color .15s;
+}
+.builder-collapse-btn:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg));
+  color: var(--text);
+}
+
+body.custom-theme-vars .section,
+body.custom-theme-vars .settings-panel,
+body.custom-theme-vars .preview-card,
+body.custom-theme-vars .theme-card,
+body.custom-theme-vars .modal,
+body.custom-theme-vars .tag-preview-pop {
+  border-radius: var(--ui-radius, 12px);
+}
+body.custom-theme-vars .btn,
+body.custom-theme-vars .icon-btn,
+body.custom-theme-vars .field input,
+body.custom-theme-vars .field textarea,
+body.custom-theme-vars .field select,
+body.custom-theme-vars .search,
+body.custom-theme-vars .builder-title-input,
+body.custom-theme-vars .tag-card,
+body.custom-theme-vars .subsection,
+body.custom-theme-vars .meas-section,
+body.custom-theme-vars .meas-section-name-wrap {
+  border-radius: calc(var(--ui-radius, 12px) * .72);
+}
+body.custom-theme-vars .builder,
+body.custom-theme-vars .preview-body,
+body.custom-theme-vars .settings-page {
+  padding-top: calc(12px * var(--ui-density, 1));
+  padding-bottom: calc(12px * var(--ui-density, 1));
+}
+body.custom-theme-vars .section,
+body.custom-theme-vars .subsection {
+  padding: calc(6px * var(--ui-density, 1)) calc(8px * var(--ui-density, 1));
+}
+
+.uppercase-text { text-transform: uppercase; }
+
+/* ============================================================================
+   v3 FEATURE LAYER — measurement sections, otherBlocks, spec ref, tag chips,
+   sort, favorites, resizable panels, undo toast.
+   ============================================================================ */
+
+/* ---------- Measurement section card ---------- */
+.meas-section {
+  position: relative;
+  padding: 8px 10px;
+  margin: 6px 0;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--accent) 4%, var(--surface-2));
+  transition: border-color .2s ease, box-shadow .25s ease, background .2s;
+}
+.meas-section::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 8px; bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent-grad);
+  opacity: .55;
+}
+.meas-section:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.meas-section-head {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 4px;
+}
+.meas-section-name-wrap {
+  flex: 1;
+  display: flex; align-items: center; gap: 7px;
+  padding: 2px 6px 2px 9px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.meas-section-name-wrap:focus-within {
+  border-color: var(--accent);
+  background: var(--bg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.meas-section-edit-icon {
+  flex-shrink: 0;
+  width: 15px; height: 15px;
+  color: var(--accent-2);
+  opacity: .9;
+}
+.meas-section-name {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 2px;
+  font: inherit; color: inherit;
+  border: none;
+  background: transparent;
+  font-weight: 700; font-size: 13px; letter-spacing: 0.3px;
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.meas-section-name::placeholder {
+  -webkit-text-fill-color: var(--text-muted);
+  opacity: .6; font-weight: 500; letter-spacing: 0;
+}
+.meas-section-name:focus {
+  outline: none;
+  -webkit-text-fill-color: var(--text);
+}
+.meas-section-del {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.meas-section-del:hover { background: var(--border); color: var(--accent-2); }
+
+.add-btn-meas {
+  margin-top: 2px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+.add-btn-meas:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* ---------- Spec auto-reference button row ---------- */
+.spec-ref-row {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.spec-ref-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--accent-2); letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.spec-ref-chips {
+  display: flex; gap: 4px; flex-wrap: wrap;
+}
+.spec-ref-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  letter-spacing: 0.2px;
+  transition: all .15s;
+  max-width: 220px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.spec-ref-chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.spec-ref-chip.active {
+  background: var(--accent-grad);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.spec-ref-off { color: var(--text-muted); }
+.spec-ref-off.active { background: var(--text-muted); }
+
+/* ---------- Add Other footer button ---------- */
+.add-other-wrap { margin: 10px 0 4px; display: flex; justify-content: center; }
+.other-tags-spacer {
+  height: 1px;
+  margin: 12px auto 10px;
+  width: min(420px, 86%);
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--accent) 22%, transparent) 18%,
+    color-mix(in srgb, var(--accent-2) 48%, var(--accent)) 50%,
+    color-mix(in srgb, var(--accent) 22%, transparent) 82%,
+    transparent 100%
+  );
+  opacity: .78;
+}
+.btn-add-other {
+  padding: 7px 24px;
+  min-width: 240px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+  color: var(--accent-2);
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all .18s;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.btn-add-other:hover {
+  background: var(--accent-grad);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+.add-other-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  font-weight: 800;
+  font-size: 12px;
+  transition: background .2s;
+}
+.btn-add-other:hover .add-other-icon { background: rgba(255,255,255,0.25); }
+
+/* ---------- Other-block label + text inputs ---------- */
+.other-block { padding: 10px 12px 12px; }
+.other-block-head {
+  align-items: stretch;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.other-block-label-wrap {
+  flex: 1;
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 6px 4px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.other-block-label-wrap:focus-within {
+  border-color: var(--accent);
+  background: var(--bg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.other-block-label-tag {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  background: var(--accent-grad);
+  color: white;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.other-block-label-input {
+  flex: 1;
+  padding: 6px 4px;
+  border: none;
+  background: transparent;
+  font: inherit; color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+.other-block-label-input:focus { outline: none; }
+.other-block-label-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 500;
+  opacity: .7;
+}
+.other-block-text {
+  display: block;
+  width: 100%;
+  min-height: 90px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font: inherit; color: inherit;
+  resize: vertical;
+  transition: border-color .15s, box-shadow .15s;
+}
+.other-block-text:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* ---------- Tag chips (template tag system) ---------- */
+.tag-chips-edit {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 4px;
+  min-height: 36px;
+  border-radius: 9px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  align-items: center;
+  transition: border-color .15s;
+}
+.tag-chips-edit:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.tag-chip-edit {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 4px 4px 10px;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+  background: var(--accent-grad);
+  color: white;
+  letter-spacing: 0.2px;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+.tag-chip-x {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  color: white;
+  font-size: 14px; line-height: 1;
+  transition: background .15s;
+}
+.tag-chip-x:hover { background: rgba(255,255,255,0.4); }
+.tag-chip-input {
+  flex: 1;
+  min-width: 100px;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  font: inherit; color: inherit;
+}
+.tag-chip-input:focus { outline: none; }
+
+/* Sidebar tag-card chips */
+.tag-card-tags {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  margin-top: 4px;
+}
+.tag-card-tag {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px; font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  letter-spacing: 0.3px;
+  transition: background .15s, color .15s;
+  cursor: pointer;
+}
+.tag-card-tag:hover {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+.tag-card-tag.more {
+  cursor: default;
+  color: var(--text-muted);
+  background: transparent;
+}
+.tag-card.active .tag-card-tag {
+  background: rgba(255,255,255,0.22);
+  color: white;
+}
+
+/* Sidebar sort + tag filter */
+.sidebar-sort-row {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 8px;
+}
+.sidebar-sort-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--accent-2);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.sidebar-sort-select {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 12px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+.sidebar-sort-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.tag-filter-row {
+  display: flex; align-items: center; gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+}
+.tag-filter-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--accent-2);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.tag-filter-select {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 9px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+  color: var(--text);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.tag-filter-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+/* ---------- Colorful template titles ---------- */
+.tag-card-title {
+  font-weight: 700;
+  font-size: 13.5px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.1px;
+  filter: saturate(1.1);
+}
+.tag-card.active .tag-card-title {
+  -webkit-text-fill-color: white;
+  background: none;
+  filter: none;
+}
+.tag-card.pinned-card {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.tag-card.pinned-card:hover {
+  background: color-mix(in srgb, var(--accent) 12%, var(--border));
+}
+
+/* ---------- Favorite (★) button always visible when pinned ---------- */
+.tag-action-fav {
+  font-size: 14px;
+  line-height: 1;
+}
+.tag-action-fav.active-fav {
+  opacity: 1 !important;
+  color: #f59e0b;
+}
+.tag-card.active .tag-action-fav.active-fav {
+  color: #fde68a;
+}
+
+/* ---------- Resizable panel handles ---------- */
+.resizer {
+  position: relative;
+  cursor: col-resize;
+  user-select: none;
+  background: transparent;
+  transition: background .15s;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 5;
+}
+.resizer-grip {
+  width: 2px;
+  height: 40px;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background .15s, height .15s;
+}
+.resizer:hover .resizer-grip {
+  background: var(--accent);
+  height: 60px;
+}
+body.resizing { cursor: col-resize !important; }
+body.resizing * { user-select: none !important; }
+
+/* ---------- Undo toast action button ---------- */
+.toast.with-action {
+  padding: 8px 8px 8px 18px;
+  display: inline-flex; align-items: center; gap: 12px;
+}
+.toast-action {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.4px;
+  background: var(--accent-grad);
+  color: white;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: transform .12s ease, box-shadow .15s;
+}
+.toast-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.toast-action:active { transform: scale(.95); }
+
+/* ---------- Dimmer existing colorful section titles for NCO/NCR feel ---------- */
+.section-title {
+  font-size: 14px; font-weight: 800; letter-spacing: 0.6px;
+}
+
+/* ---------- Settings page ---------- */
+.settings-page {
+  overflow-y: auto;
+  padding: 22px 28px;
+  position: relative;
+}
+.settings-hero {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
+}
+.settings-title {
+  font-size: 26px;
+  font-weight: 850;
+  letter-spacing: -0.2px;
+  background: var(--accent-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.settings-subtitle {
+  max-width: 760px;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.settings-credit {
+  position: fixed;
+  right: 16px;
+  bottom: 12px;
+  z-index: 12;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+  color: var(--text-muted);
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .2px;
+}
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+  gap: 14px;
+}
+.settings-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+.settings-panel-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  margin-bottom: 8px;
+}
+.settings-feature-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 7px;
+}
+.settings-feature {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--border));
+}
+.settings-feature strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+.settings-feature span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 12%, var(--border));
+}
+.settings-row:first-of-type { border-top: none; }
+.settings-row-text strong {
+  display: block;
+  font-size: 13px;
+}
+.settings-row-text span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.settings-switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 42px; height: 24px;
+}
+.settings-switch input {
+  opacity: 0;
+  width: 0; height: 0;
+}
+.settings-switch span {
+  position: absolute; inset: 0;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background .15s;
+}
+.settings-switch span::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; top: 3px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: 0 1px 4px rgba(0,0,0,.22);
+  transition: transform .15s;
+}
+.settings-switch input:checked + span {
+  background: var(--accent-grad);
+}
+.settings-switch input:checked + span::after {
+  transform: translateX(18px);
+}
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.settings-theme-panel {
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.theme-studio-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.theme-studio-title {
+  font-size: 15px;
+  font-weight: 850;
+  letter-spacing: .2px;
+}
+.theme-studio-copy {
+  color: var(--text-muted);
+  font-size: 12px;
+  max-width: 660px;
+  line-height: 1.45;
+}
+.theme-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 9px;
+}
+.theme-card {
+  position: relative;
+  min-height: 96px;
+  overflow: hidden;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--border));
+  background: var(--surface-2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+  text-align: left;
+  transition: transform .15s, border-color .15s, box-shadow .15s;
+}
+.theme-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 44%, var(--border));
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--accent) 13%, transparent);
+}
+.theme-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent), var(--shadow);
+}
+.theme-card-bg {
+  position: absolute;
+  inset: 0;
+  opacity: .9;
+}
+.theme-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(0,0,0,.18));
+  pointer-events: none;
+}
+.theme-card-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+}
+.theme-card-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 850;
+  color: white;
+  text-shadow: 0 1px 8px rgba(0,0,0,.3);
+}
+.theme-card.active .theme-card-name::after {
+  content: 'Active';
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.22);
+  font-size: 9px;
+  letter-spacing: .45px;
+  text-transform: uppercase;
+}
+.theme-card-chips {
+  display: flex;
+  gap: 5px;
+}
+.theme-card-chip {
+  width: 26px;
+  height: 22px;
+  border-radius: 7px;
+  border: 1px solid rgba(255,255,255,.32);
+  box-shadow: 0 3px 10px rgba(0,0,0,.18);
+}
+.theme-card-kind {
+  color: rgba(255,255,255,.82);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .35px;
+  text-transform: uppercase;
+}
+.theme-lab-layout {
+  width: min(780px, calc(92vw - 36px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, .55fr);
+  gap: 12px;
+}
+.theme-lab-controls {
+  display: grid;
+  gap: 10px;
+}
+.theme-lab-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.theme-lab-field label,
+.theme-lab-slider label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--accent-2);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .3px;
+}
+.theme-lab-field input[type="text"],
+.theme-lab-field select {
+  width: 100%;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.theme-lab-field input[type="color"] {
+  width: 100%;
+  height: 38px;
+  padding: 3px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.theme-lab-slider input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.theme-lab-preview {
+  min-height: 230px;
+  border-radius: 16px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  background: var(--bg-grad);
+  box-shadow: var(--shadow);
+}
+.theme-lab-window {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 10px;
+  padding: 11px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.theme-lab-bar {
+  height: 8px;
+  width: 74%;
+  border-radius: 999px;
+  background: var(--accent-grad);
+}
+.theme-lab-card {
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 10px;
+}
+.theme-lab-line {
+  height: 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+  background: color-mix(in srgb, var(--text-muted) 34%, transparent);
+}
+.theme-lab-line.short { width: 58%; }
+.theme-lab-button {
+  width: 82px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--accent-grad);
+}
+@media (max-width: 900px) {
+  .theme-studio-head,
+  .theme-lab-layout { grid-template-columns: 1fr; display: grid; }
+  .theme-lab-row { grid-template-columns: 1fr; }
+}
+.settings-history-list {
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.settings-history-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 8px 0;
+}
+.settings-history-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, var(--border));
+}
+.settings-history-title {
+  font-weight: 700;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.settings-history-meta {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+@media (max-width: 900px) {
+  .settings-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body class="theme-midnight">
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">✈ Red Tag Builder</div>
+    <nav class="tabs" id="tabs"></nav>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="undoBtn" title="Undo (⌘Z)" aria-label="Undo">↶</button>
+    <button class="icon-btn" id="redoBtn" title="Redo (⌘⇧Z)" aria-label="Redo">↷</button>
+    <button class="icon-btn" id="formatBtn" title="Toggle formatted preview layout" aria-label="Toggle formatted preview layout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 6h16"></path>
+        <path d="M4 12h7"></path>
+        <path d="M13 12h7"></path>
+        <path d="M4 18h16"></path>
+      </svg>
+    </button>
+    <button class="icon-btn" id="uppercaseBtn" title="Toggle uppercase tag text" aria-label="Toggle uppercase tag text">aA</button>
+    <button class="icon-btn" id="focusBtn" title="Fullscreen (⌘.)">⛶</button>
+    <button class="icon-btn" id="themeBtn" title="Theme">🎨</button>
+  </header>
+  <main class="main" id="main"></main>
+</div>
+
+<!-- Theme picker dropdown -->
+<div class="theme-picker" id="themePicker">
+  <h4>Boeing</h4>
+  <button class="theme-opt" data-theme="theme-boeing-classic"><span class="theme-swatch" style="background:linear-gradient(135deg,#0033A0,#1E64C8)"></span>Boeing Classic</button>
+  <button class="theme-opt" data-theme="theme-boeing-sky"><span class="theme-swatch" style="background:linear-gradient(135deg,#4ea8ff,#00d4ff)"></span>Boeing Sky</button>
+  <h4>Light</h4>
+  <button class="theme-opt" data-theme="theme-sunrise"><span class="theme-swatch" style="background:linear-gradient(135deg,#ff7a59,#ff4f87)"></span>Sunrise</button>
+  <button class="theme-opt" data-theme="theme-mint"><span class="theme-swatch" style="background:linear-gradient(135deg,#14b8a6,#3b82f6)"></span>Mint</button>
+  <button class="theme-opt" data-theme="theme-lavender"><span class="theme-swatch" style="background:linear-gradient(135deg,#8b5cf6,#6366f1)"></span>Lavender</button>
+  <button class="theme-opt" data-theme="theme-rosegold"><span class="theme-swatch" style="background:linear-gradient(135deg,#d4796a,#c9a17a)"></span>Rose Gold</button>
+  <button class="theme-opt" data-theme="theme-sage"><span class="theme-swatch" style="background:linear-gradient(135deg,#6a8e5e,#b59f6e)"></span>Sage</button>
+  <button class="theme-opt" data-theme="theme-linen"><span class="theme-swatch" style="background:linear-gradient(135deg,#0d7377,#14b8a6)"></span>Linen</button>
+  <button class="theme-opt" data-theme="theme-highline"><span class="theme-swatch" style="background:linear-gradient(135deg,#006bff,#00b894)"></span>Highline</button>
+  <button class="theme-opt" data-theme="theme-vapor"><span class="theme-swatch" style="background:linear-gradient(135deg,#7c3aed,#06b6d4)"></span>Vapor</button>
+  <button class="theme-opt" data-theme="theme-glacier"><span class="theme-swatch" style="background:linear-gradient(135deg,#0ea5e9,#22c55e)"></span>Glacier</button>
+  <button class="theme-opt" data-theme="theme-monochrome"><span class="theme-swatch" style="background:linear-gradient(135deg,#111111,#555555)"></span>Monochrome</button>
+  <h4>Dark</h4>
+  <button class="theme-opt" data-theme="theme-midnight"><span class="theme-swatch" style="background:linear-gradient(135deg,#38bdf8,#818cf8)"></span>Midnight</button>
+  <button class="theme-opt" data-theme="theme-charcoal"><span class="theme-swatch" style="background:linear-gradient(135deg,#fbbf24,#f87171)"></span>Charcoal</button>
+  <button class="theme-opt" data-theme="theme-cosmos"><span class="theme-swatch" style="background:linear-gradient(135deg,#ec4899,#a855f7)"></span>Cosmos</button>
+  <button class="theme-opt" data-theme="theme-aurora"><span class="theme-swatch" style="background:linear-gradient(135deg,#34d399,#60a5fa,#c084fc)"></span>Aurora</button>
+  <button class="theme-opt" data-theme="theme-ocean"><span class="theme-swatch" style="background:linear-gradient(135deg,#00b4d8,#90e0ef)"></span>Ocean</button>
+  <button class="theme-opt" data-theme="theme-cyberpunk"><span class="theme-swatch" style="background:linear-gradient(135deg,#00ffd5,#ff006e)"></span>Cyberpunk</button>
+  <button class="theme-opt" data-theme="theme-alloy"><span class="theme-swatch" style="background:linear-gradient(135deg,#b8ff5c,#00d4ff)"></span>Alloy</button>
+  <button class="theme-opt" data-theme="theme-emberline"><span class="theme-swatch" style="background:linear-gradient(135deg,#ff6b6b,#ffd166)"></span>Emberline</button>
+  <button class="theme-opt" data-theme="theme-command"><span class="theme-swatch" style="background:linear-gradient(135deg,#3cffb5,#8ab4ff)"></span>Command</button>
+  <h4>Custom</h4>
+  <div id="customThemesList"></div>
+  <button class="theme-opt" id="createThemeBtn"><span class="theme-swatch" style="background:linear-gradient(135deg,var(--accent),var(--accent-2))"></span>+ Create theme</button>
+</div>
+
+<!-- Modal & hidden file inputs & toast -->
+<div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modal"></div></div>
+<input type="file" id="fileImport" accept="application/json" style="display:none">
+<input type="file" id="filePdf" accept="application/pdf" style="display:none" multiple>
+<div class="toast" id="toast"></div>
+<div class="drop-overlay" id="dropOverlay" aria-hidden="true">
+  <div class="drop-overlay-card">
+    <div class="drop-overlay-title">Drop JSON to Import</div>
+    <div class="drop-overlay-copy">Release your file to load templates, tags, and caret templates.</div>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   STATE — single source of truth
+   ============================================================================ */
+
+const STORAGE_KEY = 'tagBuilder.v1';
+
+/* ============================================================================
+   PASTE JSON HERE
+   ----------------------------------------------------------------------------
+   Future release setup:
+   1. Export JSON from the app.
+   2. Replace the words Paste JSON here between the backticks below with the
+      full exported JSON object.
+   3. Save this HTML file. On first load, the baked JSON will merge into the
+      app automatically. Leave the placeholder text as-is when you do not want
+      baked-in data.
+   ============================================================================ */
+const BAKED_IN_JSON = String.raw`
+Paste JSON here
+`;
+
+// blankTag() returns a fresh tag object every call. Doing this as a function
+// (instead of a constant) avoids accidentally sharing references between tags.
+const blankTag = () => ({
+  id: 'tag_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+  templateName: '',
+  type: 'NCR',
+  revisionNumber: 0,      // if > 0, prepends "*Revision N*" line at the top
+  drawings: [
+    { type: 'Engineering', custom: '', number: '', sheet: '', rev: '', location: '' }
+  ],
+  processSpecs: [
+    { number: '', section: '', rev: '' }
+  ],
+  items: [ blankItem() ],
+  lso: '',
+  lio: '',
+  carrotTemplateId: null,
+  carrotTemplateName: '',
+  carrotsText: '',
+  attachmentsEnabled: true,
+  attachmentsText: '*See Attachments*',
+  otherBlocks: [],      // [{ id, label, text }] free-form trailing notes
+  pinned: false,        // pin tags to the top of the sidebar (favorites)
+  tags: [],             // user tags (chips) for organization
+  createdAt: Date.now(),
+  updatedAt: Date.now()
+});
+
+function blankTagForType(type = 'NCR') {
+  const tag = blankTag();
+  tag.type = type;
+  if (type === 'NCO') tag.attachmentsEnabled = false;
+  return tag;
+}
+
+function blankMeasSection(name = 'Measurements') {
+  return {
+    id: 'ms_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    name,
+    text: ''
+  };
+}
+
+function blankOtherBlock(label = 'Note') {
+  return {
+    id: 'ob_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    label,
+    text: ''
+  };
+}
+
+function blankItem(itemNumber = '') {
+  return {
+    itemNumber: itemNumber ? String(itemNumber) : '',
+    countOf: '', countTotal: '',
+    partNumber: '', description: '',
+    discrepancy: '',
+    measSections: [ blankMeasSection('Measurements') ],
+    sbText: '',
+    sbAutoRefIndexes: [0]   // [] = off, otherwise indexes into processSpecs
+  };
+}
+
+const state = {
+  activeTab: 'NCRs',
+  activeTheme: 'theme-midnight',
+  tags: [],          // saved NCR tags
+  templates: [],     // saved templates
+  carrotTemplates: [], // saved NCO carrot templates
+  deletionHistory: [], // [{ id, title, bemsid, deletedAt, type }]
+  current: blankTagForType('NCR'),
+  selectedId: null,  // id of the currently-loaded template (null = new)
+  selectedCarrotId: null,
+  previewSuppressed: false,
+  carrotPreviewSuppressed: false,
+  search: '',
+  dateFilter: 'all', // 'all' | 'today' | 'week' | 'month'
+  tagFilter: '',     // filter by template tag (chip)
+  sortMode: 'updated', // 'updated' | 'created' | 'name' | 'name-desc'
+  guides: [],        // [{name, url}] PDFs loaded via file picker (object URLs)
+  activeGuideIdx: 0,
+  customThemes: [],  // user-built themes [{id, name, base, accent, accent2}]
+  focusMode: false,  // transient — not persisted
+  formattedPreview: false,
+  uppercaseText: false,
+  sidebarWidth: 250,
+  previewWidth: 500,
+  scanPrefixStrip: true,
+  settingsReturnTab: 'NCRs',
+  history: [],       // undo stack [{type, payload, label}]
+  redoStack: []
+};
+
+/* ---------- PERSISTENCE ----------
+   Tags + templates + active theme survive page reloads via localStorage.
+   PDF guides do NOT persist — object URLs only live for the session,
+   which is fine since the user loads from a shared folder each time. */
+function persist() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    activeTheme: state.activeTheme,
+    tags: state.tags,
+    templates: state.templates,
+    carrotTemplates: state.carrotTemplates,
+    deletionHistory: state.deletionHistory,
+    customThemes: state.customThemes,
+    formattedPreview: state.formattedPreview,
+    uppercaseText: state.uppercaseText,
+    sidebarWidth: state.sidebarWidth,
+    previewWidth: state.previewWidth,
+    sortMode: state.sortMode,
+    scanPrefixStrip: state.scanPrefixStrip
+  }));
+}
+function loadPersisted() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    state.activeTheme = data.activeTheme || state.activeTheme;
+    state.tags = (data.tags || []).map(migrateTag);
+    state.templates = (data.templates || []).map(migrateTag);
+    state.carrotTemplates = data.carrotTemplates || [];
+    state.deletionHistory = Array.isArray(data.deletionHistory) ? data.deletionHistory : [];
+    state.customThemes = data.customThemes || [];
+    state.formattedPreview = !!data.formattedPreview;
+    state.uppercaseText = !!data.uppercaseText;
+    if (typeof data.sidebarWidth === 'number') state.sidebarWidth = data.sidebarWidth;
+    if (typeof data.previewWidth === 'number') state.previewWidth = data.previewWidth;
+    if (typeof data.sortMode === 'string') state.sortMode = data.sortMode;
+    if (typeof data.scanPrefixStrip === 'boolean') state.scanPrefixStrip = data.scanPrefixStrip;
+  } catch (e) { console.warn('Load failed', e); }
+}
+
+// Migrate legacy tag/template format -> new schema (measSections, otherBlocks, tags)
+function migrateTag(t) {
+  if (!t || typeof t !== 'object') return t;
+  if (!Array.isArray(t.otherBlocks)) t.otherBlocks = [];
+  if (!Array.isArray(t.tags)) t.tags = [];
+  if (Array.isArray(t.items)) {
+    t.items = t.items.map(it => migrateItem(it));
+  }
+  return t;
+}
+
+function migrateItem(it) {
+  if (!it || typeof it !== 'object') return it;
+  // Build measSections from any prior shape (legacy item-level L/W/D, or
+  // the earlier intermediate format that stored L/W/D inside each section).
+  const oldL = it.measL, oldW = it.measW, oldD = it.measD;
+  const oldCustom = it.measCustom;
+  const fmt = (v, suf) => {
+    const raw = String(v || '').trim();
+    if (!raw) return '';
+    if (/[′']$/.test(raw)) return raw.replace(/[′']$/, "'") + suf;
+    if (/["″]$/.test(raw)) return raw.replace(/["″]$/, '"') + suf;
+    return raw + '"' + suf;
+  };
+  const fold = (l, w, d) => {
+    const parts = [];
+    if (l) parts.push(fmt(l, 'L'));
+    if (w) parts.push(fmt(w, 'W'));
+    if (d) parts.push(fmt(d, 'D'));
+    return parts.length ? parts.join(' x ') : '';
+  };
+
+  if (!Array.isArray(it.measSections)) {
+    const measLine = fold(oldL, oldW, oldD);
+    const sections = [];
+    sections.push({
+      id: 'ms_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      name: 'Measurements',
+      text: [measLine, measLine && oldCustom ? oldCustom : ''].filter(Boolean).join('\n')
+        || (oldCustom && !measLine ? '' : '')
+    });
+    if (oldCustom && !measLine) {
+      sections.push({
+        id: 'ms_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + 'b',
+        name: '',
+        text: oldCustom
+      });
+    }
+    it.measSections = sections;
+  } else {
+    // Earlier intermediate format had measL/W/D inside each section. Fold them.
+    it.measSections = it.measSections.map(sec => {
+      const line = fold(sec.measL, sec.measW, sec.measD);
+      const folded = {
+        id: sec.id || ('ms_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6)),
+        name: sec.name || '',
+        text: [line, sec.text].filter(Boolean).join(line && sec.text ? '\n' : '')
+      };
+      return folded;
+    });
+  }
+  // Migrate sbAutoRef boolean / sbAutoRefIndex int -> sbAutoRefIndexes array
+  if (!Array.isArray(it.sbAutoRefIndexes)) {
+    if (typeof it.sbAutoRefIndex === 'number') {
+      it.sbAutoRefIndexes = it.sbAutoRefIndex >= 0 ? [it.sbAutoRefIndex] : [];
+    } else {
+      it.sbAutoRefIndexes = it.sbAutoRef === false ? [] : [0];
+    }
+  }
+  delete it.measL; delete it.measW; delete it.measD; delete it.measCustom;
+  delete it.sbAutoRef; delete it.sbAutoRefIndex;
+  return it;
+}
+
+/* On first run, seed a sample "Sharp Dent" template so users can see what a
+   filled-out tag looks like and how templates work. We store a "seeded" flag
+   so we don't keep re-adding it after the user deletes the sample. */
+function seedDefaults() {
+  if (localStorage.getItem(STORAGE_KEY + '.seeded')) return;
+  if (state.tags.length || state.templates.length || state.carrotTemplates.length) {
+    localStorage.setItem(STORAGE_KEY + '.seeded', '1');
+    return;
+  }
+  state.templates.push({
+    id: 'tpl_sharp_dent',
+    templateName: 'Sharp Dent',
+    type: 'NCR',
+    revisionNumber: 0,
+    drawings: [
+      { type: 'Engineering', custom: '', number: '123A1234', sheet: '1', rev: 'A' }
+    ],
+    processSpecs: [
+      { number: 'BAC1234', section: '11.1a', rev: 'A' }
+    ],
+    items: [{
+      countOf: '1', countTotal: '8',
+      partNumber: '123Q1234-1', description: 'Tube Assy',
+      discrepancy: 'has a sharp dent C/T the AS56942 Fitting',
+      measSections: [{
+        id: 'ms_seed_1', name: 'Measurements',
+        text: '0.172"L x 0.086"W x 0.007"D'
+      }],
+      sbText: 'No blah blah on the tube',
+      sbAutoRefIndexes: [0]
+    }],
+    lso: '100/010',
+    lio: '110/010',
+    carrotTemplateId: null,
+    carrotTemplateName: '',
+    carrotsText: '',
+    attachmentsEnabled: true,
+    attachmentsText: '*See Attachments*',
+    otherBlocks: [],
+    tags: ['example', 'tube'],
+    pinned: false,
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  });
+  localStorage.setItem(STORAGE_KEY + '.seeded', '1');
+  persist();
+}
+
+/* ---------- DOM HELPERS ---------- */
+const $  = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+// el(tag, attrs, children) — tiny createElement helper.
+// Beginner note: this lets us build DOM trees declaratively, almost like JSX.
+function el(tag, attrs = {}, children = []) {
+  const node = document.createElement(tag);
+  for (const k in attrs) {
+    if (attrs[k] == null) continue;
+    if (k === 'class') node.className = attrs[k];
+    else if (k === 'html') node.innerHTML = attrs[k];
+    else if (k === 'style') node.style.cssText = attrs[k];
+    else if (k.startsWith('on') && typeof attrs[k] === 'function')
+      node.addEventListener(k.slice(2), attrs[k]);
+    else node.setAttribute(k, attrs[k]);
+  }
+  (Array.isArray(children) ? children : [children]).forEach(c => {
+    if (c == null || c === false) return;
+    node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return node;
+}
+
+function toast(msg) {
+  const t = $('#toast');
+  t.innerHTML = '';
+  t.appendChild(document.createTextNode(msg));
+  t.classList.add('show');
+  t.classList.remove('with-action');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+/* ---------- Undo / Redo ----------
+   Tracks structural history events (template/caret create + delete) so a user
+   can roll back an accidental click. The toast surfaces an Undo button for
+   ~6 seconds; ⌘Z / ⌘⇧Z work globally. */
+const HISTORY_LIMIT = 25;
+function pushHistory(entry) {
+  state.history.push(entry);
+  if (state.history.length > HISTORY_LIMIT) state.history.shift();
+  state.redoStack.length = 0;
+  renderUndoButton();
+}
+function actionToast(msg, label, action) {
+  const t = $('#toast');
+  t.innerHTML = '';
+  t.appendChild(document.createTextNode(msg));
+  const btn = el('button', {
+    class: 'toast-action',
+    onclick: e => { e.stopPropagation(); action(); t.classList.remove('show'); }
+  }, label);
+  t.appendChild(btn);
+  t.classList.add('show', 'with-action');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => {
+    t.classList.remove('show'); t.classList.remove('with-action');
+  }, 6000);
+}
+function performUndo() {
+  const entry = state.history.pop();
+  if (!entry) { toast('Nothing to undo'); return; }
+  state.redoStack.push(applyHistoryReverse(entry));
+  renderUndoButton();
+  persist();
+  renderAll();
+  toast('Undid: ' + entry.label);
+}
+function performRedo() {
+  const entry = state.redoStack.pop();
+  if (!entry) { toast('Nothing to redo'); return; }
+  state.history.push(applyHistoryReverse(entry));
+  renderUndoButton();
+  persist();
+  renderAll();
+  toast('Redid: ' + entry.label);
+}
+function applyHistoryReverse(entry) {
+  // Returns the inverse entry to push onto the opposite stack.
+  const reverse = { type: '', label: entry.label, payload: null };
+  switch (entry.type) {
+    case 'create-template': {
+      // Undo a creation = remove it; reverse = re-create
+      const idx = state.templates.findIndex(x => x.id === entry.payload.id);
+      const removed = idx >= 0 ? state.templates.splice(idx, 1)[0] : entry.payload;
+      if (state.selectedId === entry.payload.id) {
+        state.selectedId = null;
+        state.current = blankTagForType(currentTagType());
+      }
+      reverse.type = 'delete-template';
+      reverse.payload = { template: clone(removed), index: idx };
+      return reverse;
+    }
+    case 'delete-template': {
+      // Undo a deletion = re-insert; reverse = re-delete
+      const tpl = clone(entry.payload.template);
+      const insertAt = Math.min(entry.payload.index ?? 0, state.templates.length);
+      state.templates.splice(insertAt, 0, tpl);
+      reverse.type = 'create-template';
+      reverse.payload = clone(tpl);
+      return reverse;
+    }
+    case 'create-caret': {
+      const idx = state.carrotTemplates.findIndex(x => x.id === entry.payload.id);
+      const removed = idx >= 0 ? state.carrotTemplates.splice(idx, 1)[0] : entry.payload;
+      reverse.type = 'delete-caret';
+      reverse.payload = { template: clone(removed), index: idx };
+      return reverse;
+    }
+    case 'delete-caret': {
+      const tpl = clone(entry.payload.template);
+      const insertAt = Math.min(entry.payload.index ?? 0, state.carrotTemplates.length);
+      state.carrotTemplates.splice(insertAt, 0, tpl);
+      reverse.type = 'create-caret';
+      reverse.payload = clone(tpl);
+      return reverse;
+    }
+  }
+  return reverse;
+}
+function renderUndoButton() {
+  const btn = $('#undoBtn');
+  const rbtn = $('#redoBtn');
+  if (btn) btn.classList.toggle('feature-on', state.history.length > 0);
+  if (rbtn) rbtn.classList.toggle('feature-on', state.redoStack.length > 0);
+}
+
+const clone = o => JSON.parse(JSON.stringify(o));
+
+/* ---------- Scan prefix stripping ----------
+   Barcode scanners frequently prepend marker prefixes (1K, 1P, K606, K 606,
+   bare 606) to the scanned content. Strip them on input so the form value is
+   the meaningful number. We only strip when the prefix sits at the start of
+   the value AND has at least one alphanumeric character after it — that way
+   a user typing the literal "606" still works. */
+const SCAN_PREFIX_RE = /^(?:1K|1P|K\s?606|606)(?=[\s:\-]?[A-Za-z0-9])/i;
+function stripScanPrefix(value) {
+  if (!state.scanPrefixStrip || typeof value !== 'string') return value;
+  let v = value;
+  let prev;
+  // Repeat in case multiple prefixes were concatenated by the scanner.
+  do {
+    prev = v;
+    v = v.replace(SCAN_PREFIX_RE, '').replace(/^[\s:\-]+/, '');
+  } while (v !== prev);
+  return v;
+}
+
+function formatDate(ms) {
+  const d = new Date(ms);
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
+         ' ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+/* ============================================================================
+   RENDER — TABS & THEME
+   ============================================================================ */
+const TABS = ['NCRs', 'NCOs', 'Scrap', 'Guides'];
+
+function renderTabs() {
+  const root = $('#tabs');
+  root.innerHTML = '';
+  TABS.forEach(name => {
+    root.appendChild(el('button', {
+      class: 'tab' + (state.activeTab === name ? ' active' : ''),
+      onclick: () => {
+        state.activeTab = name;
+        // If switching to a tab whose type differs from the in-progress tag,
+        // reset the buffer to a fresh blank tag of the right type so the
+        // builder shows the correct context.
+        const expected = currentTagType();
+        if ((name === 'NCRs' || name === 'NCOs') && state.current.type !== expected) {
+          state.current = blankTagForType(expected);
+          state.selectedId = null;
+          state.selectedCarrotId = null;
+          state.previewSuppressed = false;
+          state.carrotPreviewSuppressed = false;
+        }
+        renderAll();
+      }
+    }, name));
+  });
+}
+
+function applyTheme() {
+  // Reset any inline custom-theme variables before applying the next theme.
+  [
+    '--bg-grad', '--bg', '--surface', '--surface-2', '--text', '--text-muted',
+    '--border', '--accent', '--accent-2', '--accent-grad', '--shadow',
+    '--ui-radius', '--ui-density'
+  ].forEach(p =>
+    document.body.style.removeProperty(p));
+
+  let cls = state.activeTheme;
+  let customClass = '';
+  if (cls && cls.startsWith('custom:')) {
+    const id = cls.slice(7);
+    const ct = state.customThemes.find(t => t.id === id);
+    if (ct) {
+      cls = ct.base || 'theme-midnight';
+      customClass = ' custom-theme-vars';
+      if (ct.bg) document.body.style.setProperty('--bg', ct.bg);
+      if (ct.bg2) document.body.style.setProperty('--bg-grad',
+        `linear-gradient(${ct.angle || 135}deg, ${ct.bg || '#0b1020'}, ${ct.bg2 || ct.bg || '#1e293b'})`);
+      if (ct.surface) document.body.style.setProperty('--surface', hexToRgba(ct.surface, ct.surfaceAlpha || 0.74));
+      if (ct.surface2) document.body.style.setProperty('--surface-2', ct.surface2);
+      if (ct.text) document.body.style.setProperty('--text', ct.text);
+      if (ct.muted) document.body.style.setProperty('--text-muted', ct.muted);
+      if (ct.border) document.body.style.setProperty('--border', ct.border);
+      document.body.style.setProperty('--accent', ct.accent);
+      document.body.style.setProperty('--accent-2', ct.accent2);
+      document.body.style.setProperty('--accent-grad',
+        `linear-gradient(${ct.angle || 135}deg, ${ct.accent}, ${ct.accent2})`);
+      document.body.style.setProperty('--shadow',
+        `0 4px ${Math.round(18 + (ct.glow || 22) * .6)}px ${hexToRgba(ct.accent, (ct.glow || 22) / 100)}`);
+      document.body.style.setProperty('--ui-radius', (ct.radius || 12) + 'px');
+      document.body.style.setProperty('--ui-density', String(ct.density || 1));
+    } else {
+      cls = 'theme-midnight';
+    }
+  }
+  document.body.className = cls + customClass + (state.focusMode ? ' focus-mode' : '');
+}
+
+// Convert #rrggbb (or #rgb) to rgba(r,g,b,alpha) string.
+function hexToRgba(hex, alpha) {
+  let h = String(hex || '').replace('#', '');
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const r = parseInt(h.slice(0, 2), 16) || 0;
+  const g = parseInt(h.slice(2, 4), 16) || 0;
+  const b = parseInt(h.slice(4, 6), 16) || 0;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/* ============================================================================
+   RENDER — MAIN ROUTER
+   Different tab = different layout; we swap grid columns accordingly.
+   ============================================================================ */
+function renderMain() {
+  const main = $('#main');
+  main.innerHTML = '';
+
+  if (state.activeTab === 'Guides') {
+    main.style.gridTemplateColumns = '1fr';
+    main.appendChild(renderGuides());
+    return;
+  }
+
+  if (state.activeTab === 'Scrap') {
+    main.style.gridTemplateColumns = '1fr';
+    main.appendChild(renderComingSoon(state.activeTab));
+    return;
+  }
+
+  if (state.activeTab === 'Settings') {
+    main.style.gridTemplateColumns = '1fr';
+    main.appendChild(renderSettingsPage());
+    return;
+  }
+
+  // NCRs and NCOs — full 3-column UI (same builder, different tag.type)
+  // Layout: sidebar | drag-handle | builder | drag-handle | preview
+  main.style.gridTemplateColumns =
+    `${state.sidebarWidth}px 6px minmax(0, 1fr) 6px ${state.previewWidth}px`;
+  main.appendChild(renderSidebar());
+  main.appendChild(renderResizer('left'));
+  main.appendChild(renderBuilder());
+  main.appendChild(renderResizer('right'));
+  main.appendChild(renderPreview());
+  if (state.focusMode) main.appendChild(renderSidebarRestoreButton());
+}
+
+function renderResizer(side) {
+  const r = el('div', {
+    class: 'resizer resizer-' + side,
+    'data-side': side,
+    title: 'Drag to resize',
+    onmousedown: e => startResize(e, side)
+  });
+  r.appendChild(el('div', { class: 'resizer-grip' }));
+  return r;
+}
+
+function renderSidebarRestoreButton() {
+  return el('button', {
+    class: 'sidebar-restore-btn',
+    title: 'Show template list',
+    'aria-label': 'Show template list',
+    onclick: () => toggleFocusMode()
+  }, ['›', el('span', {}, 'Templates')]);
+}
+
+function startResize(e, side) {
+  e.preventDefault();
+  const main = $('#main');
+  if (!main) return;
+  const mainRect = main.getBoundingClientRect();
+  const startX = e.clientX;
+  const startSidebar = state.sidebarWidth;
+  const startPreview = state.previewWidth;
+  const minPreview = getPreviewMinWidth();
+  document.body.classList.add('resizing');
+
+  function onMove(ev) {
+    const dx = ev.clientX - startX;
+    if (side === 'left') {
+      const next = Math.max(180, Math.min(520, startSidebar + dx));
+      state.sidebarWidth = next;
+    } else {
+      const next = Math.max(minPreview, Math.min(900, startPreview - dx));
+      state.previewWidth = next;
+    }
+    main.style.gridTemplateColumns =
+      `${state.sidebarWidth}px 6px minmax(0, 1fr) 6px ${state.previewWidth}px`;
+    const sb = main.querySelector('.sidebar');
+    if (sb) sb.style.width = state.sidebarWidth + 'px';
+  }
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    document.body.classList.remove('resizing');
+    persist();
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function getPreviewMinWidth() {
+  const card = document.querySelector('.preview-card');
+  const body = document.querySelector('.preview-body');
+  const cardWidth = card ? Math.ceil(card.getBoundingClientRect().width) : 470;
+  const bodyStyle = body ? getComputedStyle(body) : null;
+  const padLeft = bodyStyle ? parseFloat(bodyStyle.paddingLeft) || 0 : 14;
+  const padRight = bodyStyle ? parseFloat(bodyStyle.paddingRight) || 0 : 14;
+  return Math.ceil(cardWidth + padLeft + padRight + 2);
+}
+
+// Map active tab → tag.type ("NCR" or "NCO")
+function currentTagType() {
+  return state.activeTab === 'NCOs' ? 'NCO' : 'NCR';
+}
+
+function renderComingSoon(label) {
+  return el('section', { class: 'coming-soon' }, [
+    el('h2', {}, label + ' — Coming Soon'),
+    el('p', {}, 'This section will get its own builder when the team finalizes the format.'),
+    el('p', { style: 'font-size:12px;max-width:400px' },
+       'For now, all tags live under NCRs. Switch tabs above to keep working.')
+  ]);
+}
+
+function settingsToggle(title, detail, checked, onChange) {
+  const row = el('div', { class: 'settings-row' });
+  row.appendChild(el('div', { class: 'settings-row-text' }, [
+    el('strong', {}, title),
+    el('span', {}, detail)
+  ]));
+  const input = el('input', {
+    type: 'checkbox',
+    onchange: e => onChange(e.target.checked)
+  });
+  if (checked) input.checked = true;
+  row.appendChild(el('label', { class: 'settings-switch' }, [
+    input,
+    el('span', {})
+  ]));
+  return row;
+}
+
+function featureCard(title, detail) {
+  return el('div', { class: 'settings-feature' }, [
+    el('strong', {}, title),
+    el('span', {}, detail)
+  ]);
+}
+
+function themeCard(themeId, meta, customTheme) {
+  const card = el('button', {
+    class: 'theme-card' + (state.activeTheme === themeId ? ' active' : ''),
+    title: customTheme ? 'Apply theme. Double-click to edit.' : 'Apply theme',
+    ondblclick: e => {
+      if (!customTheme) return;
+      e.preventDefault();
+      openThemeBuilder(customTheme);
+    },
+    onclick: e => {
+      applyThemeWithRipple(themeId, e.clientX, e.clientY, meta.bg || `linear-gradient(135deg,${meta.a},${meta.b})`);
+      if (state.activeTab === 'Settings') renderAll();
+    }
+  });
+  card.appendChild(el('div', {
+    class: 'theme-card-bg',
+    style: `background:${meta.bg || `linear-gradient(135deg,${meta.a},${meta.b})`}`
+  }));
+  card.appendChild(el('div', { class: 'theme-card-content' }, [
+    el('div', { class: 'theme-card-name' }, meta.name),
+    el('div', { class: 'theme-card-chips' }, [
+      el('span', { class: 'theme-card-chip', style: `background:${meta.a}` }),
+      el('span', { class: 'theme-card-chip', style: `background:${meta.b}` }),
+      el('span', { class: 'theme-card-chip', style: `background:${meta.surface2 || 'rgba(255,255,255,.82)'}` })
+    ]),
+    el('div', { class: 'theme-card-kind' }, meta.kind || (customTheme ? 'Custom' : 'Theme'))
+  ]));
+  if (customTheme) {
+    card.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      openThemeBuilder(customTheme);
+    });
+  }
+  return card;
+}
+
+function renderThemeStudioPanel() {
+  const panel = el('div', { class: 'settings-panel settings-theme-panel' });
+  const activeName = activeThemeName();
+  panel.appendChild(el('div', { class: 'theme-studio-head' }, [
+    el('div', {}, [
+      el('div', { class: 'settings-panel-title' }, 'Theme Studio'),
+      el('div', { class: 'theme-studio-title' }, activeName),
+      el('div', { class: 'theme-studio-copy' },
+        'Pick a polished theme, then build custom palettes with accents, surfaces, background gradients, radius, density, and glow.')
+    ]),
+    el('div', { class: 'settings-actions', style: 'margin-top:0' }, [
+      el('button', { class: 'btn btn-primary', onclick: () => openThemeBuilder(null) }, 'Create Custom Theme'),
+      el('button', { class: 'btn btn-ghost', onclick: () => { $('#themePicker').classList.add('show'); } }, 'Compact Picker')
+    ])
+  ]));
+
+  const cards = el('div', { class: 'theme-card-grid' });
+  BUILTIN_THEMES.forEach(t => cards.appendChild(themeCard(t.cls, t)));
+  (state.customThemes || []).forEach(ct => {
+    const meta = {
+      name: ct.name || 'Custom Theme',
+      kind: 'Custom',
+      bg: `linear-gradient(${ct.angle || 135}deg, ${ct.bg || '#0b1020'}, ${ct.bg2 || '#1e293b'})`,
+      a: ct.accent || '#38bdf8',
+      b: ct.accent2 || '#818cf8',
+      surface2: ct.surface2 || ct.surface || '#1e293b'
+    };
+    cards.appendChild(themeCard('custom:' + ct.id, meta, ct));
+  });
+  panel.appendChild(cards);
+  return panel;
+}
+
+function activeThemeName() {
+  if (state.activeTheme && state.activeTheme.startsWith('custom:')) {
+    const ct = state.customThemes.find(t => 'custom:' + t.id === state.activeTheme);
+    return ct ? ct.name : 'Custom Theme';
+  }
+  const builtIn = BUILTIN_THEMES.find(t => t.cls === state.activeTheme);
+  return builtIn ? builtIn.name : 'Theme';
+}
+
+function renderSettingsPage() {
+  const wrap = el('section', { class: 'settings-page' });
+  wrap.appendChild(el('div', { class: 'settings-hero' }, [
+    el('div', { class: 'settings-title' }, 'Settings'),
+    el('div', { class: 'settings-subtitle' },
+      'A quick map of what this tag builder can do, plus the small switches that shape how it writes and previews tags.')
+  ]));
+  wrap.appendChild(renderThemeStudioPanel());
+
+  const grid = el('div', { class: 'settings-grid' });
+  const features = el('div', { class: 'settings-panel' });
+  features.appendChild(el('div', { class: 'settings-panel-title' }, 'Features'));
+  features.appendChild(el('div', { class: 'settings-feature-list' }, [
+    featureCard('NCR and NCO templates', 'Build, save, duplicate, rename, delete, favorite, import, and export reusable tag templates.'),
+    featureCard('Live preview', 'Preview formatted tag text as you type, then copy it directly to the clipboard.'),
+    featureCard('Process spec references', 'Select one or more process specs for S/B auto-reference text.'),
+    featureCard('Custom measurement sections', 'Add editable measurement/custom text sections with named headings.'),
+    featureCard('Other notes', 'Append custom labeled blocks after the main tag fields.'),
+    featureCard('Caret templates', 'Save reusable NCO caret/work-instruction text.'),
+    featureCard('Tags and filtering', 'Organize templates with tags and filter them from the sidebar dropdown.'),
+    featureCard('PDF guides', 'Load local guide PDFs into tabs for side-by-side reference.'),
+    featureCard('Themes and custom themes', 'Switch built-in themes or create a custom accent palette.'),
+    featureCard('Undo and redo', 'Recover template and caret create/delete actions from the toolbar or keyboard.')
+  ]));
+  grid.appendChild(features);
+
+  const settings = el('div', { class: 'settings-panel' });
+  settings.appendChild(el('div', { class: 'settings-panel-title' }, 'Preferences'));
+  settings.appendChild(settingsToggle(
+    'Strip scanner prefixes',
+    'Remove common scan prefixes from text fields while typing.',
+    state.scanPrefixStrip,
+    checked => { state.scanPrefixStrip = checked; persist(); toast(checked ? 'Scanner prefix stripping on' : 'Scanner prefix stripping off'); }
+  ));
+  settings.appendChild(settingsToggle(
+    'Formatted preview',
+    'Use aligned preview output for easier inspection before copying.',
+    state.formattedPreview,
+    checked => { state.formattedPreview = checked; persist(); renderAll(); }
+  ));
+  settings.appendChild(settingsToggle(
+    'Uppercase copied text',
+    'Convert copied preview text to uppercase.',
+    state.uppercaseText,
+    checked => { state.uppercaseText = checked; persist(); renderAll(); }
+  ));
+  settings.appendChild(settingsToggle(
+    'Collapse template list',
+    'Hide the template sidebar while keeping the live preview visible.',
+    state.focusMode,
+    checked => { state.focusMode = checked; renderAll(); }
+  ));
+  settings.appendChild(el('div', { class: 'settings-actions' }, [
+    el('button', {
+      class: 'btn btn-primary',
+      onclick: () => { state.activeTab = state.settingsReturnTab || 'NCRs'; renderAll(); }
+    }, 'Back to Tags'),
+    el('button', {
+      class: 'btn btn-ghost',
+      onclick: () => { $('#themePicker').classList.add('show'); }
+    }, 'Theme Picker'),
+    el('button', {
+      class: 'btn btn-ghost',
+      onclick: () => {
+        state.sidebarWidth = 250;
+        state.previewWidth = 500;
+        persist();
+        toast('Panel widths reset');
+        renderAll();
+      }
+    }, 'Reset Panel Widths')
+  ]));
+  grid.appendChild(settings);
+
+  const history = el('div', { class: 'settings-panel' });
+  history.appendChild(el('div', { class: 'settings-panel-title' }, 'Delete History'));
+  const list = el('div', { class: 'settings-history-list' });
+  const rows = (state.deletionHistory || [])
+    .slice()
+    .sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+  if (rows.length === 0) {
+    list.appendChild(el('div', { class: 'settings-history-empty' }, 'No deleted templates yet.'));
+  } else {
+    rows.forEach(row => {
+      list.appendChild(el('div', { class: 'settings-history-item' }, [
+        el('div', {}, [
+          el('div', { class: 'settings-history-title' }, row.title || 'Untitled'),
+          el('div', { class: 'settings-history-meta' }, 'BEMSID ' + (row.bemsid || 'N/A'))
+        ]),
+        el('div', { class: 'settings-history-meta' }, formatDate(row.deletedAt || Date.now()))
+      ]));
+    });
+  }
+  history.appendChild(list);
+  grid.appendChild(history);
+  wrap.appendChild(grid);
+  wrap.appendChild(el('div', { class: 'settings-credit' }, 'Made by Josh Ferry - 3495411'));
+  return wrap;
+}
+
+/* ============================================================================
+   RENDER — SIDEBAR (saved templates + import/export)
+   ============================================================================ */
+function renderSidebar() {
+  const wrap = el('aside', { class: 'sidebar' });
+  wrap.style.width = state.sidebarWidth + 'px';
+
+  // New template + search + sort
+  const head = el('div', { class: 'sidebar-head' });
+  head.appendChild(el('button', {
+    class: 'btn btn-primary btn-block btn-new-tag',
+    onclick: () => {
+      state.current = blankTagForType(currentTagType());
+      state.selectedId = null;
+      state.selectedCarrotId = null;
+      state.previewSuppressed = false;
+      state.carrotPreviewSuppressed = false;
+      renderAll();
+    }
+  }, '+ New Tag (Clear Forms)'));
+
+  const search = el('input', {
+    class: 'search', type: 'search',
+    placeholder: state.activeTab === 'NCOs' ? 'Search NCO tags and caret templates…' : 'Search templates…',
+    value: state.search,
+    oninput: e => { state.search = e.target.value; replaceTemplateList(); }
+  });
+  head.appendChild(search);
+
+  // Sort row
+  const sortRow = el('div', { class: 'sidebar-sort-row' });
+  sortRow.appendChild(el('span', { class: 'sidebar-sort-label' }, 'Sort:'));
+  const sortSel = el('select', {
+    class: 'sidebar-sort-select',
+    onchange: e => {
+      state.sortMode = e.target.value;
+      persist();
+      replaceTemplateList();
+    }
+  });
+  [
+    ['updated', 'Recent'],
+    ['created', 'Created'],
+    ['name', 'Name (A→Z)'],
+    ['name-desc', 'Name (Z→A)']
+  ].forEach(([val, label]) => {
+    const o = el('option', { value: val }, label);
+    if (state.sortMode === val) o.selected = true;
+    sortSel.appendChild(o);
+  });
+  sortRow.appendChild(sortSel);
+  head.appendChild(sortRow);
+
+  // Tag filter dropdown
+  const tagFilterWrap = renderTagFilterChips();
+  if (tagFilterWrap) head.appendChild(tagFilterWrap);
+
+  wrap.appendChild(head);
+
+  // Template list (separate function so we can re-render only this on search)
+  const list = el('div', { class: 'tag-list', id: 'tagList' });
+  list.appendChild(buildTemplateList());
+  wrap.appendChild(list);
+
+  // Import / Export
+  const foot = el('div', { class: 'sidebar-foot' });
+  foot.appendChild(el('button', {
+    class: 'btn btn-ghost sidebar-collapse-btn',
+    title: 'Collapse template list',
+    'aria-label': 'Collapse template list',
+    onclick: () => toggleFocusMode()
+  }, '‹'));
+  foot.appendChild(el('button', {
+    class: 'btn btn-ghost', onclick: () => $('#fileImport').click()
+  }, 'Import'));
+  foot.appendChild(el('button', {
+    class: 'btn btn-ghost', onclick: exportAll
+  }, 'Export'));
+  foot.appendChild(el('div', { class: 'sidebar-foot-spacer' }));
+  foot.appendChild(el('button', {
+    class: 'btn btn-ghost sidebar-settings-btn',
+    title: 'Settings',
+    'aria-label': 'Settings',
+    onclick: () => {
+      state.settingsReturnTab = state.activeTab === 'NCOs' ? 'NCOs' : 'NCRs';
+      state.activeTab = 'Settings';
+      renderAll();
+    }
+  }, el('span', { class: 'sidebar-settings-glyph', 'aria-hidden': 'true' }, '⚙')));
+  wrap.appendChild(foot);
+
+  return wrap;
+}
+
+function renderTagFilterChips() {
+  const expectedType = currentTagType();
+  const allTags = new Set();
+  state.templates
+    .filter(t => (t.type || 'NCR') === expectedType)
+    .forEach(t => (t.tags || []).forEach(tg => {
+      const clean = String(tg || '').trim();
+      if (clean) allTags.add(clean);
+    }));
+  if (allTags.size === 0) {
+    state.tagFilter = '';
+    return null;
+  }
+
+  const tags = Array.from(allTags).sort((a, b) =>
+    a.localeCompare(b, undefined, { sensitivity: 'base' }));
+  if (state.tagFilter && !allTags.has(state.tagFilter)) state.tagFilter = '';
+
+  const wrap = el('div', { class: 'tag-filter-row' });
+  wrap.appendChild(el('label', { class: 'tag-filter-label', for: 'tagFilterSelect' }, 'Tags:'));
+  const select = el('select', {
+    class: 'tag-filter-select',
+    id: 'tagFilterSelect',
+    value: state.tagFilter,
+    onchange: e => {
+      state.tagFilter = e.target.value;
+      replaceTemplateList();
+    }
+  });
+  select.appendChild(el('option', { value: '' }, 'All tags'));
+  tags.forEach(tg => {
+    select.appendChild(el('option', {
+      value: tg,
+      selected: state.tagFilter === tg ? 'selected' : null
+    }, '#' + tg));
+  });
+  wrap.appendChild(select);
+  return wrap;
+}
+
+function renderTagFilterRefresh() {
+  const old = document.querySelector('.tag-filter-row');
+  if (!old) return;
+  const fresh = renderTagFilterChips();
+  if (fresh) old.replaceWith(fresh);
+  else old.remove();
+}
+
+function buildTemplateList() {
+  const frag = document.createDocumentFragment();
+  const q = state.search.trim().toLowerCase();
+  const expectedType = currentTagType();
+
+  const visible = state.templates
+    .filter(t => (t.type || 'NCR') === expectedType)
+    .filter(t => !q || textIndex(t).includes(q))
+    .filter(t => !state.tagFilter || (t.tags || []).includes(state.tagFilter))
+    .sort(templateComparator);
+
+  if (state.activeTab !== 'NCOs') {
+    if (visible.length === 0) {
+      frag.appendChild(el('div', { class: 'empty-state' },
+        state.search
+          ? 'No matches'
+          : 'No templates yet — fill one out and hit Save.'));
+      return frag;
+    }
+    visible.forEach(t => frag.appendChild(renderTemplateCard(t, expectedType)));
+    return frag;
+  }
+
+  const carrotVisible = state.carrotTemplates
+    .filter(t => !q || carrotTextIndex(t).includes(q))
+    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+  frag.appendChild(renderSidebarGroup(
+    'NCO Tags',
+    visible,
+    state.search ? 'No matching NCO tags' : 'No NCO tags yet — fill one out and hit Save.',
+    t => renderTemplateCard(t, expectedType)
+  ));
+  frag.appendChild(renderSidebarGroup(
+    'Caret Templates',
+    carrotVisible,
+    state.search ? 'No matching caret templates' : 'No caret templates yet — save one from the Caret section.',
+    renderCarrotTemplateCard
+  ));
+
+  return frag;
+}
+
+function renderSidebarGroup(title, items, emptyMessage, renderItem) {
+  const group = el('div', { class: 'tag-list-group' });
+  group.appendChild(el('div', { class: 'tag-list-group-title' }, title));
+  if (items.length === 0) {
+    group.appendChild(el('div', { class: 'tag-list-group-empty' }, emptyMessage));
+    return group;
+  }
+  items.forEach(item => group.appendChild(renderItem(item)));
+  return group;
+}
+
+function templateComparator(a, b) {
+  // Pinned/favorited templates always float to the top.
+  if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+  switch (state.sortMode) {
+    case 'created':
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    case 'name':
+      return String(a.templateName || '').localeCompare(String(b.templateName || ''));
+    case 'name-desc':
+      return String(b.templateName || '').localeCompare(String(a.templateName || ''));
+    case 'updated':
+    default:
+      return (b.updatedAt || 0) - (a.updatedAt || 0);
+  }
+}
+
+function renderTemplateCard(t, expectedType) {
+  const card = el('div', {
+    class: 'tag-card'
+      + (state.selectedId === t.id ? ' active' : '')
+      + (t.pinned ? ' pinned-card' : ''),
+    onclick: () => {
+      if (state.selectedId === t.id) {
+        // Click again on focused template -> unfocus (clear selection + builder)
+        state.current = blankTagForType(currentTagType());
+        state.selectedId = null;
+        state.selectedCarrotId = null;
+        state.previewSuppressed = false;
+        state.carrotPreviewSuppressed = false;
+        renderAll();
+        return;
+      }
+      state.current = clone(t);
+      state.selectedId = t.id;
+      state.selectedCarrotId = t.carrotTemplateId || null;
+      state.previewSuppressed = false;
+      state.carrotPreviewSuppressed = false;
+      renderAll();
+    }
+  });
+
+  // Title (colorful gradient via CSS class)
+  card.appendChild(el('div', { class: 'tag-card-title' },
+    t.templateName || tagSummary(t) || 'Untitled'));
+
+  // Inline tags display
+  if ((t.tags || []).length) {
+    const tagsRow = el('div', { class: 'tag-card-tags' });
+    t.tags.slice(0, 4).forEach(tg => {
+      tagsRow.appendChild(el('span', {
+        class: 'tag-card-tag',
+        onclick: e => {
+          e.stopPropagation();
+          state.tagFilter = state.tagFilter === tg ? '' : tg;
+          renderAll();
+        }
+      }, '#' + tg));
+    });
+    if (t.tags.length > 4) {
+      tagsRow.appendChild(el('span', { class: 'tag-card-tag more' }, '+' + (t.tags.length - 4)));
+    }
+    card.appendChild(tagsRow);
+  }
+
+  const actions = el('div', { class: 'tag-card-actions' });
+  // Favorite (pin) toggle — sits inside the actions row, but always visible when pinned
+  actions.appendChild(el('button', {
+    class: 'tag-action tag-action-fav' + (t.pinned ? ' active-fav' : ''),
+    title: t.pinned ? 'Unfavorite' : 'Favorite',
+    onclick: e => {
+      e.stopPropagation();
+      t.pinned = !t.pinned;
+      t.updatedAt = Date.now();
+      persist();
+      renderAll();
+    }
+  }, t.pinned ? '★' : '☆'));
+  actions.appendChild(el('button', {
+    class: 'tag-action',
+    title: 'Rename template',
+    onclick: e => {
+      e.stopPropagation();
+      renameTemplate(t.id);
+    }
+  }, '✎'));
+  actions.appendChild(el('button', {
+    class: 'tag-action delete',
+    title: 'Delete template',
+    html: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>',
+    onclick: e => {
+      e.stopPropagation();
+      confirmTemplateDelete(t.id);
+    }
+  }));
+  card.appendChild(actions);
+
+  attachHoverPreview(card, t);
+  return card;
+}
+
+function renderCarrotTemplateCard(t) {
+  const isActive = state.selectedCarrotId === t.id && !state.carrotPreviewSuppressed;
+  const card = el('div', {
+    class: 'tag-card' + (isActive ? ' active' : ''),
+    onclick: () => {
+      if (state.selectedCarrotId === t.id) {
+        state.current.carrotTemplateId = t.id;
+        state.current.carrotTemplateName = state.current.carrotTemplateName || t.name || '';
+        state.carrotPreviewSuppressed = !state.carrotPreviewSuppressed;
+        renderAll();
+        return;
+      }
+      state.selectedCarrotId = t.id;
+      state.current.carrotTemplateId = t.id;
+      state.current.carrotTemplateName = t.name || '';
+      state.current.carrotsText = t.text || '';
+      state.carrotPreviewSuppressed = false;
+      renderAll();
+    }
+  });
+  card.appendChild(el('div', { class: 'tag-card-title' }, t.name || 'Untitled'));
+
+  const actions = el('div', { class: 'tag-card-actions' });
+  actions.appendChild(el('button', {
+    class: 'tag-action',
+    title: 'Rename caret template',
+    onclick: e => {
+      e.stopPropagation();
+      renameCarrotTemplate(t.id);
+    }
+  }, '✎'));
+  actions.appendChild(el('button', {
+    class: 'tag-action delete',
+    title: 'Delete caret template',
+    html: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>',
+    onclick: e => {
+      e.stopPropagation();
+      confirmCarrotTemplateDelete(t.id);
+    }
+  }));
+  card.appendChild(actions);
+  attachHoverPreview(card, caretTemplatePreviewTag(t));
+  return card;
+}
+
+function caretTemplatePreviewTag(t) {
+  const preview = blankTagForType('NCO');
+  preview.carrotTemplateName = t.name || '';
+  preview.carrotsText = t.text || '';
+  return preview;
+}
+
+// Returns true if a tag's updatedAt falls inside the chosen filter window.
+function inDateRange(t, filter) {
+  if (filter === 'all') return true;
+  const day = 24 * 60 * 60 * 1000;
+  const windows = { today: day, week: 7 * day, month: 30 * day };
+  return Date.now() - t.updatedAt < windows[filter];
+}
+
+// Replace just the list when search changes — keeps focus on the search box.
+function replaceTemplateList() {
+  const list = $('#tagList');
+  if (!list) return;
+  list.innerHTML = '';
+  list.appendChild(buildTemplateList());
+}
+
+function textIndex(t) {
+  // Searchable string for a tag — combine all text fields.
+  const measText = (i) => (i.measSections || []).flatMap(s =>
+    [s.name, s.text]);
+  const parts = [
+    t.templateName,
+    ...(t.tags || []),
+    ...(t.drawings || []).flatMap(d => [d.number, d.sheet, d.rev, d.location, d.custom, d.type]),
+    ...(t.processSpecs || []).flatMap(s => [s.number, s.section, s.rev]),
+    ...(t.items || []).flatMap(i => [
+      i.partNumber, i.description, i.discrepancy,
+      ...measText(i),
+      i.sbText
+    ]),
+    t.lso, t.lio,
+    ...(t.otherBlocks || []).flatMap(o => [o.label, o.text]),
+    t.carrotTemplateName, t.carrotsText
+  ];
+  return parts.filter(Boolean).join(' ').toLowerCase();
+}
+
+function carrotTextIndex(t) {
+  return [t.name, t.text].filter(Boolean).join(' ').toLowerCase();
+}
+
+function tagSummary(t) {
+  const item = t.items && t.items[0];
+  const draw = t.drawings && t.drawings[0];
+  if (item && item.partNumber) return `${item.partNumber} ${item.description || ''}`.trim();
+  if (draw && (draw.number || draw.location)) return draw.number || draw.location;
+  return 'Untitled';
+}
+
+/* ============================================================================
+   RENDER — BUILDER (the form)
+   ============================================================================ */
+function renderBuilder() {
+  const t = state.current;
+  const wrap = el('section', { class: 'builder' });
+
+  // Header
+  const head = el('div', { class: 'builder-head' });
+  const titleWrap = el('div', { class: 'builder-title-wrap' });
+  if (['NCRs', 'NCOs'].includes(state.activeTab)) {
+    titleWrap.appendChild(el('input', {
+      class: 'builder-title-input',
+      type: 'text',
+      value: t.templateName || '',
+      placeholder: 'Template Name',
+      'aria-label': 'Template Name',
+      oninput: e => { t.templateName = e.target.value; }
+    }));
+  }
+  titleWrap.appendChild(renderTemplateActions());
+  head.appendChild(titleWrap);
+
+  wrap.appendChild(head);
+
+  if (state.activeTab !== 'NCOs') {
+    wrap.appendChild(el('div', { class: 'builder-divider', 'aria-hidden': 'true' }));
+  }
+
+  // ----- Header / Revision section -----
+  const revSec = section('Header');
+  const revRow = el('div', { class: 'row' });
+  revRow.appendChild(field('Revision #', 'number', t.revisionNumber,
+    v => { t.revisionNumber = parseInt(v) || 0; updatePreview(); }, { min: 0 }));
+  revSec.appendChild(revRow);
+  wrap.appendChild(revSec);
+
+  // ----- Drawings -----
+  const drawSec = section('Drawings');
+  t.drawings.forEach((d, i) => drawSec.appendChild(renderDrawing(d, i)));
+  drawSec.appendChild(el('button', {
+    class: 'add-btn',
+    onclick: () => openDrawingTypeModal(type => {
+      t.drawings.push({ type, custom: '', number: '', sheet: '', rev: '', location: '' });
+      renderAll();
+    })
+  }, '+ Add drawing'));
+  wrap.appendChild(drawSec);
+
+  // ----- Process Specs -----
+  const specSec = section('Process Specs');
+  t.processSpecs.forEach((s, i) => specSec.appendChild(renderSpec(s, i)));
+  specSec.appendChild(el('button', {
+    class: 'add-btn',
+    onclick: () => { t.processSpecs.push({ number: '', section: '', rev: '' }); renderAll(); }
+  }, '+ Add process spec'));
+  wrap.appendChild(specSec);
+
+  // ----- Items -----
+  const itemSec = section('Items');
+  t.items.forEach((it, i) => itemSec.appendChild(renderItem(it, i)));
+  itemSec.appendChild(el('button', {
+    class: 'add-btn',
+    onclick: () => { t.items.push(blankItem(t.items.length + 1)); renderAll(); }
+  }, '+ Add item'));
+  wrap.appendChild(itemSec);
+
+  // ----- Footer -----
+  const footSec = section('Footer');
+  const footRow = el('div', { class: 'row row-2' });
+  footRow.appendChild(field('LSO - Last Shop Operation', 'text', t.lso,
+    v => { t.lso = v; updatePreview(); }, { placeholder: '100/010' }));
+  footRow.appendChild(field('LIO - Last Inspection Operation', 'text', t.lio,
+    v => { t.lio = v; updatePreview(); }, { placeholder: '110/010' }));
+  footSec.appendChild(footRow);
+
+  const attRow = el('div', { class: 'row row-att' });
+  const attLabel = el('label', { style: 'display:flex;gap:6px;align-items:center;font-size:12px;color:var(--text-muted);padding-bottom:8px' });
+  const cb = el('input', {
+    type: 'checkbox',
+    onchange: e => { t.attachmentsEnabled = e.target.checked; updatePreview(); }
+  });
+  if (t.attachmentsEnabled) cb.checked = true;
+  attLabel.appendChild(cb);
+  attLabel.appendChild(document.createTextNode(' Include attachments line'));
+  attRow.appendChild(attLabel);
+  attRow.appendChild(field('Attachments text', 'text', t.attachmentsText,
+    v => { t.attachmentsText = v; updatePreview(); }, { placeholder: '*See Attachments*' }));
+  footSec.appendChild(attRow);
+  wrap.appendChild(footSec);
+
+  // ----- Other (free-form trailing notes) -----
+  if (!Array.isArray(t.otherBlocks)) t.otherBlocks = [];
+  if (t.otherBlocks.length > 0) {
+    const otherSec = section('Other Notes');
+    t.otherBlocks.forEach((o, i) => otherSec.appendChild(renderOtherBlock(o, i)));
+    wrap.appendChild(otherSec);
+  }
+  const addOtherWrap = el('div', { class: 'add-other-wrap' });
+  addOtherWrap.appendChild(el('button', {
+    class: 'btn btn-add-other',
+    onclick: () => {
+      t.otherBlocks.push(blankOtherBlock(''));
+      renderAll();
+    }
+  }, [
+    el('span', { class: 'add-other-icon' }, '+'),
+    el('span', {}, 'Add Other Text')
+  ]));
+  wrap.appendChild(addOtherWrap);
+
+  // ----- Tags (chips) -----
+  if (state.activeTab === 'NCRs') {
+    wrap.appendChild(el('div', { class: 'other-tags-spacer', 'aria-hidden': 'true' }));
+    wrap.appendChild(renderTagsEditor(t));
+  }
+
+  if (state.activeTab === 'NCOs') {
+    wrap.appendChild(el('div', { class: 'builder-divider', 'aria-hidden': 'true' }));
+    wrap.appendChild(renderCarrotsSection(t));
+    wrap.appendChild(el('div', { class: 'other-tags-spacer', 'aria-hidden': 'true' }));
+    wrap.appendChild(renderTagsEditor(t));
+  }
+
+  return wrap;
+}
+
+function renderOtherBlock(o, idx) {
+  const t = state.current;
+  const sub = el('div', { class: 'subsection other-block' });
+  const head = el('div', { class: 'subsection-head other-block-head' });
+  const labelWrap = el('div', { class: 'other-block-label-wrap' });
+  labelWrap.appendChild(el('label', { class: 'other-block-label-tag' }, 'Label'));
+  labelWrap.appendChild(el('input', {
+    class: 'other-block-label-input',
+    type: 'text',
+    value: o.label || '',
+    placeholder: 'e.g. Notes',
+    'aria-label': 'Other block label',
+    oninput: e => { o.label = e.target.value; updatePreview(); }
+  }));
+  head.appendChild(labelWrap);
+  head.appendChild(el('button', {
+    class: 'del-btn meas-section-del',
+    title: 'Remove block',
+    onclick: () => { t.otherBlocks.splice(idx, 1); renderAll(); }
+  }, '×'));
+  sub.appendChild(head);
+
+  const ta = el('textarea', {
+    class: 'other-block-text',
+    placeholder: 'Type any additional notes here…',
+    oninput: e => { o.text = e.target.value; updatePreview(); }
+  });
+  ta.value = o.text || '';
+  sub.appendChild(ta);
+  return sub;
+}
+
+function renderTagsEditor(t) {
+  const sec = section('Tags');
+  if (!Array.isArray(t.tags)) t.tags = [];
+  const chips = el('div', { class: 'tag-chips-edit' });
+  t.tags.forEach((tg, i) => {
+    const chip = el('span', { class: 'tag-chip-edit' });
+    chip.appendChild(el('span', {}, tg));
+    chip.appendChild(el('button', {
+      class: 'tag-chip-x',
+      title: 'Remove tag',
+      onclick: () => { t.tags.splice(i, 1); renderAll(); }
+    }, '×'));
+    chips.appendChild(chip);
+  });
+  const input = el('input', {
+    class: 'tag-chip-input',
+    type: 'text',
+    placeholder: 'Add tag and press Enter…',
+    onkeydown: e => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const v = (e.target.value || '').trim().replace(/^#/, '');
+        if (v && !t.tags.includes(v)) {
+          t.tags.push(v);
+          e.target.value = '';
+          renderAll();
+        } else {
+          e.target.value = '';
+        }
+      } else if (e.key === 'Backspace' && !e.target.value && t.tags.length) {
+        t.tags.pop();
+        renderAll();
+      }
+    }
+  });
+  chips.appendChild(input);
+  sec.appendChild(chips);
+  return sec;
+}
+
+// Helper to build a section card with a title.
+function section(title) {
+  const sec = el('div', { class: 'section' });
+  sec.appendChild(el('div', { class: 'section-head' }, [
+    el('div', { class: 'section-title' }, title)
+  ]));
+  return sec;
+}
+
+// Generic input field — labeled input with an oninput callback.
+function field(labelText, type, value, onInput, extra = {}) {
+  const f = el('div', { class: 'field' });
+  if (labelText) f.appendChild(el('label', {}, labelText));
+  const input = el('input', {
+    type, value: value ?? '',
+    placeholder: extra.placeholder || '',
+    min: extra.min, max: extra.max,
+    oninput: e => {
+      // Auto-strip scanner prefixes on text inputs (number fields untouched).
+      if (type === 'text' && state.scanPrefixStrip) {
+        const stripped = stripScanPrefix(e.target.value);
+        if (stripped !== e.target.value) e.target.value = stripped;
+      }
+      onInput(e.target.value);
+    }
+  });
+  f.appendChild(input);
+  return f;
+}
+
+// Multi-line field for longer text (discrepancy, S/B).
+function textareaField(labelText, value, onInput, extra = {}) {
+  const f = el('div', { class: 'field' });
+  f.appendChild(el('label', {}, labelText));
+  const ta = el('textarea', {
+    class: extra.size === 'paragraph' ? 'tag-paragraph' : (extra.size === 'lg' ? 'lg' : null),
+    placeholder: extra.placeholder || '',
+    oninput: e => onInput(e.target.value)
+  });
+  ta.value = value || '';
+  f.appendChild(ta);
+  return f;
+}
+
+function renderCarrotsSection(t) {
+  const sec = section('Caret');
+  const title = sec.querySelector('.section-title');
+  const head = sec.querySelector('.section-head');
+  if (title) title.title = 'Custom Work Instructions';
+  if (head) {
+    head.classList.add('section-head-inline');
+    head.appendChild(el('input', {
+      class: 'section-head-input',
+      type: 'text',
+      value: t.carrotTemplateName || '',
+      placeholder: 'Caret Template Title',
+      'aria-label': 'Caret Template Name',
+      oninput: e => { t.carrotTemplateName = e.target.value; }
+    }));
+    head.appendChild(el('button', {
+      class: 'btn btn-primary',
+      onclick: saveCarrotTemplate
+    }, 'Save Caret Template'));
+  }
+
+  const f = el('div', { class: 'field' });
+  f.appendChild(el('label', {}, 'Custom Work Instructions'));
+  const ta = el('textarea', {
+    placeholder: 'Paste or write text here...',
+    style: 'min-height:180px;resize:vertical',
+    oninput: e => {
+      t.carrotsText = e.target.value;
+      updatePreview();
+    }
+  });
+  ta.value = t.carrotsText || '';
+  f.appendChild(ta);
+  sec.appendChild(f);
+  return sec;
+}
+
+function renderDrawing(d, idx) {
+  const t = state.current;
+  const sub = el('div', { class: 'subsection' });
+  const head = el('div', { class: 'subsection-head' });
+
+  // Type select
+  const typeSel = el('select', {
+    onchange: e => { d.type = e.target.value; updatePreview(); renderAll(); }
+  });
+  ['Engineering', 'Tool', 'Supplier', 'Other'].forEach(opt => {
+    const o = el('option', { value: opt }, opt + ' Drawing');
+    if (d.type === opt) o.selected = true;
+    typeSel.appendChild(o);
+  });
+  head.appendChild(typeSel);
+
+  // Show Remove on every drawing as long as we have at least one to fall back on
+  if (t.drawings.length > 1) {
+    head.appendChild(el('button', {
+      class: 'del-btn',
+      onclick: () => { t.drawings.splice(idx, 1); renderAll(); }
+    }, 'Remove'));
+  }
+  sub.appendChild(head);
+
+  if (d.type === 'Other') {
+    sub.appendChild(field('Custom label', 'text', d.custom,
+      v => { d.custom = v; updatePreview(); },
+      { placeholder: 'Vendor' }));
+    sub.appendChild(field('Location', 'text', d.location || d.number,
+      v => {
+        d.location = v;
+        d.number = '';
+        d.sheet = '';
+        d.rev = '';
+        updatePreview();
+      },
+      { placeholder: 'TWMetals' }));
+    return sub;
+  }
+
+  const row = el('div', { class: 'row row-3' });
+  row.appendChild(field('Number', 'text', d.number,
+    v => { d.number = v; updatePreview(); }, { placeholder: '123A1234' }));
+  row.appendChild(field('Sheet', 'text', d.sheet,
+    v => { d.sheet = v; updatePreview(); }, { placeholder: '1' }));
+  row.appendChild(field('Rev', 'text', d.rev,
+    v => { d.rev = v; updatePreview(); }, { placeholder: 'A' }));
+  sub.appendChild(row);
+  return sub;
+}
+
+function renderSpec(s, idx) {
+  const t = state.current;
+  const sub = el('div', { class: 'subsection' });
+  const head = el('div', { class: 'subsection-head' });
+  head.appendChild(el('div', { class: 'subsection-title' },
+    'Process Spec ' + (idx + 1)));
+  if (t.processSpecs.length > 1) {
+    head.appendChild(el('button', {
+      class: 'del-btn',
+      onclick: () => removeProcessSpec(idx)
+    }, 'Remove'));
+  }
+  sub.appendChild(head);
+
+  const row = el('div', { class: 'row row-3' });
+  row.appendChild(field('Number', 'text', s.number,
+    v => { s.number = v; updatePreview(); updateSpecRefControls(); }, { placeholder: 'BAC1234' }));
+  row.appendChild(field('Section', 'text', s.section,
+    v => { s.section = v; updatePreview(); updateSpecRefControls(); }, { placeholder: '11.1a' }));
+  row.appendChild(field('Rev', 'text', s.rev,
+    v => { s.rev = v; updatePreview(); }, { placeholder: 'A' }));
+  sub.appendChild(row);
+  return sub;
+}
+
+function removeProcessSpec(idx) {
+  const t = state.current;
+  (t.items || []).forEach(it => {
+    it.sbAutoRefIndexes = normalizedAutoRefIndexes(it, t)
+      .filter(refIdx => refIdx !== idx)
+      .map(refIdx => refIdx > idx ? refIdx - 1 : refIdx);
+  });
+  t.processSpecs.splice(idx, 1);
+  (t.items || []).forEach(it => {
+    it.sbAutoRefIndexes = normalizedAutoRefIndexes(it, t);
+  });
+  renderAll();
+}
+
+function renderItem(it, idx) {
+  const t = state.current;
+  const sub = el('div', { class: 'subsection' });
+  const head = el('div', { class: 'subsection-head' });
+  const titleWrap = el('div', { class: 'subsection-title-wrap' });
+  titleWrap.appendChild(el('div', { class: 'subsection-title' }, 'Item'));
+  titleWrap.appendChild(el('input', {
+    class: 'subsection-mini-input',
+    type: 'text',
+    value: it.itemNumber || String(idx + 1),
+    'aria-label': `Item number ${idx + 1}`,
+    oninput: e => { it.itemNumber = e.target.value; updatePreview(); }
+  }));
+  head.appendChild(titleWrap);
+  if (t.items.length > 1) {
+    head.appendChild(el('button', {
+      class: 'del-btn',
+      onclick: () => { t.items.splice(idx, 1); renderAll(); }
+    }, 'Remove'));
+  }
+  sub.appendChild(head);
+
+  // Bad parts / Total quantity
+  const cnt = el('div', { class: 'row row-2' });
+  cnt.appendChild(field('Bad Parts', 'text', it.countOf,
+    v => { it.countOf = v; updatePreview(); }, { placeholder: '1' }));
+  cnt.appendChild(field('Total Quantity', 'text', it.countTotal,
+    v => { it.countTotal = v; updatePreview(); }, { placeholder: '8' }));
+  sub.appendChild(cnt);
+
+  // Part number + description
+  const part = el('div', { class: 'row row-2' });
+  part.appendChild(field('Part Number', 'text', it.partNumber,
+    v => { it.partNumber = v; updatePreview(); }, { placeholder: '123Q1234-1' }));
+  part.appendChild(field('Item Description', 'text', it.description,
+    v => { it.description = v; updatePreview(); }, { placeholder: 'Tube Assy' }));
+  sub.appendChild(part);
+
+  // Discrepancy
+  const discGroup = el('div', { class: 'inner-group' });
+  discGroup.appendChild(el('div', { class: 'inner-group-title' }, 'Discrepancy'));
+  const discTa = el('textarea', {
+    class: 'tag-paragraph',
+    placeholder: 'has a sharp dent C/T the AS56942 Fitting',
+    oninput: e => { it.discrepancy = e.target.value; updatePreview(); }
+  });
+  discTa.value = it.discrepancy || '';
+  discGroup.appendChild(discTa);
+  sub.appendChild(discGroup);
+
+  // Measurement sections (editable heading + one free-form measurement field).
+  if (!Array.isArray(it.measSections) || it.measSections.length === 0) {
+    it.measSections = [ blankMeasSection('Measurements') ];
+  }
+  it.measSections.forEach((sec, sIdx) => {
+    sub.appendChild(renderMeasSection(it, sec, sIdx));
+  });
+  sub.appendChild(el('button', {
+    class: 'add-btn add-btn-meas',
+    onclick: () => {
+      it.measSections.push(blankMeasSection('Section'));
+      renderAll();
+    }
+  }, '+ Add Section'));
+
+  // S/B (What the Spec says it should be)
+  sub.appendChild(textareaField('S/B (What the Spec says it should be)', it.sbText,
+    v => { it.sbText = v; updatePreview(); }, {
+      size: 'paragraph',
+      placeholder: 'No dents on the tube'
+    }));
+  sub.appendChild(renderSpecRefControl(it, t));
+
+  return sub;
+}
+
+function renderMeasSection(it, sec, sIdx) {
+  const wrap = el('div', { class: 'meas-section' });
+  const head = el('div', { class: 'meas-section-head' });
+  const nameWrap = el('div', { class: 'meas-section-name-wrap' });
+  nameWrap.appendChild(el('span', {
+    class: 'meas-section-edit-icon',
+    title: 'Editable title',
+    html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>'
+  }));
+  nameWrap.appendChild(el('input', {
+    class: 'meas-section-name',
+    type: 'text',
+    value: '',
+    placeholder: sec.name || 'Measurements',
+    'aria-label': 'Editable measurement section title',
+    oninput: e => { sec.name = e.target.value; updatePreview(); }
+  }));
+  head.appendChild(nameWrap);
+  if ((it.measSections || []).length > 1) {
+    head.appendChild(el('button', {
+      class: 'del-btn meas-section-del',
+      title: 'Remove section',
+      onclick: () => { it.measSections.splice(sIdx, 1); renderAll(); }
+    }, '×'));
+  }
+  wrap.appendChild(head);
+
+  const meas = el('div', { class: 'row measurement-field' });
+  meas.appendChild(field('', 'text', sec.text,
+    v => { sec.text = v; updatePreview(); },
+    { placeholder: '0.172"L x 0.086"W x 0.007"D' }));
+  wrap.appendChild(meas);
+
+  return wrap;
+}
+
+function renderSpecRefControl(it, t) {
+  const wrap = el('div', { class: 'spec-ref-row' });
+  wrap.appendChild(el('div', { class: 'spec-ref-label' }, 'Auto-reference Process Spec:'));
+
+  const chips = el('div', { class: 'spec-ref-chips' });
+  const specs = (t.processSpecs || []);
+  const selected = normalizedAutoRefIndexes(it, t);
+
+  specs.forEach((s, i) => {
+    chips.appendChild(el('button', {
+      class: 'spec-ref-chip' + (selected.includes(i) ? ' active' : ''),
+      title: 'Toggle auto-reference for this spec',
+      'aria-pressed': selected.includes(i) ? 'true' : 'false',
+      'data-spec-ref-index': String(i),
+      onclick: () => {
+        const next = new Set(normalizedAutoRefIndexes(it, t));
+        if (next.has(i)) next.delete(i);
+        else next.add(i);
+        it.sbAutoRefIndexes = Array.from(next).sort((a, b) => a - b);
+        updatePreview();
+        renderAll();
+      }
+    }, processSpecChipLabel(s, i)));
+  });
+  chips.appendChild(el('button', {
+    class: 'spec-ref-chip spec-ref-off' + (selected.length === 0 ? ' active' : ''),
+    title: 'Disable auto-reference',
+    'aria-pressed': selected.length === 0 ? 'true' : 'false',
+    onclick: () => { it.sbAutoRefIndexes = []; updatePreview(); renderAll(); }
+  }, 'Off'));
+
+  wrap.appendChild(chips);
+  return wrap;
+}
+
+function renderTemplateActions() {
+  const actions = el('div', { class: 'builder-actions' });
+  actions.appendChild(el('button', {
+    class: 'btn btn-primary builder-action-btn builder-action-save',
+    onclick: saveTemplate,
+    title: '⌘S'
+  }, 'Save Template'));
+  if (state.selectedId) {
+    actions.appendChild(el('button', {
+      class: 'btn btn-ghost builder-action-btn builder-action-danger',
+      onclick: () => confirmTemplateDelete(state.selectedId)
+    }, 'Delete'));
+  }
+  actions.appendChild(el('button', {
+    class: 'btn btn-ghost builder-action-btn builder-action-duplicate',
+    onclick: duplicateTemplate,
+    title: '⌘D'
+  }, 'Duplicate Template'));
+  return actions;
+}
+
+/* ============================================================================
+   RENDER — PREVIEW
+   ============================================================================ */
+function renderPreview() {
+  const wrap = el('aside', { class: 'preview-pane' });
+
+  const head = el('div', { class: 'preview-head' });
+  head.appendChild(el('div', { class: 'preview-title' }, 'Live Preview'));
+  wrap.appendChild(head);
+
+  const body = el('div', { class: 'preview-body' });
+  const card = el('div', {
+    class: 'preview-card'
+      + (state.formattedPreview ? ' formatted-preview' : '')
+      + (state.uppercaseText ? ' uppercase-text' : ''),
+    id: 'previewCard'
+  });
+  card.innerHTML = currentPreviewHTML();
+  body.appendChild(card);
+  wrap.appendChild(body);
+
+  const foot = el('div', { class: 'preview-foot' });
+  foot.appendChild(el('button', {
+    class: 'btn btn-primary btn-block', onclick: copyPreview, title: '⌘Enter'
+  }, '📋 Copy to clipboard'));
+  wrap.appendChild(foot);
+
+  return wrap;
+}
+
+// Lightweight update — only the preview text, keeps form focus intact.
+function updatePreview() {
+  const c = $('#previewCard');
+  if (c) {
+    c.classList.toggle('formatted-preview', state.formattedPreview);
+    c.classList.toggle('uppercase-text', state.uppercaseText);
+    c.innerHTML = currentPreviewHTML();
+  }
+}
+
+function currentPreviewHTML() {
+  if (state.selectedId && state.previewSuppressed) {
+    return `<span class="preview-placeholder">Click the selected template again to show its preview.</span>`;
+  }
+  return previewHTML(state.current);
+}
+
+function isCaretPreviewSuppressed(t = state.current) {
+  if (t.type !== 'NCO' || !state.carrotPreviewSuppressed || !state.selectedCarrotId) {
+    return false;
+  }
+  return !t.carrotTemplateId || t.carrotTemplateId === state.selectedCarrotId;
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>]/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[ch]));
+}
+
+function joinPreviewTokens(tokens) {
+  return tokens
+    .map(token => token == null ? '' : String(token))
+    .map(token => token.trim())
+    .filter(token => token !== '')
+    .join(' ')
+    .trim();
+}
+
+function joinWithAnd(parts) {
+  const clean = parts.map(p => String(p || '').trim()).filter(Boolean);
+  if (clean.length <= 1) return clean[0] || '';
+  if (clean.length === 2) return clean.join(' and ');
+  return clean.slice(0, -1).join(', ') + ', and ' + clean[clean.length - 1];
+}
+
+function processSpecChipLabel(spec, index) {
+  if (spec && (spec.number || spec.section)) {
+    return [spec.number, spec.section ? 'Sec.' + spec.section : ''].filter(Boolean).join(' ');
+  }
+  return `Spec ${index + 1}`;
+}
+
+function processSpecReferenceText(spec) {
+  if (!spec || (!spec.number && !spec.section && !spec.rev)) return '';
+  return joinPreviewTokens([
+    spec.number,
+    spec.section ? `Sec.${spec.section}` : '',
+    spec.rev ? `Rev.${spec.rev}` : ''
+  ]);
+}
+
+function normalizedAutoRefIndexes(it, t = state.current) {
+  if (!Array.isArray(it.sbAutoRefIndexes)) {
+    if (typeof it.sbAutoRefIndex === 'number') {
+      it.sbAutoRefIndexes = it.sbAutoRefIndex >= 0 ? [it.sbAutoRefIndex] : [];
+    } else {
+      it.sbAutoRefIndexes = it.sbAutoRef === false ? [] : [0];
+    }
+    delete it.sbAutoRef;
+    delete it.sbAutoRefIndex;
+  }
+  const specs = t.processSpecs || [];
+  const seen = new Set();
+  const indexes = it.sbAutoRefIndexes
+    .filter(idx => Number.isInteger(idx) && idx >= 0 && idx < specs.length)
+    .filter(idx => {
+      if (seen.has(idx)) return false;
+      seen.add(idx);
+      return true;
+    })
+    .sort((a, b) => a - b);
+  if (indexes.length !== it.sbAutoRefIndexes.length ||
+      indexes.some((idx, pos) => idx !== it.sbAutoRefIndexes[pos])) {
+    it.sbAutoRefIndexes = indexes;
+  }
+  return indexes;
+}
+
+function updateSpecRefControls() {
+  document.querySelectorAll('.spec-ref-chip[data-spec-ref-index]').forEach(btn => {
+    const index = Number(btn.dataset.specRefIndex);
+    btn.textContent = processSpecChipLabel((state.current.processSpecs || [])[index], index);
+  });
+}
+
+function hasPreviewInput(t) {
+  const itemHasMeas = i =>
+    (i.measSections || []).some(s => s.text);
+  return (
+    (t.revisionNumber || 0) > 0 ||
+    (t.drawings || []).some(d => d.number || d.sheet || d.rev || d.location || d.custom) ||
+    (t.processSpecs || []).some(s => s.number || s.section || s.rev) ||
+    (t.items || []).some(i =>
+      i.countOf || i.countTotal || i.partNumber || i.description ||
+      i.discrepancy || itemHasMeas(i) || i.sbText
+    ) ||
+    t.lso || t.lio || t.carrotsText ||
+    (t.otherBlocks || []).some(o => o.text || o.label)
+  );
+}
+
+function buildPreviewBlocks(t) {
+  const blocks = [];
+
+  if (t.revisionNumber > 0) {
+    blocks.push({ type: 'emphasis', lines: [`*Revision ${t.revisionNumber}*`] });
+    blocks.push({ type: 'spacer' });
+  }
+
+  (t.drawings || []).forEach(d => {
+    if (d.type === 'Other') {
+      const text = joinPreviewTokens([d.location || d.number || '']);
+      if (!text) return;
+      blocks.push({
+        type: 'inline',
+        className: 'lbl',
+        label: `${d.custom || 'Other Drawing'}:`,
+        text
+      });
+      return;
+    }
+    if (!d.number && !d.sheet && !d.rev) return;
+    const label =
+      d.type === 'Engineering' ? 'Eng. Drawing' :
+      d.type === 'Tool'        ? 'Tool Drawing' :
+      d.type === 'Supplier'    ? 'Supplier Drawing' :
+      (d.custom || 'Other Drawing');
+    const text = joinPreviewTokens([
+      d.number,
+      d.sheet ? `Sht.${d.sheet}` : '',
+      d.rev ? `Rev.${d.rev}` : ''
+    ]);
+    blocks.push({ type: 'inline', className: 'lbl', label: `${label}:`, text });
+  });
+
+  (t.processSpecs || []).forEach(p => {
+    if (!p.number && !p.section && !p.rev) return;
+    const text = joinPreviewTokens([
+      p.number,
+      p.section ? `Sec.${p.section}` : '',
+      p.rev ? `Rev.${p.rev}` : ''
+    ]);
+    blocks.push({ type: 'inline', className: 'lbl', label: 'Process Spec:', text });
+  });
+
+  (t.items || []).forEach((it, i) => {
+    const sections = it.measSections || [];
+    const hasMeasContent = sections.some(s => s.text);
+    const hasContent =
+      it.countOf || it.countTotal ||
+      it.partNumber || it.description || it.discrepancy ||
+      hasMeasContent || it.sbText;
+    if (!hasContent) return;
+
+    if (blocks.length) blocks.push({ type: 'spacer' });
+
+    const headerHasContent =
+      it.countOf || it.countTotal ||
+      it.partNumber || it.description || it.discrepancy;
+    if (headerHasContent) {
+      const countPart = (it.countOf || it.countTotal)
+        ? `${it.countOf || ''} of ${it.countTotal || ''}`
+        : '';
+      const text = joinPreviewTokens([
+        countPart,
+        it.partNumber,
+        it.description,
+        it.discrepancy
+      ]);
+      blocks.push({
+        type: 'inline',
+        className: 'item-hdr',
+        label: `Item ${it.itemNumber || String(i + 1)}:`,
+        text
+      });
+    }
+
+    sections.forEach(sec => {
+      const hasText = !!(sec.text && String(sec.text).trim());
+      if (!hasText) return;
+      const sectionName = String(sec.name || '').trim();
+
+      blocks.push({ type: 'spacer' });
+      if (sectionName) {
+        blocks.push({ type: 'heading', className: 'meas-hdr', label: sectionName });
+      }
+      blocks.push({ type: 'multiline', lines: String(sec.text).split('\n') });
+    });
+
+    if (it.sbText) {
+      let ref = '';
+      const refs = normalizedAutoRefIndexes(it, t)
+        .map(idx => processSpecReferenceText((t.processSpecs || [])[idx]))
+        .filter(Boolean);
+      if (refs.length) {
+        ref = ` per ${joinWithAnd(refs)}`;
+      }
+      blocks.push({ type: 'spacer' });
+      blocks.push({
+        type: 'inline',
+        className: 'lbl',
+        label: 'S/B:',
+        text: `${it.sbText}${ref}`
+      });
+    }
+  });
+
+  if (t.lso || t.lio) {
+    blocks.push({ type: 'spacer' });
+    if (t.lso) blocks.push({ type: 'inline', className: 'lbl', label: 'LSO:', text: t.lso });
+    if (t.lio) blocks.push({ type: 'inline', className: 'lbl', label: 'LIO:', text: t.lio });
+  }
+
+  if (t.attachmentsEnabled && t.attachmentsText) {
+    blocks.push({ type: 'spacer' });
+    blocks.push({ type: 'emphasis', lines: String(t.attachmentsText).split('\n') });
+  }
+
+  (t.otherBlocks || []).forEach(o => {
+    if (!o || (!o.text && !o.label)) return;
+    blocks.push({ type: 'spacer' });
+    const label = String(o.label || '').trim();
+    if (label) {
+      blocks.push({ type: 'heading', className: 'meas-hdr', label });
+    }
+    if (o.text) {
+      blocks.push({ type: 'multiline', lines: String(o.text).split('\n') });
+    }
+  });
+
+  if (t.type === 'NCO' && t.carrotsText && !isCaretPreviewSuppressed(t)) {
+    blocks.push({ type: 'spacer' });
+    blocks.push({ type: 'multiline', lines: String(t.carrotsText).split('\n') });
+  }
+
+  return blocks;
+}
+
+function renderPreviewRichText(text) {
+  return escapeHtml(text).replace(/\*([^*]+)\*/g, '<em>*$1*</em>');
+}
+
+const FORMATTED_PREVIEW_WIDTH = 51;
+
+function renderPreviewClassic(blocks) {
+  const lines = [];
+  blocks.forEach(block => {
+    if (block.type === 'spacer') {
+      lines.push('');
+      return;
+    }
+    if (block.type === 'inline') {
+      const labelClass = block.className || 'lbl';
+      const label = `<span class="${labelClass}">${escapeHtml(block.label)}</span>`;
+      lines.push(joinPreviewTokens([label, block.text]));
+      return;
+    }
+    if (block.type === 'heading') {
+      lines.push(`<span class="${block.className || 'meas-hdr'}">${escapeHtml(block.label)}</span>`);
+      return;
+    }
+    if (block.type === 'text') {
+      lines.push(escapeHtml(block.text));
+      return;
+    }
+    if (block.type === 'multiline') {
+      block.lines.forEach(line => lines.push(escapeHtml(line)));
+      return;
+    }
+    if (block.type === 'emphasis') {
+      block.lines.forEach(line => lines.push(renderPreviewRichText(line)));
+    }
+  });
+  return lines.join('\n');
+}
+
+function wrapIndentedText(text, firstIndent, nextIndent, width = FORMATTED_PREVIEW_WIDTH) {
+  const source = String(text || '');
+  if (!source.trim()) return [firstIndent.trimEnd()];
+
+  const parts = source.match(/\S+\s*|\s+/g) || [];
+  const lines = [];
+  let current = firstIndent;
+
+  parts.forEach(part => {
+    if (current === firstIndent || current === nextIndent) {
+      current += part.replace(/^\n+|\n+$/g, '');
+      return;
+    }
+    if ((current + part).length <= width) {
+      current += part;
+      return;
+    }
+    lines.push(current.trimEnd());
+    current = nextIndent + part.replace(/^\s+/, '');
+  });
+
+  lines.push(current.trimEnd());
+  return lines;
+}
+
+function wrapPlainText(text, width = FORMATTED_PREVIEW_WIDTH) {
+  return wrapIndentedText(text, '', '', width).map(line => line.trimEnd());
+}
+
+function renderFormattedInlineBlock(block) {
+  const labelText = String(block.label || '');
+  const firstIndent = labelText + ' ';
+  const nextIndent = ' '.repeat(firstIndent.length);
+  const lines = wrapIndentedText(block.text, firstIndent, nextIndent);
+  return lines.map((line, idx) => {
+    if (idx !== 0) return escapeHtml(line);
+    return `<span class="${block.className || 'lbl'} preview-inline-label">${escapeHtml(labelText)}</span> ${escapeHtml(line.slice(firstIndent.length))}`;
+  });
+}
+
+function renderPreviewFormatted(blocks) {
+  const lines = [];
+
+  blocks.forEach(block => {
+    if (block.type === 'spacer') {
+      lines.push('');
+      return;
+    }
+    if (block.type === 'inline') {
+      renderFormattedInlineBlock(block).forEach(line => lines.push(line));
+      return;
+    }
+    if (block.type === 'heading') {
+      wrapPlainText(block.label).forEach((line, idx) => {
+        if (idx === 0) lines.push(`<span class="${block.className || 'meas-hdr'}">${escapeHtml(line)}</span>`);
+        else lines.push(escapeHtml(line));
+      });
+      return;
+    }
+    if (block.type === 'text') {
+      wrapPlainText(block.text).forEach(line => lines.push(escapeHtml(line)));
+      return;
+    }
+    if (block.type === 'multiline') {
+      block.lines.forEach(line => wrapPlainText(line).forEach(wrapped => lines.push(escapeHtml(wrapped))));
+      return;
+    }
+    if (block.type === 'emphasis') {
+      block.lines.forEach(line => wrapPlainText(line).forEach(wrapped => lines.push(renderPreviewRichText(wrapped))));
+    }
+  });
+
+  return lines.join('\n');
+}
+
+function previewText(blocks) {
+  const lines = [];
+  blocks.forEach(block => {
+    if (block.type === 'spacer') {
+      lines.push('');
+      return;
+    }
+    if (block.type === 'inline') {
+      const firstIndent = String(block.label || '') + ' ';
+      const nextIndent = ' '.repeat(firstIndent.length);
+      wrapIndentedText(block.text, firstIndent, nextIndent).forEach(line => lines.push(line));
+      return;
+    }
+    if (block.type === 'heading') {
+      wrapPlainText(block.label).forEach(line => lines.push(line));
+      return;
+    }
+    if (block.type === 'text') {
+      wrapPlainText(block.text).forEach(line => lines.push(line));
+      return;
+    }
+    if (block.type === 'multiline' || block.type === 'emphasis') {
+      block.lines.forEach(line => wrapPlainText(line).forEach(wrapped => lines.push(wrapped)));
+    }
+  });
+  return lines.join('\n');
+}
+
+// Build the preview text from current tag state. Output mirrors the user's
+// example format exactly: Eng. Drawing line, Process Spec line, Item line(s),
+// Measurements, S/B with auto-reference, LSO/LIO, attachments.
+function previewHTML(t) {
+  if (!hasPreviewInput(t)) {
+    return `<span class="preview-placeholder">Start typing to show live preview.</span>`;
+  }
+  const blocks = buildPreviewBlocks(t);
+  return state.formattedPreview ? renderPreviewFormatted(blocks) : renderPreviewClassic(blocks);
+}
+
+// Plain text for the clipboard.
+function previewPlainText(t) {
+  const text = hasPreviewInput(t)
+    ? previewText(buildPreviewBlocks(t))
+    : 'Start typing to show live preview.';
+  return state.uppercaseText ? text.toUpperCase() : text;
+}
+
+function copyPreview() {
+  const text = previewPlainText(state.current);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(
+      () => toast('Copied to clipboard'),
+      () => fallbackCopy(text)
+    );
+  } else fallbackCopy(text);
+}
+
+function fallbackCopy(text) {
+  // For older browsers / restricted environments. Uses a hidden textarea.
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); toast('Copied to clipboard'); }
+  catch (e) { toast('Copy failed — select & copy manually'); }
+  ta.remove();
+}
+
+/* ============================================================================
+   ACTIONS — save / duplicate / delete / rename templates
+   ============================================================================ */
+function saveTemplate() {
+  const t = state.current;
+  const name = (t.templateName || '').trim();
+  if (!name) {
+    toast('Name the template first');
+    return;
+  }
+
+  openModal('Save template', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `Do you want to create a new template named "${name}" or update the current template?`)
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-primary',
+      onclick: createNewTemplate
+    }, 'Create New'),
+    el('button', {
+      class: 'btn btn-primary',
+      onclick: updateCurrentTemplate
+    }, 'Update Current Tag')
+  ]);
+}
+
+function prepareCurrentTemplateForSave() {
+  const t = state.current;
+  const name = (t.templateName || '').trim();
+  if (!name) {
+    toast('Name the template first');
+    return null;
+  }
+
+  t.templateName = name;
+  t.type = currentTagType();
+  t.carrotTemplateId = state.activeTab === 'NCOs' ? (state.selectedCarrotId || null) : null;
+  t.createdAt = t.createdAt || Date.now();
+  t.updatedAt = Date.now();
+  return t;
+}
+
+function updateCurrentTemplate() {
+  const t = prepareCurrentTemplateForSave();
+  if (!t) return;
+  const idx = state.templates.findIndex(x => x.id === t.id);
+  if (idx >= 0) state.templates[idx] = clone(t);
+  else state.templates.unshift(clone(t));
+  state.selectedId = t.id;
+  closeModal();
+  persist();
+  toast(idx >= 0 ? 'Template updated' : 'Template saved');
+  renderAll();
+}
+
+function createNewTemplate() {
+  const t = prepareCurrentTemplateForSave();
+  if (!t) return;
+
+  const fresh = clone(t);
+  fresh.id = blankTagForType(currentTagType()).id;
+  fresh.createdAt = Date.now();
+  fresh.updatedAt = Date.now();
+  state.templates.unshift(clone(fresh));
+  state.current = fresh;
+  state.selectedId = fresh.id;
+  state.previewSuppressed = false;
+  state.carrotPreviewSuppressed = false;
+  pushHistory({
+    type: 'create-template',
+    label: 'Create "' + (fresh.templateName || 'Untitled') + '"',
+    payload: clone(fresh)
+  });
+  closeModal();
+  persist();
+  renderAll();
+  actionToast('Template created', 'Undo', performUndo);
+}
+
+function saveCarrotTemplate() {
+  if (state.activeTab !== 'NCOs') return;
+  const name = (state.current.carrotTemplateName || '').trim();
+  const text = state.current.carrotsText || '';
+  if (!name) {
+    toast('Name the caret template first');
+    return;
+  }
+  if (!text.trim()) {
+    toast('Add caret text first');
+    return;
+  }
+
+  const id = state.selectedCarrotId || ('carrot_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
+  const next = {
+    id,
+    name,
+    text,
+    createdAt: state.carrotTemplates.find(x => x.id === id)?.createdAt || Date.now(),
+    updatedAt: Date.now()
+  };
+  const idx = state.carrotTemplates.findIndex(x => x.id === id);
+  const wasNew = idx < 0;
+  if (idx >= 0) state.carrotTemplates[idx] = next;
+  else state.carrotTemplates.unshift(next);
+  state.selectedCarrotId = id;
+  state.current.carrotTemplateId = id;
+  state.current.carrotTemplateName = name;
+  if (wasNew) {
+    pushHistory({
+      type: 'create-caret',
+      label: 'Create caret "' + name + '"',
+      payload: clone(next)
+    });
+  }
+  persist();
+  renderAll();
+  if (wasNew) actionToast('Caret template saved', 'Undo', performUndo);
+  else toast('Caret template updated');
+}
+
+function duplicateTemplate() {
+  const name = (state.current.templateName || '').trim() || 'Untitled';
+  openModal('Duplicate template?', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `Are you sure you want to duplicate this template? "${name}" will be copied into the template list.`)
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-primary',
+      onclick: confirmDuplicateTemplate
+    }, 'Duplicate')
+  ]);
+}
+
+function confirmDuplicateTemplate() {
+  createNewTemplate();
+}
+
+function renameTemplate(templateId) {
+  const template = state.templates.find(x => x.id === templateId);
+  if (!template) return;
+
+  const nextName = prompt('Rename template', template.templateName || '');
+  if (nextName == null) return;
+
+  const name = nextName.trim();
+  if (!name) {
+    toast('Template name cannot be empty');
+    return;
+  }
+
+  template.templateName = name;
+  template.updatedAt = Date.now();
+  if (state.selectedId === templateId) {
+    state.current.templateName = name;
+    state.current.updatedAt = template.updatedAt;
+  }
+  persist();
+  toast('Template renamed');
+  renderAll();
+}
+
+function renameCarrotTemplate(templateId) {
+  const template = state.carrotTemplates.find(x => x.id === templateId);
+  if (!template) return;
+
+  const nextName = prompt('Rename caret template', template.name || '');
+  if (nextName == null) return;
+
+  const name = nextName.trim();
+  if (!name) {
+    toast('Caret template name cannot be empty');
+    return;
+  }
+
+  template.name = name;
+  template.updatedAt = Date.now();
+  if (state.selectedCarrotId === templateId) {
+    state.current.carrotTemplateName = name;
+  }
+  persist();
+  toast('Caret template renamed');
+  renderAll();
+}
+
+function recordTemplateDeletion(template, bemsid) {
+  state.deletionHistory.unshift({
+    id: 'del_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    title: template.templateName || tagSummary(template) || 'Untitled',
+    bemsid: String(bemsid || '').trim(),
+    deletedAt: Date.now(),
+    type: template.type || currentTagType()
+  });
+}
+
+function deleteTemplateById(templateId, bemsid = '') {
+  const idx = state.templates.findIndex(x => x.id === templateId);
+  const removed = idx >= 0 ? clone(state.templates[idx]) : null;
+  state.templates = state.templates.filter(x => x.id !== templateId);
+  if (state.selectedId === templateId) {
+    state.current = blankTagForType(currentTagType());
+    state.selectedId = null;
+    state.selectedCarrotId = null;
+    state.previewSuppressed = false;
+    state.carrotPreviewSuppressed = false;
+  }
+  if (removed) {
+    recordTemplateDeletion(removed, bemsid);
+    pushHistory({
+      type: 'delete-template',
+      label: 'Delete "' + (removed.templateName || 'Untitled') + '"',
+      payload: { template: removed, index: idx }
+    });
+  }
+  closeModal();
+  persist();
+  renderAll();
+  if (removed) {
+    actionToast('Template deleted', 'Undo', performUndo);
+  } else {
+    toast('Template deleted');
+  }
+}
+
+function deleteCarrotTemplateById(templateId) {
+  const idx = state.carrotTemplates.findIndex(x => x.id === templateId);
+  const removed = idx >= 0 ? clone(state.carrotTemplates[idx]) : null;
+  state.carrotTemplates = state.carrotTemplates.filter(x => x.id !== templateId);
+  if (state.selectedCarrotId === templateId) {
+    state.selectedCarrotId = null;
+    state.current.carrotTemplateId = null;
+    state.current.carrotTemplateName = '';
+    state.carrotPreviewSuppressed = false;
+  }
+  if (removed) {
+    pushHistory({
+      type: 'delete-caret',
+      label: 'Delete caret "' + (removed.name || 'Untitled') + '"',
+      payload: { template: removed, index: idx }
+    });
+  }
+  closeModal();
+  persist();
+  renderAll();
+  if (removed) {
+    actionToast('Caret template deleted', 'Undo', performUndo);
+  } else {
+    toast('Caret template deleted');
+  }
+}
+
+function confirmTemplateDelete(templateId) {
+  const template = state.templates.find(x => x.id === templateId);
+  if (!template) return;
+  const name = template.templateName || 'Untitled';
+
+  openModal('Delete template?', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `Delete "${name}" from the template list?`)
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-danger',
+      onclick: () => confirmTemplateDeleteFinal(templateId)
+    }, 'Continue')
+  ]);
+}
+
+function confirmCarrotTemplateDelete(templateId) {
+  const template = state.carrotTemplates.find(x => x.id === templateId);
+  if (!template) return;
+  const name = template.name || 'Untitled';
+
+  openModal('Delete caret template?', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `Delete caret template "${name}" from the NCO sidebar?`)
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-danger',
+      onclick: () => confirmCarrotTemplateDeleteFinal(templateId)
+    }, 'Continue')
+  ]);
+}
+
+function confirmTemplateDeleteFinal(templateId) {
+  const template = state.templates.find(x => x.id === templateId);
+  if (!template) {
+    closeModal();
+    return;
+  }
+  const name = template.templateName || 'Untitled';
+  const passwordId = 'deletePassword_' + templateId;
+  const bemsidId = 'deleteBemsid_' + templateId;
+
+  openModal('Final confirmation', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `"${name}" will be permanently deleted. Enter the delete password and your BEMSID to continue.`),
+    el('div', { class: 'field' }, [
+      el('label', { for: passwordId }, 'Password'),
+      el('input', {
+        id: passwordId,
+        type: 'password',
+        placeholder: 'Delete password',
+        autocomplete: 'off'
+      })
+    ]),
+    el('div', { class: 'field' }, [
+      el('label', { for: bemsidId }, 'BEMSID'),
+      el('input', {
+        id: bemsidId,
+        type: 'number',
+        inputmode: 'numeric',
+        pattern: '[0-9]*',
+        placeholder: 'BEMSID',
+        oninput: e => { e.target.value = String(e.target.value || '').replace(/\D/g, ''); }
+      })
+    ])
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-danger',
+      onclick: () => authorizeTemplateDelete(templateId, passwordId, bemsidId)
+    }, 'Delete template')
+  ]);
+}
+
+function authorizeTemplateDelete(templateId, passwordId, bemsidId) {
+  const password = (document.getElementById(passwordId)?.value || '').trim();
+  const bemsid = (document.getElementById(bemsidId)?.value || '').trim();
+  if (!/^\d+$/.test(bemsid)) {
+    toast('Enter a numeric BEMSID with the password');
+    return;
+  }
+  if (password !== 'TDRCQA') {
+    toast('Incorrect delete password');
+    return;
+  }
+  deleteTemplateById(templateId, bemsid);
+}
+
+function confirmCarrotTemplateDeleteFinal(templateId) {
+  const template = state.carrotTemplates.find(x => x.id === templateId);
+  if (!template) {
+    closeModal();
+    return;
+  }
+  const name = template.name || 'Untitled';
+
+  openModal('Final confirmation', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `Caret template "${name}" will be permanently deleted. This cannot be undone.`)
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-danger',
+      onclick: () => deleteCarrotTemplateById(templateId)
+    }, 'Delete caret template')
+  ]);
+}
+
+/* ============================================================================
+   IMPORT / EXPORT JSON — for moving tags between machines
+   ============================================================================ */
+function exportAll() {
+  const data = {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    activeTheme: state.activeTheme,
+    customThemes: state.customThemes,
+    tags: state.tags,
+    templates: state.templates,
+    carrotTemplates: state.carrotTemplates,
+    deletionHistory: state.deletionHistory
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = el('a', { href: url, download: 'tag-builder-' + Date.now() + '.json' });
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('Exported');
+}
+
+function applyImportedJsonData(data) {
+  const incoming = data.tags || [];
+  const incomingTpl = data.templates || [];
+  const incomingCarrots = data.carrotTemplates || [];
+  const incomingDeleteHistory = data.deletionHistory || [];
+  const incomingCustomThemes = data.customThemes || [];
+  // Merge by id (incoming wins on conflict).
+  const byId = new Map(state.tags.map(t => [t.id, t]));
+  incoming.forEach(t => byId.set(t.id, migrateTag(t)));
+  state.tags = Array.from(byId.values());
+  const tplById = new Map(state.templates.map(t => [t.id, t]));
+  incomingTpl.forEach(t => tplById.set(t.id, migrateTag(t)));
+  state.templates = Array.from(tplById.values());
+  const carrotById = new Map(state.carrotTemplates.map(t => [t.id, t]));
+  incomingCarrots.forEach(t => carrotById.set(t.id, t));
+  state.carrotTemplates = Array.from(carrotById.values());
+  const deleteById = new Map((state.deletionHistory || []).map(t => [t.id, t]));
+  incomingDeleteHistory.forEach((t, i) => {
+    const row = {
+      id: t.id || ('imported_del_' + Date.now() + '_' + i),
+      title: t.title || 'Untitled',
+      bemsid: t.bemsid || '',
+      deletedAt: t.deletedAt || Date.now(),
+      type: t.type || ''
+    };
+    deleteById.set(row.id, row);
+  });
+  state.deletionHistory = Array.from(deleteById.values());
+  const customById = new Map((state.customThemes || []).map(t => [t.id, t]));
+  incomingCustomThemes.forEach((t, i) => {
+    const theme = normalizeCustomTheme({
+      ...t,
+      id: t.id || ('imported_theme_' + Date.now() + '_' + i)
+    });
+    customById.set(theme.id, theme);
+  });
+  state.customThemes = Array.from(customById.values());
+  if (data.activeTheme) state.activeTheme = data.activeTheme;
+  return {
+    tags: incoming.length,
+    templates: incomingTpl.length,
+    carrotTemplates: incomingCarrots.length
+  };
+}
+
+function bakedJsonHash(text) {
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+  }
+  return String(hash);
+}
+
+function applyBakedInJson() {
+  const raw = String(BAKED_IN_JSON || '').trim();
+  if (!raw || raw === 'Paste JSON here') return;
+  const hash = bakedJsonHash(raw);
+  if (localStorage.getItem(STORAGE_KEY + '.bakedJsonHash') === hash) return;
+  try {
+    applyImportedJsonData(JSON.parse(raw));
+    localStorage.setItem(STORAGE_KEY + '.bakedJsonHash', hash);
+    persist();
+  } catch (err) {
+    console.warn('Baked-in JSON was not loaded:', err);
+  }
+}
+
+function importFile(file) {
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const counts = applyImportedJsonData(data);
+      persist();
+      toast(`Imported ${counts.tags} tags, ${counts.templates} templates, and ${counts.carrotTemplates} caret templates`);
+      renderAll();
+    } catch (err) {
+      alert('Invalid JSON: ' + err.message);
+    }
+  };
+  r.readAsText(file);
+}
+
+function isJsonFile(file) {
+  if (!file) return false;
+  const name = String(file.name || '').toLowerCase();
+  return file.type === 'application/json' || name.endsWith('.json');
+}
+
+/* ============================================================================
+   MODAL helpers
+   ============================================================================ */
+function openModal(title, options, footer) {
+  const m = $('#modal');
+  m.innerHTML = '';
+  m.appendChild(el('h3', {}, title));
+  const list = el('div', { class: 'modal-options' });
+  (Array.isArray(options) ? options : [options]).forEach(o => o && list.appendChild(o));
+  m.appendChild(list);
+  const f = el('div', { class: 'modal-foot' });
+  (footer || []).forEach(b => b && f.appendChild(b));
+  m.appendChild(f);
+  $('#modalBackdrop').classList.add('show');
+}
+function closeModal() { $('#modalBackdrop').classList.remove('show'); }
+
+function openDrawingTypeModal(onPick) {
+  const types = ['Engineering', 'Tool', 'Supplier', 'Other'];
+  const opts = types.map(t => el('button', {
+    onclick: () => { closeModal(); onPick(t); }
+  }, t + ' Drawing'));
+  openModal('Add drawing — pick type', opts, [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel')
+  ]);
+}
+
+/* ============================================================================
+   GUIDES TAB — multiple PDF tabs, loaded from disk via file picker
+   PDFs persist for the session only (object URLs are not durable).
+   Tip: keep your team's guides in a shared folder so anyone can pick the
+   same files.
+   ============================================================================ */
+function renderGuides() {
+  const wrap = el('section', { class: 'guides' });
+  const tabs = el('div', { class: 'guides-tabs' });
+
+  state.guides.forEach((g, i) => {
+    const isActive = i === state.activeGuideIdx;
+    const t = el('div', {
+      class: 'guide-tab' + (isActive ? ' active' : ''),
+      onclick: () => { state.activeGuideIdx = i; renderAll(); }
+    });
+    t.appendChild(document.createTextNode(g.name));
+    t.appendChild(el('span', {
+      class: 'x',
+      onclick: e => {
+        e.stopPropagation();
+        URL.revokeObjectURL(state.guides[i].url);
+        state.guides.splice(i, 1);
+        if (state.activeGuideIdx >= state.guides.length)
+          state.activeGuideIdx = Math.max(0, state.guides.length - 1);
+        renderAll();
+      }
+    }, '×'));
+    tabs.appendChild(t);
+  });
+
+  tabs.appendChild(el('button', {
+    class: 'btn btn-ghost',
+    onclick: () => $('#filePdf').click()
+  }, '+ Add PDF'));
+  wrap.appendChild(tabs);
+
+  const view = el('div', { class: 'guide-viewer' });
+  if (state.guides.length === 0) {
+    view.appendChild(el('div', { class: 'empty-state' }, [
+      el('h3', { style: 'margin-bottom:8px;color:var(--text);font-size:18px' }, 'Team Guides'),
+      el('div', {}, 'Click "+ Add PDF" to load one or more PDFs from disk.'),
+      el('div', { style: 'margin-top:12px;font-size:12px;max-width:480px;margin-left:auto;margin-right:auto' },
+        'Tip: keep guides on a shared folder (OneDrive / SharePoint / network drive) so everyone picks the same source. PDFs aren\'t saved into this file — they load fresh each session.')
+    ]));
+  } else {
+    const g = state.guides[state.activeGuideIdx];
+    const frame = el('iframe', { src: g.url });
+    // Make iframe fill remaining viewport height
+    frame.style.height = 'calc(100vh - 130px)';
+    view.appendChild(frame);
+  }
+  wrap.appendChild(view);
+  return wrap;
+}
+
+/* ============================================================================
+   GLOBAL EVENTS — theme toggle, file inputs, keyboard shortcuts
+   ============================================================================ */
+function setupGlobalEvents() {
+  let dragDepth = 0;
+
+  // Theme picker show/hide
+  $('#themeBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    $('#themePicker').classList.toggle('show');
+  });
+  document.addEventListener('click', e => {
+    if (!$('#themePicker').contains(e.target) && e.target !== $('#themeBtn'))
+      $('#themePicker').classList.remove('show');
+  });
+  $$('#themePicker .theme-opt[data-theme]').forEach(b => {
+    b.addEventListener('click', e => {
+      const sw = b.querySelector('.theme-swatch');
+      const bg = sw ? sw.style.background : '';
+      applyThemeWithRipple(b.dataset.theme, e.clientX, e.clientY, bg);
+      $('#themePicker').classList.remove('show');
+    });
+  });
+  $('#createThemeBtn').addEventListener('click', () => {
+    $('#themePicker').classList.remove('show');
+    openThemeBuilder(null);
+  });
+  renderCustomThemes();
+
+  // Modal: backdrop click closes
+  $('#modalBackdrop').addEventListener('click', e => {
+    if (e.target === $('#modalBackdrop')) closeModal();
+  });
+
+  // Fullscreen + preview text toggles
+  $('#focusBtn').addEventListener('click', toggleFullscreen);
+  $('#formatBtn').addEventListener('click', toggleFormattedPreview);
+  $('#uppercaseBtn').addEventListener('click', toggleUppercaseText);
+  if (state.formattedPreview) $('#formatBtn').classList.add('feature-on');
+  if (state.uppercaseText) $('#uppercaseBtn').classList.add('feature-on');
+
+  // Undo / Redo buttons
+  $('#undoBtn').addEventListener('click', performUndo);
+  $('#redoBtn').addEventListener('click', performRedo);
+  renderUndoButton();
+
+  // Hidden file input is triggered from the sidebar Import button.
+  $('#fileImport').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (f) importFile(f);
+    e.target.value = '';
+  });
+  $('#filePdf').addEventListener('change', e => {
+    const files = Array.from(e.target.files || []);
+    files.forEach(f => state.guides.push({ name: f.name, url: URL.createObjectURL(f) }));
+    if (files.length) state.activeGuideIdx = state.guides.length - files.length;
+    e.target.value = '';
+    renderAll();
+  });
+
+  function setDropOverlay(show) {
+    document.body.classList.toggle('drag-importing', show);
+    const overlay = $('#dropOverlay');
+    if (overlay) overlay.setAttribute('aria-hidden', show ? 'false' : 'true');
+  }
+  function fileDragEvent(e) {
+    return !!(e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files'));
+  }
+
+  document.addEventListener('dragenter', e => {
+    if (!fileDragEvent(e)) return;
+    e.preventDefault();
+    dragDepth++;
+    setDropOverlay(true);
+  });
+  document.addEventListener('dragover', e => {
+    if (!fileDragEvent(e)) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+    setDropOverlay(true);
+  });
+  document.addEventListener('dragleave', e => {
+    if (!fileDragEvent(e)) return;
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (dragDepth === 0) setDropOverlay(false);
+  });
+  document.addEventListener('drop', e => {
+    if (!fileDragEvent(e)) return;
+    e.preventDefault();
+    dragDepth = 0;
+    setDropOverlay(false);
+    const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!file) return;
+    if (!isJsonFile(file)) {
+      toast('Drop a JSON export file');
+      return;
+    }
+    importFile(file);
+  });
+  document.addEventListener('fullscreenchange', syncFeatureButtons);
+
+  // Keyboard shortcuts (works great with BetterTouchTool gestures too):
+  //   ⌘/Ctrl + S      Save
+  //   ⌘/Ctrl + D      Duplicate current tag
+  //   ⌘/Ctrl + Enter  Copy preview to clipboard
+  document.addEventListener('keydown', e => {
+    const meta = e.metaKey || e.ctrlKey;
+    // ⌘Z / ⌘⇧Z — undo / redo (works on any tab)
+    if (meta && (e.key === 'z' || e.key === 'Z')) {
+      // Don't fight typed undo inside an editable field
+      const target = e.target;
+      const inEditable = target && (
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      );
+      if (!inEditable) {
+        e.preventDefault();
+        if (e.shiftKey) performRedo(); else performUndo();
+        return;
+      }
+    }
+    // ⌘. — browser fullscreen (works on any tab)
+    if (meta && e.key === '.') { e.preventDefault(); toggleFullscreen(); return; }
+    if (!['NCRs', 'NCOs'].includes(state.activeTab)) return;
+    if (meta && e.key.toLowerCase() === 's') { e.preventDefault(); saveTemplate(); }
+    else if (meta && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateTemplate(); }
+    else if (meta && e.key === 'Enter') { e.preventDefault(); copyPreview(); }
+  });
+}
+
+/* ============================================================================
+   RENDER LOOP — call this any time state changes structurally
+   Preserves scroll positions on the builder, sidebar, and preview pane so
+   clicking a template (or any other re-render trigger) doesn't snap to top.
+   ============================================================================ */
+function captureScrollPositions() {
+  const builder = document.querySelector('.builder');
+  const list = document.querySelector('.tag-list');
+  const preview = document.querySelector('.preview-body');
+  return {
+    builder: builder ? builder.scrollTop : 0,
+    list: list ? list.scrollTop : 0,
+    preview: preview ? preview.scrollTop : 0
+  };
+}
+function restoreScrollPositions(saved) {
+  if (!saved) return;
+  requestAnimationFrame(() => {
+    const builder = document.querySelector('.builder');
+    const list = document.querySelector('.tag-list');
+    const preview = document.querySelector('.preview-body');
+    if (builder) builder.scrollTop = saved.builder;
+    if (list) list.scrollTop = saved.list;
+    if (preview) preview.scrollTop = saved.preview;
+  });
+}
+
+function renderAll() {
+  const savedScroll = captureScrollPositions();
+  applyTheme();
+  renderTabs();
+  renderMain();
+  renderUndoButton();
+  syncFeatureButtons();
+  restoreScrollPositions(savedScroll);
+}
+
+function syncFeatureButtons() {
+  const focusBtn = $('#focusBtn');
+  const formatBtn = $('#formatBtn');
+  const uppercaseBtn = $('#uppercaseBtn');
+  if (focusBtn) focusBtn.classList.toggle('feature-on', !!document.fullscreenElement);
+  if (formatBtn) formatBtn.classList.toggle('feature-on', state.formattedPreview);
+  if (uppercaseBtn) uppercaseBtn.classList.toggle('feature-on', state.uppercaseText);
+}
+
+/* ============================================================================
+   FEATURES — custom themes, theme ripple,
+   tag-card hover preview, focus mode, uppercase text
+   ============================================================================ */
+
+/* ---------- Custom theme builder ---------- */
+const BUILTIN_THEMES = [
+  { cls: 'theme-boeing-classic', name: 'Boeing Classic', kind: 'Boeing', bg: 'linear-gradient(135deg,#E8F0FA,#F5F8FC)', a: '#0033A0', b: '#1E64C8' },
+  { cls: 'theme-boeing-sky',     name: 'Boeing Sky',     kind: 'Boeing', bg: 'linear-gradient(135deg,#001a40,#0a2d6b)', a: '#4ea8ff', b: '#00d4ff' },
+  { cls: 'theme-sunrise',        name: 'Sunrise',        kind: 'Light',  bg: 'linear-gradient(135deg,#FFE5D9,#FFD6E0)', a: '#ff7a59', b: '#ff4f87' },
+  { cls: 'theme-mint',           name: 'Mint',           kind: 'Light',  bg: 'linear-gradient(135deg,#E0F7F4,#D6E9FF)', a: '#14b8a6', b: '#3b82f6' },
+  { cls: 'theme-lavender',       name: 'Lavender',       kind: 'Light',  bg: 'linear-gradient(135deg,#ECE5FF,#E5F0FF)', a: '#8b5cf6', b: '#6366f1' },
+  { cls: 'theme-rosegold',       name: 'Rose Gold',      kind: 'Light',  bg: 'linear-gradient(135deg,#FFF1EE,#FCE4DA)', a: '#d4796a', b: '#c9a17a' },
+  { cls: 'theme-sage',           name: 'Sage',           kind: 'Light',  bg: 'linear-gradient(135deg,#EDF4E8,#F4EEE0)', a: '#6a8e5e', b: '#b59f6e' },
+  { cls: 'theme-linen',          name: 'Linen',          kind: 'Light',  bg: 'linear-gradient(135deg,#FAF6ED,#F2EAD3)', a: '#0d7377', b: '#14b8a6' },
+  { cls: 'theme-highline',       name: 'Highline',       kind: 'Modern', bg: 'linear-gradient(135deg,#f6fbff,#eefdf8)', a: '#006bff', b: '#00b894' },
+  { cls: 'theme-vapor',          name: 'Vapor',          kind: 'Modern', bg: 'linear-gradient(135deg,#fff7fb,#ecfff9)', a: '#7c3aed', b: '#06b6d4' },
+  { cls: 'theme-glacier',        name: 'Glacier',        kind: 'Modern', bg: 'linear-gradient(135deg,#eef8ff,#f7fffb)', a: '#0ea5e9', b: '#22c55e' },
+  { cls: 'theme-monochrome',     name: 'Monochrome',     kind: 'Light',  bg: 'linear-gradient(135deg,#fafafa,#ececec)', a: '#111111', b: '#555555' },
+  { cls: 'theme-midnight',       name: 'Midnight',       kind: 'Dark',   bg: 'linear-gradient(135deg,#0f172a,#1e1b4b)', a: '#38bdf8', b: '#818cf8' },
+  { cls: 'theme-charcoal',       name: 'Charcoal',       kind: 'Dark',   bg: 'linear-gradient(135deg,#1c1c1e,#2c2c2e)', a: '#fbbf24', b: '#f87171' },
+  { cls: 'theme-cosmos',         name: 'Cosmos',         kind: 'Dark',   bg: 'linear-gradient(135deg,#1a0b2e,#2e0b4a)', a: '#ec4899', b: '#a855f7' },
+  { cls: 'theme-aurora',         name: 'Aurora',         kind: 'Dark',   bg: 'linear-gradient(135deg,#0a0e1a,#1a0a2e)', a: '#34d399', b: '#c084fc' },
+  { cls: 'theme-ocean',          name: 'Ocean',          kind: 'Dark',   bg: 'linear-gradient(135deg,#001f3f,#003d5b)', a: '#00b4d8', b: '#90e0ef' },
+  { cls: 'theme-cyberpunk',      name: 'Cyberpunk',      kind: 'Dark',   bg: 'linear-gradient(135deg,#0a0014,#1a0033)', a: '#00ffd5', b: '#ff006e' },
+  { cls: 'theme-alloy',          name: 'Alloy',          kind: 'Modern', bg: 'linear-gradient(135deg,#0d1117,#1f2937)', a: '#b8ff5c', b: '#00d4ff' },
+  { cls: 'theme-emberline',      name: 'Emberline',      kind: 'Modern', bg: 'linear-gradient(135deg,#160f17,#2b1f0f)', a: '#ff6b6b', b: '#ffd166' },
+  { cls: 'theme-command',        name: 'Command',        kind: 'Modern', bg: 'linear-gradient(135deg,#06100c,#101827)', a: '#3cffb5', b: '#8ab4ff' }
+];
+
+function renderCustomThemes() {
+  const list = $('#customThemesList');
+  if (!list) return;
+  list.innerHTML = '';
+  if (state.customThemes.length === 0) {
+    list.appendChild(el('div', { class: 'ct-empty' }, 'No custom themes yet'));
+    return;
+  }
+  state.customThemes.forEach(ct => {
+    const row = el('div', { class: 'ct-row' });
+    const opt = el('button', {
+      class: 'theme-opt', 'data-custom': ct.id,
+      onclick: e => {
+        const sw = opt.querySelector('.theme-swatch');
+        applyThemeWithRipple('custom:' + ct.id, e.clientX, e.clientY,
+          sw ? sw.style.background : '');
+        $('#themePicker').classList.remove('show');
+      }
+    });
+    opt.appendChild(el('span', {
+      class: 'theme-swatch',
+      style: `background:linear-gradient(135deg,${ct.accent},${ct.accent2})`
+    }));
+    opt.appendChild(el('span', {}, ct.name));
+    row.appendChild(opt);
+
+    row.appendChild(el('button', {
+      class: 'ct-mini-btn', title: 'Edit',
+      html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+      onclick: e => { e.stopPropagation(); openThemeBuilder(ct); }
+    }));
+    row.appendChild(el('button', {
+      class: 'ct-mini-btn', title: 'Copy theme JSON',
+      html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+      onclick: e => {
+        e.stopPropagation();
+        const json = JSON.stringify({ customTheme: ct }, null, 2);
+        navigator.clipboard.writeText(json).then(
+          () => toast('Theme JSON copied — share with coworkers'),
+          () => toast('Copy failed')
+        );
+      }
+    }));
+    row.appendChild(el('button', {
+      class: 'ct-mini-btn del', title: 'Delete',
+      html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>',
+      onclick: e => {
+        e.stopPropagation();
+        if (!confirm(`Delete theme "${ct.name}"?`)) return;
+        state.customThemes = state.customThemes.filter(x => x.id !== ct.id);
+        if (state.activeTheme === 'custom:' + ct.id) {
+          state.activeTheme = 'theme-midnight';
+          applyTheme();
+        }
+        persist();
+        renderCustomThemes();
+        if (state.activeTab === 'Settings') renderAll();
+        toast('Theme deleted');
+      }
+    }));
+    list.appendChild(row);
+  });
+}
+
+function openThemeBuilder(existing) {
+  const isEdit = !!existing;
+  const draft = normalizeCustomTheme(existing);
+
+  const wrap = el('div', { class: 'theme-builder theme-lab-layout' });
+  const controls = el('div', { class: 'theme-lab-controls' });
+
+  function colorField(label, key) {
+    const field = el('div', { class: 'theme-lab-field' });
+    field.appendChild(el('label', {}, label));
+    field.appendChild(el('input', {
+      type: 'color',
+      value: draft[key],
+      oninput: e => { draft[key] = e.target.value; updatePreviewSwatch(); }
+    }));
+    return field;
+  }
+  function sliderField(label, key, min, max, step) {
+    const field = el('div', { class: 'theme-lab-slider' });
+    const value = el('span', {}, String(draft[key]));
+    field.appendChild(el('label', {}, [label, ' ', value]));
+    field.appendChild(el('input', {
+      type: 'range',
+      min,
+      max,
+      step,
+      value: draft[key],
+      oninput: e => {
+        draft[key] = Number(e.target.value);
+        value.textContent = String(draft[key]);
+        updatePreviewSwatch();
+      }
+    }));
+    return field;
+  }
+
+  const nameRow = el('div', { class: 'theme-lab-field' });
+  nameRow.appendChild(el('label', {}, 'Theme name'));
+  nameRow.appendChild(el('input', {
+    type: 'text',
+    value: draft.name,
+    oninput: e => { draft.name = e.target.value; }
+  }));
+
+  const baseRow = el('div', { class: 'theme-lab-field' });
+  baseRow.appendChild(el('label', {}, 'Base behavior'));
+  const baseSel = el('select', {
+    onchange: e => { draft.base = e.target.value; updatePreviewSwatch(); }
+  });
+  BUILTIN_THEMES.forEach(b => {
+    const o = el('option', { value: b.cls }, `${b.name} (${b.kind})`);
+    if (b.cls === draft.base) o.selected = true;
+    baseSel.appendChild(o);
+  });
+  baseRow.appendChild(baseSel);
+
+  controls.appendChild(nameRow);
+  controls.appendChild(baseRow);
+  controls.appendChild(el('div', { class: 'theme-lab-row' }, [
+    colorField('Accent', 'accent'),
+    colorField('Accent 2', 'accent2')
+  ]));
+  controls.appendChild(el('div', { class: 'theme-lab-row' }, [
+    colorField('Background start', 'bg'),
+    colorField('Background end', 'bg2')
+  ]));
+  controls.appendChild(el('div', { class: 'theme-lab-row' }, [
+    colorField('Panel glass', 'surface'),
+    colorField('Solid panel', 'surface2')
+  ]));
+  controls.appendChild(el('div', { class: 'theme-lab-row' }, [
+    colorField('Text', 'text'),
+    colorField('Muted text', 'muted')
+  ]));
+  controls.appendChild(el('div', { class: 'theme-lab-row' }, [
+    colorField('Border', 'border'),
+    sliderField('Gradient angle', 'angle', 0, 180, 5)
+  ]));
+  controls.appendChild(el('div', { class: 'theme-lab-row' }, [
+    sliderField('Radius', 'radius', 6, 22, 1),
+    sliderField('Density', 'density', .82, 1.2, .02)
+  ]));
+  controls.appendChild(sliderField('Glow', 'glow', 8, 45, 1));
+
+  const preview = el('div', { class: 'theme-lab-preview' }, [
+    el('div', { class: 'theme-lab-window' }, [
+      el('div', { class: 'theme-lab-bar' }),
+      el('div', { class: 'theme-lab-card' }, [
+        el('div', { class: 'theme-lab-line' }),
+        el('div', { class: 'theme-lab-line' }),
+        el('div', { class: 'theme-lab-line short' })
+      ]),
+      el('div', { class: 'theme-lab-button' })
+    ])
+  ]);
+
+  function updatePreviewSwatch() {
+    preview.style.setProperty('--bg-grad',
+      `linear-gradient(${draft.angle}deg, ${draft.bg}, ${draft.bg2})`);
+    preview.style.setProperty('--surface', hexToRgba(draft.surface, draft.surfaceAlpha));
+    preview.style.setProperty('--surface-2', draft.surface2);
+    preview.style.setProperty('--text', draft.text);
+    preview.style.setProperty('--text-muted', draft.muted);
+    preview.style.setProperty('--border', draft.border);
+    preview.style.setProperty('--accent', draft.accent);
+    preview.style.setProperty('--accent-2', draft.accent2);
+    preview.style.setProperty('--accent-grad',
+      `linear-gradient(${draft.angle}deg, ${draft.accent}, ${draft.accent2})`);
+    preview.style.setProperty('--shadow',
+      `0 4px ${Math.round(18 + draft.glow * .6)}px ${hexToRgba(draft.accent, draft.glow / 100)}`);
+    preview.style.setProperty('--ui-radius', draft.radius + 'px');
+    preview.style.setProperty('--ui-density', String(draft.density));
+    preview.querySelector('.theme-lab-window').style.borderRadius = draft.radius + 'px';
+    preview.querySelector('.theme-lab-card').style.borderRadius = Math.max(7, draft.radius - 2) + 'px';
+    preview.querySelector('.theme-lab-button').style.borderRadius = draft.radius + 'px';
+  }
+  updatePreviewSwatch();
+
+  wrap.appendChild(controls);
+  wrap.appendChild(preview);
+
+  openModal(isEdit ? 'Edit theme' : 'Create theme', [wrap], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-primary',
+      onclick: () => {
+        if (!draft.name.trim()) { toast('Name required'); return; }
+        if (isEdit) {
+          const idx = state.customThemes.findIndex(x => x.id === draft.id);
+          if (idx >= 0) state.customThemes[idx] = draft;
+        } else {
+          state.customThemes.unshift(draft);
+        }
+        state.activeTheme = 'custom:' + draft.id;
+        persist();
+        renderCustomThemes();
+        applyTheme();
+        renderAll();
+        closeModal();
+        toast(isEdit ? 'Theme updated' : 'Theme created');
+      }
+    }, isEdit ? 'Save changes' : 'Create')
+  ]);
+}
+
+function normalizeCustomTheme(existing) {
+  const base = existing ? { ...existing } : {};
+  return {
+    id: base.id || ('ct_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6)),
+    name: base.name || 'My Theme',
+    base: base.base || 'theme-midnight',
+    accent: base.accent || '#38bdf8',
+    accent2: base.accent2 || '#818cf8',
+    bg: base.bg || '#0b1020',
+    bg2: base.bg2 || '#1e1b4b',
+    surface: base.surface || '#1e293b',
+    surfaceAlpha: typeof base.surfaceAlpha === 'number' ? base.surfaceAlpha : 0.74,
+    surface2: base.surface2 || '#1e293b',
+    text: base.text || '#e2e8f0',
+    muted: base.muted || '#94a3b8',
+    border: base.border || '#1e293b',
+    angle: typeof base.angle === 'number' ? base.angle : 135,
+    radius: typeof base.radius === 'number' ? base.radius : 12,
+    density: typeof base.density === 'number' ? base.density : 1,
+    glow: typeof base.glow === 'number' ? base.glow : 22
+  };
+}
+
+/* ---------- Theme ripple ---------- */
+function applyThemeWithRipple(themeId, x, y, swatchBg) {
+  if (typeof x === 'number' && typeof y === 'number') {
+    const ripple = document.createElement('div');
+    ripple.className = 'theme-ripple';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    ripple.style.background = swatchBg || 'var(--accent-grad)';
+    document.body.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 720);
+  }
+  state.activeTheme = themeId;
+  applyTheme();
+  persist();
+}
+
+/* ---------- Tag-card hover preview ---------- */
+let _hoverTimer = null, _hoverPop = null;
+function attachHoverPreview(card, template) {
+  card.addEventListener('mouseenter', () => {
+    clearTimeout(_hoverTimer);
+    _hoverTimer = setTimeout(() => showHoverPreview(card, template), 220);
+  });
+  card.addEventListener('mouseleave', () => {
+    clearTimeout(_hoverTimer);
+    hideHoverPreview();
+  });
+}
+function showHoverPreview(card, template) {
+  hideHoverPreview();
+  const html = previewHTML(template);
+  if (!html) return;
+  const pop = document.createElement('div');
+  pop.className = 'tag-preview-pop'
+    + (state.formattedPreview ? ' formatted-preview' : '')
+    + (state.uppercaseText ? ' uppercase-text' : '');
+  pop.innerHTML = html;
+  document.body.appendChild(pop);
+  const rect = card.getBoundingClientRect();
+  // Default: anchor to the right of the card
+  let left = rect.right + 8;
+  let top = rect.top;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+  const popRect = pop.getBoundingClientRect();
+  if (popRect.right > window.innerWidth - 8) {
+    left = Math.max(8, rect.left - popRect.width - 8);
+    pop.style.left = left + 'px';
+  }
+  if (popRect.bottom > window.innerHeight - 8) {
+    top = Math.max(8, window.innerHeight - popRect.height - 8);
+    pop.style.top = top + 'px';
+  }
+  _hoverPop = pop;
+}
+function hideHoverPreview() {
+  if (_hoverPop) { _hoverPop.remove(); _hoverPop = null; }
+}
+
+/* ---------- Focus mode ---------- */
+function toggleFocusMode() {
+  state.focusMode = !state.focusMode;
+  renderAll();
+  toast(state.focusMode ? 'Template list collapsed' : 'Template list shown');
+}
+
+async function toggleFullscreen() {
+  try {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen();
+      toast('Fullscreen on (⌘. to exit)');
+    } else {
+      await document.exitFullscreen();
+      toast('Fullscreen off');
+    }
+    syncFeatureButtons();
+  } catch (err) {
+    toast('Fullscreen unavailable');
+  }
+}
+
+/* ---------- Uppercase text ---------- */
+function toggleFormattedPreview() {
+  state.formattedPreview = !state.formattedPreview;
+  const btn = $('#formatBtn');
+  if (btn) btn.classList.toggle('feature-on', state.formattedPreview);
+  updatePreview();
+  hideHoverPreview();
+  persist();
+  toast(state.formattedPreview ? 'Formatted preview on' : 'Formatted preview off');
+}
+
+function toggleUppercaseText() {
+  state.uppercaseText = !state.uppercaseText;
+  const btn = $('#uppercaseBtn');
+  if (btn) btn.classList.toggle('feature-on', state.uppercaseText);
+  updatePreview();
+  hideHoverPreview();
+  persist();
+  toast(state.uppercaseText ? 'Uppercase on' : 'Uppercase off');
+}
+
+/* ---------- BOOT ---------- */
+loadPersisted();
+applyBakedInJson();
+seedDefaults();
+setupGlobalEvents();
+renderAll();
+</script>
+</body>
+</html>
