@@ -196,6 +196,46 @@ body.theme-command {
   --accent-grad: linear-gradient(135deg, #3cffb5, #8ab4ff);
   --shadow: 0 4px 24px rgba(60,255,181,0.18);
 }
+body.theme-titanium {
+  --bg-grad: linear-gradient(135deg, #080b0f 0%, #151d26 48%, #0e1319 100%);
+  --bg: #070a0e;  --surface: rgba(21,29,38,0.76);  --surface-2: #111922;
+  --text: #edf5ff; --text-muted: #91a4b7;
+  --border: #283646; --accent: #7dd3fc; --accent-2: #f8d66d;
+  --accent-grad: linear-gradient(135deg, #7dd3fc, #f8d66d);
+  --shadow: 0 4px 24px rgba(125,211,252,0.17);
+}
+body.theme-carbon {
+  --bg-grad: linear-gradient(135deg, #050609 0%, #16181d 52%, #0b0d12 100%);
+  --bg: #050609;  --surface: rgba(22,24,29,0.78);  --surface-2: #121419;
+  --text: #f4f7fb; --text-muted: #9ca6b2;
+  --border: #2b3038; --accent: #c8ff00; --accent-2: #ff7a30;
+  --accent-grad: linear-gradient(135deg, #c8ff00, #ff7a30);
+  --shadow: 0 4px 24px rgba(200,255,0,0.14);
+}
+body.theme-blueprint {
+  --bg-grad: linear-gradient(135deg, #03111f 0%, #08213a 48%, #041826 100%);
+  --bg: #020b14;  --surface: rgba(7,29,51,0.78);  --surface-2: #071a2c;
+  --text: #e8f8ff; --text-muted: #87a9c2;
+  --border: #123756; --accent: #2dd4bf; --accent-2: #fb7185;
+  --accent-grad: linear-gradient(135deg, #2dd4bf, #fb7185);
+  --shadow: 0 4px 24px rgba(45,212,191,0.16);
+}
+body.theme-boeing-classic,
+body.theme-sunrise,
+body.theme-mint,
+body.theme-lavender,
+body.theme-rosegold,
+body.theme-sage,
+body.theme-linen,
+body.theme-highline,
+body.theme-vapor,
+body.theme-glacier,
+body.theme-monochrome,
+body.theme-alloy,
+body.theme-titanium,
+body.theme-carbon {
+  --start-tag-text: #071018;
+}
 
 /* ---------- BASE ---------- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -579,6 +619,18 @@ input, textarea, select { font: inherit; color: inherit; }
 .inner-group > textarea:focus {
   outline: none; border-color: var(--accent);
 }
+input.start-tag-required,
+textarea.start-tag-required {
+  --start-tag-border: color-mix(in srgb, var(--accent-2) 70%, #ffcf33);
+  border-color: var(--start-tag-border) !important;
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--accent-2) 14%, var(--bg)),
+      color-mix(in srgb, #ffcf33 10%, var(--bg)));
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--start-tag-border) 22%, transparent),
+    0 0 18px color-mix(in srgb, var(--start-tag-border) 16%, transparent);
+}
 .field input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .field input[type="number"]::-webkit-inner-spin-button,
 .field input[type="number"]::-webkit-outer-spin-button {
@@ -659,11 +711,36 @@ select {
 .preview-head {
   padding: 14px 16px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
 }
 .preview-title {
   font-size: 11px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);
 }
+.preview-start-btn {
+  flex: 0 0 auto;
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: var(--start-tag-text, #fff);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: .2px;
+  background: var(--accent-grad);
+  box-shadow:
+    0 8px 20px color-mix(in srgb, var(--accent) 24%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.30);
+  border: 1px solid color-mix(in srgb, var(--accent-2) 44%, rgba(255,255,255,.22));
+  text-shadow: 0 1px 2px rgba(0,0,0,.34);
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.preview-start-btn:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.06) brightness(1.03);
+  box-shadow:
+    0 10px 24px color-mix(in srgb, var(--accent) 30%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.40);
+}
+.preview-start-btn:active { transform: translateY(0); }
 .preview-body { flex: 1; overflow: auto; padding: 14px; }
 .preview-card {
   position: relative; overflow: hidden;
@@ -748,24 +825,24 @@ select {
 .theme-picker {
   position: absolute; top: 50px; right: 16px;
   background: var(--surface-2);
-  border: 1px solid var(--border); border-radius: 12px;
-  padding: 8px;
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 6px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-  display: none; z-index: 50; width: 220px;
+  display: none; z-index: 50; width: 250px;
   max-height: calc(100vh - 80px); overflow-y: auto;
 }
 .theme-picker.show { display: block; }
 .theme-picker h4 {
   font-size: 10px; text-transform: uppercase;
-  color: var(--text-muted); padding: 6px 8px; letter-spacing: 0.5px;
+  color: var(--text-muted); padding: 5px 6px 3px; letter-spacing: 0.5px;
 }
 .theme-opt {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px; border-radius: 8px; width: 100%;
-  font-size: 13px; transition: background 0.15s;
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 6px; border-radius: 7px; width: 100%;
+  font-size: 12px; transition: background 0.15s;
 }
 .theme-opt:hover { background: var(--border); }
-.theme-swatch { width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); }
+.theme-swatch { width: 18px; height: 18px; border-radius: 5px; border: 1px solid rgba(0,0,0,0.08); }
 
 /* ---------- TOAST ---------- */
 .toast {
@@ -979,7 +1056,10 @@ body.theme-charcoal,
 body.theme-boeing-sky,
 body.theme-alloy,
 body.theme-emberline,
-body.theme-command {
+body.theme-command,
+body.theme-titanium,
+body.theme-carbon,
+body.theme-blueprint {
   background-size: 220% 220%;
   animation: bgDrift 28s ease-in-out infinite alternate;
 }
@@ -995,7 +1075,10 @@ body.theme-cosmos .topbar::after,
 body.theme-ocean .topbar::after,
 body.theme-alloy .topbar::after,
 body.theme-emberline .topbar::after,
-body.theme-command .topbar::after {
+body.theme-command .topbar::after,
+body.theme-titanium .topbar::after,
+body.theme-carbon .topbar::after,
+body.theme-blueprint .topbar::after {
   background-size: 220% 100%;
   animation: stripeFlow 9s linear infinite;
   opacity: .7;
@@ -1012,7 +1095,10 @@ body.theme-ocean .tab.active,
 body.theme-boeing-sky .tab.active,
 body.theme-alloy .tab.active,
 body.theme-emberline .tab.active,
-body.theme-command .tab.active {
+body.theme-command .tab.active,
+body.theme-titanium .tab.active,
+body.theme-carbon .tab.active,
+body.theme-blueprint .tab.active {
   box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 50%, transparent),
               0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent);
 }
@@ -1032,7 +1118,10 @@ body.theme-cyberpunk .inner-group > textarea:focus {
 /* Aurora — preview gets a multi-stop animated border-top */
 body.theme-aurora .preview-card::before,
 body.theme-cyberpunk .preview-card::before,
-body.theme-cosmos .preview-card::before {
+body.theme-cosmos .preview-card::before,
+body.theme-titanium .preview-card::before,
+body.theme-carbon .preview-card::before,
+body.theme-blueprint .preview-card::before {
   background-size: 220% 100%;
   animation: stripeFlow 10s linear infinite;
 }
@@ -1128,7 +1217,7 @@ body.theme-rosegold .section {
 /* ---------- Tag-card hover preview popover ---------- */
 .tag-preview-pop {
   position: fixed; z-index: 80;
-  width: 360px; max-height: 360px; overflow-y: auto;
+  width: 360px; max-height: min(360px, calc(100vh - 16px)); overflow: hidden;
   background: var(--surface-2); border: 1px solid var(--border);
   border-radius: 12px; padding: 14px 16px;
   font-family: "SF Mono", "Menlo", "Consolas", monospace;
@@ -1141,6 +1230,14 @@ body.theme-rosegold .section {
 .tag-preview-pop.formatted-preview {
   width: calc(51ch + 38px);
   max-width: min(calc(100vw - 16px), calc(51ch + 38px));
+}
+.tag-preview-pop.is-long::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 54px;
+  background: linear-gradient(180deg, transparent, var(--surface-2));
+  pointer-events: none;
 }
 .tag-preview-pop::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
@@ -1187,29 +1284,23 @@ body.focus-mode .builder { max-width: none; margin: 0; padding: 24px 28px; }
   left: 14px;
   bottom: 14px;
   z-index: 75;
-  min-width: 42px;
-  height: 42px;
-  padding: 0 13px;
-  border-radius: 13px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 11px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
   color: white;
   background: var(--accent-grad);
-  box-shadow: 0 10px 26px color-mix(in srgb, var(--accent) 28%, rgba(0,0,0,.18));
-  font-size: 18px;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 24%, rgba(0,0,0,.18));
+  font-size: 17px;
   font-weight: 850;
-  transition: transform .15s, box-shadow .15s;
+  transition: box-shadow .15s, filter .15s;
 }
 .sidebar-restore-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 32px color-mix(in srgb, var(--accent) 34%, rgba(0,0,0,.2));
-}
-.sidebar-restore-btn span {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
+  filter: brightness(1.04) saturate(1.05);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 28%, rgba(0,0,0,.18));
 }
 .icon-btn.feature-on {
   color: var(--accent);
@@ -1266,7 +1357,7 @@ body.custom-theme-vars .subsection {
   padding: calc(6px * var(--ui-density, 1)) calc(8px * var(--ui-density, 1));
 }
 
-.uppercase-text { text-transform: uppercase; }
+.uppercase-text .preview-preserve-case { text-transform: none; }
 
 /* ============================================================================
    v3 FEATURE LAYER — measurement sections, otherBlocks, spec ref, tag chips,
@@ -1881,15 +1972,15 @@ body.resizing * { user-select: none !important; }
 }
 .theme-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 9px;
+  grid-template-columns: repeat(auto-fit, minmax(136px, 1fr));
+  gap: 7px;
 }
 .theme-card {
   position: relative;
-  min-height: 96px;
+  min-height: 78px;
   overflow: hidden;
-  padding: 10px;
-  border-radius: 12px;
+  padding: 8px;
+  border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--border));
   background: var(--surface-2);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
@@ -1921,7 +2012,7 @@ body.resizing * { user-select: none !important; }
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 .theme-card-name {
   display: flex;
@@ -1947,9 +2038,9 @@ body.resizing * { user-select: none !important; }
   gap: 5px;
 }
 .theme-card-chip {
-  width: 26px;
-  height: 22px;
-  border-radius: 7px;
+  width: 22px;
+  height: 18px;
+  border-radius: 6px;
   border: 1px solid rgba(255,255,255,.32);
   box-shadow: 0 3px 10px rgba(0,0,0,.18);
 }
@@ -2138,6 +2229,9 @@ body.resizing * { user-select: none !important; }
   <button class="theme-opt" data-theme="theme-alloy"><span class="theme-swatch" style="background:linear-gradient(135deg,#b8ff5c,#00d4ff)"></span>Alloy</button>
   <button class="theme-opt" data-theme="theme-emberline"><span class="theme-swatch" style="background:linear-gradient(135deg,#ff6b6b,#ffd166)"></span>Emberline</button>
   <button class="theme-opt" data-theme="theme-command"><span class="theme-swatch" style="background:linear-gradient(135deg,#3cffb5,#8ab4ff)"></span>Command</button>
+  <button class="theme-opt" data-theme="theme-titanium"><span class="theme-swatch" style="background:linear-gradient(135deg,#7dd3fc,#f8d66d)"></span>Titanium</button>
+  <button class="theme-opt" data-theme="theme-carbon"><span class="theme-swatch" style="background:linear-gradient(135deg,#c8ff00,#ff7a30)"></span>Carbon</button>
+  <button class="theme-opt" data-theme="theme-blueprint"><span class="theme-swatch" style="background:linear-gradient(135deg,#2dd4bf,#fb7185)"></span>Blueprint</button>
   <h4>Custom</h4>
   <div id="customThemesList"></div>
   <button class="theme-opt" id="createThemeBtn"><span class="theme-swatch" style="background:linear-gradient(135deg,var(--accent),var(--accent-2))"></span>+ Create theme</button>
@@ -2161,6 +2255,21 @@ body.resizing * { user-select: none !important; }
    ============================================================================ */
 
 const STORAGE_KEY = 'tagBuilder.v1';
+
+/* ============================================================================
+   PASTE JSON HERE
+   ----------------------------------------------------------------------------
+   Future release setup:
+   1. Export JSON from the app.
+   2. Replace the words Paste JSON here between the backticks below with the
+      full exported JSON object.
+   3. Save this HTML file. On first load, the baked JSON will merge into the
+      app automatically. Leave the placeholder text as-is when you do not want
+      baked-in data.
+   ============================================================================ */
+const BAKED_IN_JSON = String.raw`
+Paste JSON here
+`;
 
 // blankTag() returns a fresh tag object every call. Doing this as a function
 // (instead of a constant) avoids accidentally sharing references between tags.
@@ -2227,7 +2336,7 @@ function blankItem(itemNumber = '') {
 
 const state = {
   activeTab: 'NCRs',
-  activeTheme: 'theme-midnight',
+  activeTheme: 'theme-alloy',
   tags: [],          // saved NCR tags
   templates: [],     // saved templates
   carrotTemplates: [], // saved NCO carrot templates
@@ -2245,6 +2354,7 @@ const state = {
   activeGuideIdx: 0,
   customThemes: [],  // user-built themes [{id, name, base, accent, accent2}]
   focusMode: false,  // transient — not persisted
+  startTagMode: false,
   formattedPreview: false,
   uppercaseText: false,
   sidebarWidth: 250,
@@ -2374,6 +2484,10 @@ function migrateItem(it) {
    so we don't keep re-adding it after the user deletes the sample. */
 function seedDefaults() {
   if (localStorage.getItem(STORAGE_KEY + '.seeded')) return;
+  if (state.tags.length || state.templates.length || state.carrotTemplates.length) {
+    localStorage.setItem(STORAGE_KEY + '.seeded', '1');
+    return;
+  }
   state.templates.push({
     id: 'tpl_sharp_dent',
     templateName: 'Sharp Dent',
@@ -2591,6 +2705,7 @@ function renderTabs() {
           state.selectedCarrotId = null;
           state.previewSuppressed = false;
           state.carrotPreviewSuppressed = false;
+          state.startTagMode = false;
         }
         renderAll();
       }
@@ -2703,7 +2818,7 @@ function renderSidebarRestoreButton() {
     title: 'Show template list',
     'aria-label': 'Show template list',
     onclick: () => toggleFocusMode()
-  }, ['›', el('span', {}, 'Templates')]);
+  }, '☰');
 }
 
 function startResize(e, side) {
@@ -2837,8 +2952,7 @@ function renderThemeStudioPanel() {
         'Pick a polished theme, then build custom palettes with accents, surfaces, background gradients, radius, density, and glow.')
     ]),
     el('div', { class: 'settings-actions', style: 'margin-top:0' }, [
-      el('button', { class: 'btn btn-primary', onclick: () => openThemeBuilder(null) }, 'Create Custom Theme'),
-      el('button', { class: 'btn btn-ghost', onclick: () => { $('#themePicker').classList.add('show'); } }, 'Compact Picker')
+      el('button', { class: 'btn btn-primary', onclick: () => openThemeBuilder(null) }, 'Create Custom Theme')
     ])
   ]));
 
@@ -2910,7 +3024,7 @@ function renderSettingsPage() {
   ));
   settings.appendChild(settingsToggle(
     'Uppercase copied text',
-    'Convert copied preview text to uppercase.',
+    'Convert copied preview text to uppercase while keeping measurements as typed.',
     state.uppercaseText,
     checked => { state.uppercaseText = checked; persist(); renderAll(); }
   ));
@@ -2925,10 +3039,6 @@ function renderSettingsPage() {
       class: 'btn btn-primary',
       onclick: () => { state.activeTab = state.settingsReturnTab || 'NCRs'; renderAll(); }
     }, 'Back to Tags'),
-    el('button', {
-      class: 'btn btn-ghost',
-      onclick: () => { $('#themePicker').classList.add('show'); }
-    }, 'Theme Picker'),
     el('button', {
       class: 'btn btn-ghost',
       onclick: () => {
@@ -2985,9 +3095,10 @@ function renderSidebar() {
       state.selectedCarrotId = null;
       state.previewSuppressed = false;
       state.carrotPreviewSuppressed = false;
+      state.startTagMode = false;
       renderAll();
     }
-  }, '+ New Tag (Clear Forms)'));
+  }, '+ Blank Tag'));
 
   const search = el('input', {
     class: 'search', type: 'search',
@@ -3193,6 +3304,7 @@ function renderTemplateCard(t, expectedType) {
         state.selectedCarrotId = null;
         state.previewSuppressed = false;
         state.carrotPreviewSuppressed = false;
+        state.startTagMode = false;
         renderAll();
         return;
       }
@@ -3201,6 +3313,7 @@ function renderTemplateCard(t, expectedType) {
       state.selectedCarrotId = t.carrotTemplateId || null;
       state.previewSuppressed = false;
       state.carrotPreviewSuppressed = false;
+      state.startTagMode = false;
       renderAll();
     }
   });
@@ -3281,6 +3394,7 @@ function renderCarrotTemplateCard(t) {
       state.current.carrotTemplateName = t.name || '';
       state.current.carrotsText = t.text || '';
       state.carrotPreviewSuppressed = false;
+      state.startTagMode = false;
       renderAll();
     }
   });
@@ -3436,9 +3550,9 @@ function renderBuilder() {
   const footSec = section('Footer');
   const footRow = el('div', { class: 'row row-2' });
   footRow.appendChild(field('LSO - Last Shop Operation', 'text', t.lso,
-    v => { t.lso = v; updatePreview(); }, { placeholder: '100/010' }));
+    v => { t.lso = v; updatePreview(); }, { placeholder: '100/010', startTagHighlight: true }));
   footRow.appendChild(field('LIO - Last Inspection Operation', 'text', t.lio,
-    v => { t.lio = v; updatePreview(); }, { placeholder: '110/010' }));
+    v => { t.lio = v; updatePreview(); }, { placeholder: '110/010', startTagHighlight: true }));
   footSec.appendChild(footRow);
 
   const attRow = el('div', { class: 'row row-att' });
@@ -3578,6 +3692,7 @@ function field(labelText, type, value, onInput, extra = {}) {
   const f = el('div', { class: 'field' });
   if (labelText) f.appendChild(el('label', {}, labelText));
   const input = el('input', {
+    class: extra.startTagHighlight ? startTagHighlightClass(value) : null,
     type, value: value ?? '',
     placeholder: extra.placeholder || '',
     min: extra.min, max: extra.max,
@@ -3588,6 +3703,7 @@ function field(labelText, type, value, onInput, extra = {}) {
         if (stripped !== e.target.value) e.target.value = stripped;
       }
       onInput(e.target.value);
+      if (extra.startTagHighlight) syncStartTagHighlight(e.target, e.target.value);
     }
   });
   f.appendChild(input);
@@ -3688,11 +3804,11 @@ function renderDrawing(d, idx) {
 
   const row = el('div', { class: 'row row-3' });
   row.appendChild(field('Number', 'text', d.number,
-    v => { d.number = v; updatePreview(); }, { placeholder: '123A1234' }));
+    v => { d.number = v; updatePreview(); }, { placeholder: '123A1234', startTagHighlight: true }));
   row.appendChild(field('Sheet', 'text', d.sheet,
-    v => { d.sheet = v; updatePreview(); }, { placeholder: '1' }));
+    v => { d.sheet = v; updatePreview(); }, { placeholder: '1', startTagHighlight: true }));
   row.appendChild(field('Rev', 'text', d.rev,
-    v => { d.rev = v; updatePreview(); }, { placeholder: 'A' }));
+    v => { d.rev = v; updatePreview(); }, { placeholder: 'A', startTagHighlight: true }));
   sub.appendChild(row);
   return sub;
 }
@@ -3743,11 +3859,12 @@ function renderItem(it, idx) {
   const titleWrap = el('div', { class: 'subsection-title-wrap' });
   titleWrap.appendChild(el('div', { class: 'subsection-title' }, 'Item'));
   titleWrap.appendChild(el('input', {
-    class: 'subsection-mini-input',
+    class: 'subsection-mini-input' + startTagHighlightClass(it.itemNumber),
     type: 'text',
-    value: it.itemNumber || String(idx + 1),
+    value: it.itemNumber || '',
+    placeholder: String(idx + 1),
     'aria-label': `Item number ${idx + 1}`,
-    oninput: e => { it.itemNumber = e.target.value; updatePreview(); }
+    oninput: e => { it.itemNumber = e.target.value; updatePreview(); syncStartTagHighlight(e.target, e.target.value); }
   }));
   head.appendChild(titleWrap);
   if (t.items.length > 1) {
@@ -3761,17 +3878,17 @@ function renderItem(it, idx) {
   // Bad parts / Total quantity
   const cnt = el('div', { class: 'row row-2' });
   cnt.appendChild(field('Bad Parts', 'text', it.countOf,
-    v => { it.countOf = v; updatePreview(); }, { placeholder: '1' }));
+    v => { it.countOf = v; updatePreview(); }, { placeholder: '1', startTagHighlight: true }));
   cnt.appendChild(field('Total Quantity', 'text', it.countTotal,
-    v => { it.countTotal = v; updatePreview(); }, { placeholder: '8' }));
+    v => { it.countTotal = v; updatePreview(); }, { placeholder: '8', startTagHighlight: true }));
   sub.appendChild(cnt);
 
   // Part number + description
   const part = el('div', { class: 'row row-2' });
   part.appendChild(field('Part Number', 'text', it.partNumber,
-    v => { it.partNumber = v; updatePreview(); }, { placeholder: '123Q1234-1' }));
+    v => { it.partNumber = v; updatePreview(); }, { placeholder: '123Q1234-1', startTagHighlight: true }));
   part.appendChild(field('Item Description', 'text', it.description,
-    v => { it.description = v; updatePreview(); }, { placeholder: 'Tube Assy' }));
+    v => { it.description = v; updatePreview(); }, { placeholder: 'Tube Assy', startTagHighlight: true }));
   sub.appendChild(part);
 
   // Discrepancy
@@ -3890,17 +4007,17 @@ function renderTemplateActions() {
     onclick: saveTemplate,
     title: '⌘S'
   }, 'Save Template'));
+  actions.appendChild(el('button', {
+    class: 'btn btn-ghost builder-action-btn builder-action-duplicate',
+    onclick: duplicateTemplate,
+    title: '⌘D'
+  }, 'Duplicate Template'));
   if (state.selectedId) {
     actions.appendChild(el('button', {
       class: 'btn btn-ghost builder-action-btn builder-action-danger',
       onclick: () => confirmTemplateDelete(state.selectedId)
     }, 'Delete'));
   }
-  actions.appendChild(el('button', {
-    class: 'btn btn-ghost builder-action-btn builder-action-duplicate',
-    onclick: duplicateTemplate,
-    title: '⌘D'
-  }, 'Duplicate Template'));
   return actions;
 }
 
@@ -3912,6 +4029,10 @@ function renderPreview() {
 
   const head = el('div', { class: 'preview-head' });
   head.appendChild(el('div', { class: 'preview-title' }, 'Live Preview'));
+  head.appendChild(el('button', {
+    class: 'preview-start-btn',
+    onclick: startMyTag
+  }, 'Start my tag'));
   wrap.appendChild(head);
 
   const body = el('div', { class: 'preview-body' });
@@ -3932,6 +4053,34 @@ function renderPreview() {
   wrap.appendChild(foot);
 
   return wrap;
+}
+
+function startMyTag() {
+  const t = state.current;
+
+  (t.drawings || []).forEach(d => {
+    if (d.number || d.sheet || d.rev) {
+      d.number = '';
+      d.sheet = '';
+      d.rev = '';
+    }
+  });
+
+  (t.items || []).forEach(it => {
+    it.itemNumber = '';
+    it.countOf = '';
+    it.countTotal = '';
+    it.partNumber = '';
+    it.description = '';
+  });
+
+  t.lso = '';
+  t.lio = '';
+  state.startTagMode = true;
+  state.previewSuppressed = false;
+  state.carrotPreviewSuppressed = false;
+  renderAll();
+  toast('Starter fields cleared');
 }
 
 // Lightweight update — only the preview text, keeps form focus intact.
@@ -4026,6 +4175,19 @@ function updateSpecRefControls() {
     const index = Number(btn.dataset.specRefIndex);
     btn.textContent = processSpecChipLabel((state.current.processSpecs || [])[index], index);
   });
+}
+
+function shouldStartTagHighlight(value) {
+  return !!state.startTagMode && !String(value ?? '').trim();
+}
+
+function startTagHighlightClass(value) {
+  return shouldStartTagHighlight(value) ? ' start-tag-required' : '';
+}
+
+function syncStartTagHighlight(control, value) {
+  if (!control) return;
+  control.classList.toggle('start-tag-required', shouldStartTagHighlight(value));
 }
 
 function hasPreviewInput(t) {
@@ -4127,9 +4289,9 @@ function buildPreviewBlocks(t) {
 
       blocks.push({ type: 'spacer' });
       if (sectionName) {
-        blocks.push({ type: 'heading', className: 'meas-hdr', label: sectionName });
+        blocks.push({ type: 'heading', className: 'meas-hdr', label: sectionName, preserveCase: true });
       }
-      blocks.push({ type: 'multiline', lines: String(sec.text).split('\n') });
+      blocks.push({ type: 'multiline', lines: String(sec.text).split('\n'), preserveCase: true });
     });
 
     if (it.sbText) {
@@ -4181,8 +4343,22 @@ function buildPreviewBlocks(t) {
   return blocks;
 }
 
-function renderPreviewRichText(text) {
-  return escapeHtml(text).replace(/\*([^*]+)\*/g, '<em>*$1*</em>');
+function applyPreviewCase(text, block) {
+  const source = String(text ?? '');
+  return state.uppercaseText && !(block && block.preserveCase)
+    ? source.toUpperCase()
+    : source;
+}
+
+function preservePreviewCase(html, block) {
+  return block && block.preserveCase
+    ? `<span class="preview-preserve-case">${html}</span>`
+    : html;
+}
+
+function renderPreviewRichText(text, block) {
+  const html = escapeHtml(applyPreviewCase(text, block)).replace(/\*([^*]+)\*/g, '<em>*$1*</em>');
+  return preservePreviewCase(html, block);
 }
 
 const FORMATTED_PREVIEW_WIDTH = 51;
@@ -4196,24 +4372,25 @@ function renderPreviewClassic(blocks) {
     }
     if (block.type === 'inline') {
       const labelClass = block.className || 'lbl';
-      const label = `<span class="${labelClass}">${escapeHtml(block.label)}</span>`;
-      lines.push(joinPreviewTokens([label, block.text]));
+      const label = `<span class="${labelClass}">${escapeHtml(applyPreviewCase(block.label, block))}</span>`;
+      lines.push(joinPreviewTokens([label, escapeHtml(applyPreviewCase(block.text, block))]));
       return;
     }
     if (block.type === 'heading') {
-      lines.push(`<span class="${block.className || 'meas-hdr'}">${escapeHtml(block.label)}</span>`);
+      const html = `<span class="${block.className || 'meas-hdr'}">${escapeHtml(applyPreviewCase(block.label, block))}</span>`;
+      lines.push(preservePreviewCase(html, block));
       return;
     }
     if (block.type === 'text') {
-      lines.push(escapeHtml(block.text));
+      lines.push(preservePreviewCase(escapeHtml(applyPreviewCase(block.text, block)), block));
       return;
     }
     if (block.type === 'multiline') {
-      block.lines.forEach(line => lines.push(escapeHtml(line)));
+      block.lines.forEach(line => lines.push(preservePreviewCase(escapeHtml(applyPreviewCase(line, block)), block)));
       return;
     }
     if (block.type === 'emphasis') {
-      block.lines.forEach(line => lines.push(renderPreviewRichText(line)));
+      block.lines.forEach(line => lines.push(renderPreviewRichText(line, block)));
     }
   });
   return lines.join('\n');
@@ -4249,13 +4426,15 @@ function wrapPlainText(text, width = FORMATTED_PREVIEW_WIDTH) {
 }
 
 function renderFormattedInlineBlock(block) {
-  const labelText = String(block.label || '');
+  const labelText = applyPreviewCase(block.label || '', block);
   const firstIndent = labelText + ' ';
   const nextIndent = ' '.repeat(firstIndent.length);
-  const lines = wrapIndentedText(block.text, firstIndent, nextIndent);
+  const lines = wrapIndentedText(applyPreviewCase(block.text, block), firstIndent, nextIndent);
   return lines.map((line, idx) => {
-    if (idx !== 0) return escapeHtml(line);
-    return `<span class="${block.className || 'lbl'} preview-inline-label">${escapeHtml(labelText)}</span> ${escapeHtml(line.slice(firstIndent.length))}`;
+    const html = idx !== 0
+      ? escapeHtml(line)
+      : `<span class="${block.className || 'lbl'} preview-inline-label">${escapeHtml(labelText)}</span> ${escapeHtml(line.slice(firstIndent.length))}`;
+    return preservePreviewCase(html, block);
   });
 }
 
@@ -4272,22 +4451,24 @@ function renderPreviewFormatted(blocks) {
       return;
     }
     if (block.type === 'heading') {
-      wrapPlainText(block.label).forEach((line, idx) => {
-        if (idx === 0) lines.push(`<span class="${block.className || 'meas-hdr'}">${escapeHtml(line)}</span>`);
-        else lines.push(escapeHtml(line));
+      wrapPlainText(applyPreviewCase(block.label, block)).forEach((line, idx) => {
+        const html = idx === 0
+          ? `<span class="${block.className || 'meas-hdr'}">${escapeHtml(line)}</span>`
+          : escapeHtml(line);
+        lines.push(preservePreviewCase(html, block));
       });
       return;
     }
     if (block.type === 'text') {
-      wrapPlainText(block.text).forEach(line => lines.push(escapeHtml(line)));
+      wrapPlainText(applyPreviewCase(block.text, block)).forEach(line => lines.push(preservePreviewCase(escapeHtml(line), block)));
       return;
     }
     if (block.type === 'multiline') {
-      block.lines.forEach(line => wrapPlainText(line).forEach(wrapped => lines.push(escapeHtml(wrapped))));
+      block.lines.forEach(line => wrapPlainText(applyPreviewCase(line, block)).forEach(wrapped => lines.push(preservePreviewCase(escapeHtml(wrapped), block))));
       return;
     }
     if (block.type === 'emphasis') {
-      block.lines.forEach(line => wrapPlainText(line).forEach(wrapped => lines.push(renderPreviewRichText(wrapped))));
+      block.lines.forEach(line => wrapPlainText(applyPreviewCase(line, block)).forEach(wrapped => lines.push(renderPreviewRichText(wrapped, block))));
     }
   });
 
@@ -4302,21 +4483,21 @@ function previewText(blocks) {
       return;
     }
     if (block.type === 'inline') {
-      const firstIndent = String(block.label || '') + ' ';
+      const firstIndent = applyPreviewCase(block.label || '', block) + ' ';
       const nextIndent = ' '.repeat(firstIndent.length);
-      wrapIndentedText(block.text, firstIndent, nextIndent).forEach(line => lines.push(line));
+      wrapIndentedText(applyPreviewCase(block.text, block), firstIndent, nextIndent).forEach(line => lines.push(line));
       return;
     }
     if (block.type === 'heading') {
-      wrapPlainText(block.label).forEach(line => lines.push(line));
+      wrapPlainText(applyPreviewCase(block.label, block)).forEach(line => lines.push(line));
       return;
     }
     if (block.type === 'text') {
-      wrapPlainText(block.text).forEach(line => lines.push(line));
+      wrapPlainText(applyPreviewCase(block.text, block)).forEach(line => lines.push(line));
       return;
     }
     if (block.type === 'multiline' || block.type === 'emphasis') {
-      block.lines.forEach(line => wrapPlainText(line).forEach(wrapped => lines.push(wrapped)));
+      block.lines.forEach(line => wrapPlainText(applyPreviewCase(line, block)).forEach(wrapped => lines.push(wrapped)));
     }
   });
   return lines.join('\n');
@@ -4335,10 +4516,9 @@ function previewHTML(t) {
 
 // Plain text for the clipboard.
 function previewPlainText(t) {
-  const text = hasPreviewInput(t)
+  return hasPreviewInput(t)
     ? previewText(buildPreviewBlocks(t))
     : 'Start typing to show live preview.';
-  return state.uppercaseText ? text.toUpperCase() : text;
 }
 
 function copyPreview() {
@@ -4758,50 +4938,81 @@ function exportAll() {
   toast('Exported');
 }
 
+function applyImportedJsonData(data) {
+  const incoming = data.tags || [];
+  const incomingTpl = data.templates || [];
+  const incomingCarrots = data.carrotTemplates || [];
+  const incomingDeleteHistory = data.deletionHistory || [];
+  const incomingCustomThemes = data.customThemes || [];
+  // Merge by id (incoming wins on conflict).
+  const byId = new Map(state.tags.map(t => [t.id, t]));
+  incoming.forEach(t => byId.set(t.id, migrateTag(t)));
+  state.tags = Array.from(byId.values());
+  const tplById = new Map(state.templates.map(t => [t.id, t]));
+  incomingTpl.forEach(t => tplById.set(t.id, migrateTag(t)));
+  state.templates = Array.from(tplById.values());
+  const carrotById = new Map(state.carrotTemplates.map(t => [t.id, t]));
+  incomingCarrots.forEach(t => carrotById.set(t.id, t));
+  state.carrotTemplates = Array.from(carrotById.values());
+  const deleteById = new Map((state.deletionHistory || []).map(t => [t.id, t]));
+  incomingDeleteHistory.forEach((t, i) => {
+    const row = {
+      id: t.id || ('imported_del_' + Date.now() + '_' + i),
+      title: t.title || 'Untitled',
+      bemsid: t.bemsid || '',
+      deletedAt: t.deletedAt || Date.now(),
+      type: t.type || ''
+    };
+    deleteById.set(row.id, row);
+  });
+  state.deletionHistory = Array.from(deleteById.values());
+  const customById = new Map((state.customThemes || []).map(t => [t.id, t]));
+  incomingCustomThemes.forEach((t, i) => {
+    const theme = normalizeCustomTheme({
+      ...t,
+      id: t.id || ('imported_theme_' + Date.now() + '_' + i)
+    });
+    customById.set(theme.id, theme);
+  });
+  state.customThemes = Array.from(customById.values());
+  if (data.activeTheme) state.activeTheme = data.activeTheme;
+  return {
+    tags: incoming.length,
+    templates: incomingTpl.length,
+    carrotTemplates: incomingCarrots.length
+  };
+}
+
+function bakedJsonHash(text) {
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+  }
+  return String(hash);
+}
+
+function applyBakedInJson() {
+  const raw = String(BAKED_IN_JSON || '').trim();
+  if (!raw || raw === 'Paste JSON here') return;
+  const hash = bakedJsonHash(raw);
+  if (localStorage.getItem(STORAGE_KEY + '.bakedJsonHash') === hash) return;
+  try {
+    applyImportedJsonData(JSON.parse(raw));
+    localStorage.setItem(STORAGE_KEY + '.bakedJsonHash', hash);
+    persist();
+  } catch (err) {
+    console.warn('Baked-in JSON was not loaded:', err);
+  }
+}
+
 function importFile(file) {
   const r = new FileReader();
   r.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-      const incoming = data.tags || [];
-      const incomingTpl = data.templates || [];
-      const incomingCarrots = data.carrotTemplates || [];
-      const incomingDeleteHistory = data.deletionHistory || [];
-      const incomingCustomThemes = data.customThemes || [];
-      // Merge by id (incoming wins on conflict).
-      const byId = new Map(state.tags.map(t => [t.id, t]));
-      incoming.forEach(t => byId.set(t.id, t));
-      state.tags = Array.from(byId.values());
-      const tplById = new Map(state.templates.map(t => [t.id, t]));
-      incomingTpl.forEach(t => tplById.set(t.id, t));
-      state.templates = Array.from(tplById.values());
-      const carrotById = new Map(state.carrotTemplates.map(t => [t.id, t]));
-      incomingCarrots.forEach(t => carrotById.set(t.id, t));
-      state.carrotTemplates = Array.from(carrotById.values());
-      const deleteById = new Map((state.deletionHistory || []).map(t => [t.id, t]));
-      incomingDeleteHistory.forEach((t, i) => {
-        const row = {
-          id: t.id || ('imported_del_' + Date.now() + '_' + i),
-          title: t.title || 'Untitled',
-          bemsid: t.bemsid || '',
-          deletedAt: t.deletedAt || Date.now(),
-          type: t.type || ''
-        };
-        deleteById.set(row.id, row);
-      });
-      state.deletionHistory = Array.from(deleteById.values());
-      const customById = new Map((state.customThemes || []).map(t => [t.id, t]));
-      incomingCustomThemes.forEach((t, i) => {
-        const theme = normalizeCustomTheme({
-          ...t,
-          id: t.id || ('imported_theme_' + Date.now() + '_' + i)
-        });
-        customById.set(theme.id, theme);
-      });
-      state.customThemes = Array.from(customById.values());
-      if (data.activeTheme) state.activeTheme = data.activeTheme;
+      const counts = applyImportedJsonData(data);
       persist();
-      toast(`Imported ${incoming.length} tags, ${incomingTpl.length} templates, and ${incomingCarrots.length} caret templates`);
+      toast(`Imported ${counts.tags} tags, ${counts.templates} templates, and ${counts.carrotTemplates} caret templates`);
       renderAll();
     } catch (err) {
       alert('Invalid JSON: ' + err.message);
@@ -5102,7 +5313,10 @@ const BUILTIN_THEMES = [
   { cls: 'theme-cyberpunk',      name: 'Cyberpunk',      kind: 'Dark',   bg: 'linear-gradient(135deg,#0a0014,#1a0033)', a: '#00ffd5', b: '#ff006e' },
   { cls: 'theme-alloy',          name: 'Alloy',          kind: 'Modern', bg: 'linear-gradient(135deg,#0d1117,#1f2937)', a: '#b8ff5c', b: '#00d4ff' },
   { cls: 'theme-emberline',      name: 'Emberline',      kind: 'Modern', bg: 'linear-gradient(135deg,#160f17,#2b1f0f)', a: '#ff6b6b', b: '#ffd166' },
-  { cls: 'theme-command',        name: 'Command',        kind: 'Modern', bg: 'linear-gradient(135deg,#06100c,#101827)', a: '#3cffb5', b: '#8ab4ff' }
+  { cls: 'theme-command',        name: 'Command',        kind: 'Modern', bg: 'linear-gradient(135deg,#06100c,#101827)', a: '#3cffb5', b: '#8ab4ff' },
+  { cls: 'theme-titanium',       name: 'Titanium',       kind: 'Dark',   bg: 'linear-gradient(135deg,#080b0f,#151d26)', a: '#7dd3fc', b: '#f8d66d' },
+  { cls: 'theme-carbon',         name: 'Carbon',         kind: 'Dark',   bg: 'linear-gradient(135deg,#050609,#16181d)', a: '#c8ff00', b: '#ff7a30' },
+  { cls: 'theme-blueprint',      name: 'Blueprint',      kind: 'Dark',   bg: 'linear-gradient(135deg,#03111f,#08213a)', a: '#2dd4bf', b: '#fb7185' }
 ];
 
 function renderCustomThemes() {
@@ -5382,6 +5596,7 @@ function showHoverPreview(card, template) {
   pop.style.left = left + 'px';
   pop.style.top = top + 'px';
   const popRect = pop.getBoundingClientRect();
+  if (pop.scrollHeight > pop.clientHeight + 1) pop.classList.add('is-long');
   if (popRect.right > window.innerWidth - 8) {
     left = Math.max(8, rect.left - popRect.width - 8);
     pop.style.left = left + 'px';
@@ -5441,6 +5656,7 @@ function toggleUppercaseText() {
 
 /* ---------- BOOT ---------- */
 loadPersisted();
+applyBakedInJson();
 seedDefaults();
 setupGlobalEvents();
 renderAll();
