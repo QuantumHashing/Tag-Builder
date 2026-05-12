@@ -925,18 +925,47 @@ select {
 }
 .preview-start-btn:active { transform: translateY(0); }
 .preview-body { flex: 1; overflow: auto; padding: 14px; }
-.preview-card {
-  position: relative; overflow: hidden;
+/* Card + Copy button live inside one frame so the button visually
+   attaches to the bottom of the live preview itself. */
+.preview-card-frame {
   width: calc(51ch + 38px);
   min-width: calc(51ch + 38px);
   max-width: none;
-  background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;
-  padding: 18px 18px 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  display: flex; flex-direction: column;
+}
+.preview-card {
+  position: relative; overflow: hidden;
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  padding: 18px 18px 14px;
   font-family: "SF Mono", "Menlo", "Consolas", monospace;
   font-size: 13px; line-height: 1.6;
   white-space: pre-wrap; word-break: break-word;
-  box-shadow: var(--shadow);
+  box-shadow: none;
 }
+.preview-card-copy {
+  display: block;
+  width: 100%;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  border: 1px solid transparent;
+  border-radius: 0 0 12px 12px;
+  background: var(--accent-grad);
+  color: #ffffff;
+  cursor: pointer;
+  transition: filter .15s ease, transform .12s ease;
+  white-space: nowrap;
+}
+.preview-card-copy:hover { filter: brightness(1.05); }
+.preview-card-copy:active { transform: translateY(1px); }
 .preview-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
   background: var(--accent-grad);
@@ -956,7 +985,7 @@ select {
 }
 .preview-card .meas-hdr {
   color: var(--accent-2); font-weight: 600;
-  text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;
+  font-size: 12px; letter-spacing: 0.2px;
 }
 .preview-card.formatted-preview,
 .tag-preview-pop.formatted-preview {
@@ -973,9 +1002,135 @@ select {
 .tag-preview-pop.formatted-preview .preview-inline-label {
   white-space: pre;
 }
-.preview-foot {
-  padding: 10px 14px; border-top: 1px solid var(--border);
-  display: flex; gap: 6px;
+/* .preview-foot is no longer rendered — the Copy button now lives
+   inside .preview-card-frame as a true bottom edge of the preview card. */
+
+/* ---------- PREVIEW NOTES (per-tag scratchpad under the preview) ---------- */
+/* Resizer between Copy button and Notes — drag vertically to resize notes */
+.preview-notes-resizer {
+  position: relative;
+  height: 8px;
+  flex-shrink: 0;
+  cursor: ns-resize;
+  background: transparent;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+  transition: background .15s ease;
+}
+.preview-notes-resizer:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.preview-notes-resizer-grip {
+  position: absolute;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 36px; height: 3px;
+  border-radius: 999px;
+  background: var(--text-muted);
+  opacity: .35;
+  pointer-events: none;
+  transition: opacity .15s ease, background .15s ease;
+}
+.preview-notes-resizer:hover .preview-notes-resizer-grip {
+  opacity: .8;
+  background: var(--accent);
+}
+body.resizing-v, body.resizing-v * { cursor: ns-resize !important; user-select: none !important; }
+.preview-notes.is-collapsed ~ .preview-notes-resizer,
+.preview-pane:has(.preview-notes.is-collapsed) .preview-notes-resizer { display: none; }
+
+.preview-notes {
+  position: relative;
+  margin: 0;
+  padding: 10px 14px 12px;
+  border: none;
+  border-radius: 0;
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+.preview-notes-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.preview-notes-title {
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 0.6px; text-transform: uppercase;
+  color: var(--accent-2);
+}
+.preview-notes-actions {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.preview-notes-icon-btn {
+  width: 26px; height: 26px;
+  padding: 0;
+  border-radius: 7px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all .15s ease;
+}
+.preview-notes-icon-btn svg { display: block; }
+.preview-notes-icon-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+}
+.preview-notes-icon-btn.is-active {
+  background: var(--accent-grad);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+.preview-notes-caret svg {
+  transition: transform .25s ease;
+}
+.preview-notes.is-collapsed .preview-notes-caret svg {
+  transform: rotate(180deg);
+}
+.preview-notes.is-collapsed { padding-bottom: 10px; }
+.preview-notes.is-collapsed .preview-notes-head { margin-bottom: 0; }
+.preview-notes.is-collapsed .preview-notes-text { display: none; }
+
+.preview-notes-text {
+  display: block;
+  width: 100%;
+  min-height: 60px;
+  padding: 9px 11px;
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--text-muted) 6%, var(--bg));
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: none;  /* sizing is controlled by the dedicated drag bar */
+  cursor: not-allowed;
+  transition: border .15s, background .15s, color .15s, box-shadow .15s;
+  box-sizing: border-box;
+}
+.preview-notes-text::placeholder {
+  color: var(--text-muted);
+  opacity: .55;
+  font-style: italic;
+}
+/* Suppress focus highlight while the textarea is read-only. */
+.preview-notes-text:focus { outline: none; }
+.preview-notes-text:not(.is-editing):focus,
+.preview-notes-text:not(.is-editing):focus-visible {
+  border-color: var(--border);
+  box-shadow: none;
+  background: color-mix(in srgb, var(--text-muted) 6%, var(--bg));
+}
+.preview-notes-text.is-editing {
+  color: var(--text);
+  background: var(--bg);
+  border-style: solid;
+  border-color: var(--accent);
+  cursor: text;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 /* ---------- MODAL ---------- */
@@ -1615,12 +1770,27 @@ body.drag-importing .drop-overlay { display: flex; }
 .guide-tab.active {
   background: var(--accent-grad); color: white; border-color: transparent;
 }
-.guide-tab .x {
+.guides-tabs-spacer { flex: 1 1 0; min-width: 0; }
+.guide-trash-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 18px; height: 18px; border-radius: 4px; font-size: 14px;
-  opacity: 0.7;
+  width: 34px; height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all .15s ease;
+  margin-left: auto;
 }
-.guide-tab .x:hover { background: rgba(255,255,255,0.25); opacity: 1; }
+.guide-trash-btn svg { display: block; }
+.guide-trash-btn:hover {
+  color: #ffffff;
+  background: #d33;
+  border-color: #d33;
+  box-shadow: 0 4px 12px rgba(211,51,51,0.28);
+}
+.guide-trash-btn:active { transform: scale(.96); }
 .guide-viewer { padding: 12px 16px; overflow: hidden; }
 .guide-viewer iframe {
   width: 100%; height: 100%; border: 1px solid var(--border);
@@ -1965,7 +2135,7 @@ body.theme-rosegold .section {
 }
 .tag-preview-pop .meas-hdr {
   color: var(--accent-2); font-weight: 700;
-  text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;
+  font-size: 11px; letter-spacing: 0.2px;
 }
 .tag-preview-pop .preview-placeholder { color: var(--text-muted); font-style: italic; }
 @keyframes popIn {
@@ -2078,79 +2248,40 @@ body.custom-theme-vars .subsection {
 
 /* ---------- Measurement section card ---------- */
 .meas-section {
-  position: relative;
-  padding: 8px 10px;
-  margin: 6px 0;
-  border-radius: 9px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--accent) 4%, var(--surface-2));
-  transition: border-color .2s ease, box-shadow .25s ease, background .2s;
+  margin: 4px 0 6px;
 }
-.meas-section::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 8px; bottom: 8px;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--accent-grad);
-  opacity: .55;
+/* Subtle divider between stacked measurement sections inside the same item. */
+.meas-section + .meas-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
 }
-.meas-section:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 14%, transparent);
+.meas-section-row {
+  align-items: end;
 }
-.meas-section-head {
-  display: flex; align-items: center; gap: 6px;
-  margin-bottom: 4px;
-}
-.meas-section-name-wrap {
-  flex: 1;
-  display: flex; align-items: center; gap: 7px;
-  padding: 2px 6px 2px 9px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
-  transition: border-color .15s, box-shadow .15s, background .15s;
-}
-.meas-section-name-wrap:focus-within {
-  border-color: var(--accent);
-  background: var(--bg);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
-}
-.meas-section-edit-icon {
-  flex-shrink: 0;
-  width: 15px; height: 15px;
-  color: var(--accent-2);
-  opacity: .9;
-}
-.meas-section-name {
-  flex: 1;
-  min-width: 0;
-  padding: 5px 2px;
-  font: inherit; color: inherit;
-  border: none;
-  background: transparent;
-  font-weight: 700; font-size: 13px; letter-spacing: 0.3px;
-  background: var(--accent-grad);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.meas-section-name::placeholder {
-  -webkit-text-fill-color: var(--text-muted);
-  opacity: .6; font-weight: 500; letter-spacing: 0;
-}
-.meas-section-name:focus {
-  outline: none;
-  -webkit-text-fill-color: var(--text);
+.meas-section-row-has-del {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
 }
 .meas-section-del {
-  width: 24px; height: 24px;
+  width: 26px; height: 28px;
+  margin-bottom: 1px;
   border-radius: 6px;
-  font-size: 16px;
+  font-size: 16px; line-height: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
   color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all .15s ease;
   flex-shrink: 0;
 }
-.meas-section-del:hover { background: var(--border); color: var(--accent-2); }
+.meas-section-del:hover {
+  color: #fff;
+  background: #d33;
+  border-color: #d33;
+}
 
 .add-btn-meas {
   display: block;
@@ -3318,6 +3449,7 @@ const blankTag = () => ({
   attachmentsText: '*See Attachments*',
   otherBlocks: [],      // [{ id, label, text }] free-form trailing notes
   headerOthers: [],     // [{ id, label, value }] extra header-row inputs
+  notes: '',            // free-form note shown in the live preview only — never copied/exported into the tag text
   pinned: false,        // pin tags to the top of the sidebar (favorites)
   tags: [],             // user tags (chips) for organization
   createdAt: Date.now(),
@@ -3396,6 +3528,8 @@ const state = {
   showSidebarTags: true,
   showNcrInNcoList: false,
   crossTabLoaded: false,
+  notesCollapsed: false, // transient — collapses the preview-notes panel
+  notesHeight: 80,       // transient — current notes textarea height (px)
   settingsReturnTab: 'NCRs',
   history: [],       // undo stack [{type, payload, label}]
   redoStack: []
@@ -3431,7 +3565,7 @@ function loadPersisted() {
     state.activeTheme = data.activeTheme || state.activeTheme;
     state.tags = (data.tags || []).map(migrateTag);
     state.templates = (data.templates || []).map(migrateTag);
-    state.carrotTemplates = data.carrotTemplates || [];
+    state.carrotTemplates = (data.carrotTemplates || []).map(migrateCarrotTemplate);
     state.deletionHistory = Array.isArray(data.deletionHistory) ? data.deletionHistory : [];
     state.customThemes = data.customThemes || [];
     state.formattedPreview = !!data.formattedPreview;
@@ -3449,12 +3583,28 @@ function loadPersisted() {
 function migrateTag(t) {
   if (!t || typeof t !== 'object') return t;
   if (!Array.isArray(t.otherBlocks)) t.otherBlocks = [];
+  // Other-text blocks no longer carry labels — wipe any legacy ones once
+  // so the preview no longer renders them as headings.
+  t.otherBlocks.forEach(o => { if (o) o.label = ''; });
   if (!Array.isArray(t.headerOthers)) t.headerOthers = [];
+  if (typeof t.notes !== 'string') t.notes = '';
   if (!Array.isArray(t.tags)) t.tags = [];
   if (Array.isArray(t.items)) {
     t.items = t.items.map(it => migrateItem(it));
   }
   return t;
+}
+
+// Caret templates were imported as-is — guarantee the required shape so
+// older or hand-edited exports don't throw when accessed.
+function migrateCarrotTemplate(c) {
+  if (!c || typeof c !== 'object') return c;
+  if (typeof c.id !== 'string' || !c.id) {
+    c.id = 'carrot_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  }
+  if (typeof c.name !== 'string') c.name = '';
+  if (typeof c.text !== 'string') c.text = '';
+  return c;
 }
 
 function migrateItem(it) {
@@ -3906,13 +4056,36 @@ function startResize(e, side) {
 }
 
 function getPreviewMinWidth() {
+  const frame = document.querySelector('.preview-card-frame');
   const card = document.querySelector('.preview-card');
   const body = document.querySelector('.preview-body');
-  const cardWidth = card ? Math.ceil(card.getBoundingClientRect().width) : 470;
+  // Prefer the frame's measured width since it owns the fixed 51ch+38px
+  // sizing; fall back to the card and finally a safe constant so resizing
+  // never collapses the live preview below the card's natural width.
+  let cardWidth = 0;
+  if (frame) cardWidth = Math.ceil(frame.getBoundingClientRect().width);
+  if (!cardWidth && card) cardWidth = Math.ceil(card.getBoundingClientRect().width);
+  if (!cardWidth) cardWidth = 480;
   const bodyStyle = body ? getComputedStyle(body) : null;
   const padLeft = bodyStyle ? parseFloat(bodyStyle.paddingLeft) || 0 : 14;
   const padRight = bodyStyle ? parseFloat(bodyStyle.paddingRight) || 0 : 14;
-  return Math.ceil(cardWidth + padLeft + padRight + 2);
+  return Math.ceil(cardWidth + padLeft + padRight + 4);
+}
+
+// Ensure the preview pane is at least wide enough to render the card without
+// horizontal clipping. Called after the first paint so getBoundingClientRect
+// reflects real measurements.
+function ensurePreviewWidthFits() {
+  const min = getPreviewMinWidth();
+  if (state.previewWidth < min) {
+    state.previewWidth = min;
+    const main = document.querySelector('#main');
+    if (main && (state.activeTab === 'NCRs' || state.activeTab === 'NCOs')) {
+      main.style.gridTemplateColumns =
+        `${state.sidebarWidth}px 6px minmax(0, 1fr) 6px ${state.previewWidth}px`;
+    }
+    persist();
+  }
 }
 
 // Map active tab → tag.type ("NCR" or "NCO")
@@ -4827,9 +5000,8 @@ function renderHeaderOther(h, idx) {
 
 function renderOtherBlock(o, idx) {
   const t = state.current;
-  // Other-text blocks are now label-less — the textarea stands on its own
-  // and the surrounding subsection just hosts a remove button.
-  o.label = '';
+  // Other-text blocks are label-less — labels were stripped at load time by
+  // migrateTag(), so no further wiping is needed in the render path.
   const sub = el('div', { class: 'subsection other-block other-block-bare' });
   const head = el('div', { class: 'subsection-head other-block-head' });
   head.appendChild(el('div', { class: 'other-block-spacer' }));
@@ -4899,7 +5071,12 @@ function buildTagChipsWrap(t) {
 // user's cursor / unsaved edits stay in place.
 function refreshTagChipsOnly(opts = {}) {
   const t = state.current;
-  if (state.selectedId) {
+  // In cross-tab mode the builder holds a fresh clone targeted at the
+  // current tab's type — the matching sidebar template is the source of
+  // the OTHER type. We don't want tag edits leaking back into that source.
+  // Just keep the tags on state.current; they'll persist when the user
+  // saves this as a new template.
+  if (state.selectedId && !state.crossTabLoaded) {
     const tpl = state.templates.find(x => x.id === state.selectedId);
     if (tpl) {
       tpl.tags = Array.isArray(t.tags) ? t.tags.slice() : [];
@@ -5173,32 +5350,32 @@ function renderItem(it, idx) {
 
 function renderMeasSection(it, sec, sIdx) {
   const wrap = el('div', { class: 'meas-section' });
-  const head = el('div', { class: 'meas-section-head' });
-  const nameWrap = el('div', { class: 'meas-section-name-wrap other-block-label-wrap' });
-  nameWrap.appendChild(el('label', { class: 'other-block-label-tag' }, 'Label'));
-  nameWrap.appendChild(el('input', {
-    class: 'meas-section-name other-block-label-input',
-    type: 'text',
-    value: '',
-    placeholder: sec.name || 'Measurements',
-    'aria-label': 'Editable measurement section title',
-    oninput: e => { sec.name = e.target.value; updatePreview(); }
-  }));
-  head.appendChild(nameWrap);
+
+  // Header row: label + (optional) × remove. Uses the standard field()
+  // so the layout matches the rest of the item's form fields.
+  const labelRow = el('div', {
+    class: 'row meas-section-row'
+      + ((it.measSections || []).length > 1 ? ' meas-section-row-has-del' : '')
+  });
+  labelRow.appendChild(field('Section label', 'text', sec.name,
+    v => { sec.name = v; updatePreview(); },
+    { placeholder: 'Measurements' }));
   if ((it.measSections || []).length > 1) {
-    head.appendChild(el('button', {
+    labelRow.appendChild(el('button', {
       class: 'del-btn meas-section-del',
       title: 'Remove section',
+      'aria-label': 'Remove measurement section',
       onclick: () => { it.measSections.splice(sIdx, 1); renderAll(); }
     }, '×'));
   }
-  wrap.appendChild(head);
+  wrap.appendChild(labelRow);
 
-  const meas = el('div', { class: 'row measurement-field' });
-  meas.appendChild(field('', 'text', sec.text,
+  // Measurement input — same standard field layout.
+  const measRow = el('div', { class: 'row' });
+  measRow.appendChild(field('Measurement', 'text', sec.text,
     v => { sec.text = v; updatePreview(); },
     { placeholder: '0.172"L x 0.086"W x 0.007"D' }));
-  wrap.appendChild(meas);
+  wrap.appendChild(measRow);
 
   return wrap;
 }
@@ -5274,6 +5451,7 @@ function renderPreview() {
   wrap.appendChild(head);
 
   const body = el('div', { class: 'preview-body' });
+  const frame = el('div', { class: 'preview-card-frame' });
   const card = el('div', {
     class: 'preview-card'
       + (state.formattedPreview ? ' formatted-preview' : '')
@@ -5281,16 +5459,186 @@ function renderPreview() {
     id: 'previewCard'
   });
   card.innerHTML = currentPreviewHTML();
-  body.appendChild(card);
+  frame.appendChild(card);
+  frame.appendChild(el('button', {
+    class: 'preview-card-copy',
+    onclick: copyPreview,
+    title: 'Copy to clipboard (⌘Enter)'
+  }, '📋 Copy to clipboard'));
+  body.appendChild(frame);
   wrap.appendChild(body);
 
-  const foot = el('div', { class: 'preview-foot' });
-  foot.appendChild(el('button', {
-    class: 'btn btn-primary btn-block', onclick: copyPreview, title: '⌘Enter'
-  }, '📋 Copy to clipboard'));
-  wrap.appendChild(foot);
+  wrap.appendChild(renderPreviewNotesResizer());
+  wrap.appendChild(renderPreviewNotes());
 
   return wrap;
+}
+
+function renderPreviewNotesResizer() {
+  const bar = el('div', {
+    class: 'preview-notes-resizer',
+    id: 'previewNotesResizer',
+    title: 'Drag to resize notes',
+    'aria-label': 'Resize notes area',
+    onmousedown: startNotesResize
+  });
+  bar.appendChild(el('div', { class: 'preview-notes-resizer-grip', 'aria-hidden': 'true' }));
+  return bar;
+}
+
+function startNotesResize(e) {
+  // Don't fight the click on the grip when notes is collapsed.
+  if (state.notesCollapsed) return;
+  e.preventDefault();
+  const ta = document.getElementById('previewNotesText');
+  if (!ta) return;
+  const startY = e.clientY;
+  const startHeight = ta.offsetHeight;
+  document.body.classList.add('resizing-v');
+  function onMove(ev) {
+    const dy = ev.clientY - startY;
+    // Drag up (dy negative) → grow notes textarea. Drag down → shrink.
+    const next = Math.max(40, Math.min(560, startHeight - dy));
+    ta.style.height = next + 'px';
+    state.notesHeight = next;
+  }
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    document.body.classList.remove('resizing-v');
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+/* ----------------------------------------------------------------------------
+   PREVIEW NOTES — per-tag scratchpad that only lives in the preview pane.
+   Greyed-out by default; pencil button enables editing; Save button stores
+   the note to state.current AND (if a template is selected, including the
+   cross-tab source) to that saved template — without touching any of the
+   other builder fields.
+   ---------------------------------------------------------------------------- */
+function renderPreviewNotes() {
+  const t = state.current;
+  const collapsed = !!state.notesCollapsed;
+  const wrap = el('div', {
+    class: 'preview-notes' + (collapsed ? ' is-collapsed' : ''),
+    id: 'previewNotes'
+  });
+
+  const head = el('div', { class: 'preview-notes-head' });
+  head.appendChild(el('div', { class: 'preview-notes-title' }, 'Notes'));
+
+  const actions = el('div', { class: 'preview-notes-actions' });
+
+  // Pencil ↔ check toggle — single button slot that swaps icon based on mode.
+  const pencilBtn = el('button', {
+    class: 'preview-notes-icon-btn preview-notes-pencil',
+    id: 'previewNotesPencil',
+    title: 'Edit note',
+    'aria-label': 'Edit note',
+    onclick: togglePreviewNotesEdit
+  });
+  pencilBtn.innerHTML = pencilIconSvg();
+  actions.appendChild(pencilBtn);
+
+  // Caret toggle — collapses/expands the notes panel. Rotates via CSS when collapsed.
+  const caretBtn = el('button', {
+    class: 'preview-notes-icon-btn preview-notes-caret',
+    id: 'previewNotesCaret',
+    title: collapsed ? 'Show notes' : 'Hide notes',
+    'aria-label': collapsed ? 'Show notes' : 'Hide notes',
+    'aria-expanded': collapsed ? 'false' : 'true',
+    onclick: togglePreviewNotesCollapsed,
+    html: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>'
+  });
+  actions.appendChild(caretBtn);
+
+  head.appendChild(actions);
+  wrap.appendChild(head);
+
+  const ta = el('textarea', {
+    class: 'preview-notes-text',
+    id: 'previewNotesText',
+    readonly: 'readonly',
+    placeholder: 'Click the pencil to add a note for this tag…',
+    rows: '4',
+    'aria-label': 'Tag notes'
+  });
+  ta.value = t.notes || '';
+  if (state.notesHeight) ta.style.height = state.notesHeight + 'px';
+  wrap.appendChild(ta);
+
+  return wrap;
+}
+
+function pencilIconSvg() {
+  return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>';
+}
+
+function checkIconSvg() {
+  return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="5 12 10 17 19 7"></polyline></svg>';
+}
+
+function togglePreviewNotesEdit() {
+  const ta = document.getElementById('previewNotesText');
+  const btn = document.getElementById('previewNotesPencil');
+  if (!ta || !btn) return;
+  const editing = ta.classList.contains('is-editing');
+  if (editing) {
+    // Save and exit edit mode.
+    const value = ta.value;
+    state.current.notes = value;
+    if (state.selectedId) {
+      const tpl = state.templates.find(x => x.id === state.selectedId);
+      if (tpl) {
+        tpl.notes = value;
+        tpl.updatedAt = Date.now();
+      }
+    }
+    persist();
+    ta.setAttribute('readonly', 'readonly');
+    ta.classList.remove('is-editing');
+    btn.innerHTML = pencilIconSvg();
+    btn.title = 'Edit note';
+    btn.setAttribute('aria-label', 'Edit note');
+    btn.classList.remove('is-active');
+    toast('Note saved');
+  } else {
+    // Enter edit mode — expand if collapsed.
+    if (state.notesCollapsed) {
+      state.notesCollapsed = false;
+      const wrap = document.getElementById('previewNotes');
+      const caret = document.getElementById('previewNotesCaret');
+      if (wrap) wrap.classList.remove('is-collapsed');
+      if (caret) {
+        caret.setAttribute('aria-expanded', 'true');
+        caret.title = 'Hide notes';
+        caret.setAttribute('aria-label', 'Hide notes');
+      }
+    }
+    ta.removeAttribute('readonly');
+    ta.classList.add('is-editing');
+    ta.focus();
+    const len = ta.value.length;
+    try { ta.setSelectionRange(len, len); } catch (e) { /* noop */ }
+    btn.innerHTML = checkIconSvg();
+    btn.title = 'Save note';
+    btn.setAttribute('aria-label', 'Save note');
+    btn.classList.add('is-active');
+  }
+}
+
+function togglePreviewNotesCollapsed() {
+  state.notesCollapsed = !state.notesCollapsed;
+  const wrap = document.getElementById('previewNotes');
+  const caret = document.getElementById('previewNotesCaret');
+  if (wrap) wrap.classList.toggle('is-collapsed', state.notesCollapsed);
+  if (caret) {
+    caret.setAttribute('aria-expanded', state.notesCollapsed ? 'false' : 'true');
+    caret.title = state.notesCollapsed ? 'Show notes' : 'Hide notes';
+    caret.setAttribute('aria-label', state.notesCollapsed ? 'Show notes' : 'Hide notes');
+  }
 }
 
 function startMyTag() {
@@ -5302,6 +5650,12 @@ function startMyTag() {
       d.sheet = '';
       d.rev = '';
     }
+  });
+
+  (t.processSpecs || []).forEach(s => {
+    s.number = '';
+    s.section = '';
+    s.rev = '';
   });
 
   (t.items || []).forEach(it => {
@@ -5457,10 +5811,16 @@ function buildPreviewBlocks(t) {
     const label = String(h.label || '').trim();
     const value = String(h.value || '').trim();
     if (!label && !value) return;
+    if (!label) {
+      // No label → render as a plain text line so we don't leave a leading
+      // space (formatted preview) or an empty <span class="lbl"></span> (classic).
+      blocks.push({ type: 'text', text: value });
+      return;
+    }
     blocks.push({
       type: 'inline',
       className: 'lbl',
-      label: label ? `${label}:` : '',
+      label: `${label}:`,
       text: value
     });
   });
@@ -5973,7 +6333,12 @@ function saveCarrotTemplate() {
 }
 
 function duplicateTemplate() {
-  const name = (state.current.templateName || '').trim() || 'Untitled';
+  const rawName = (state.current.templateName || '').trim();
+  if (!rawName) {
+    toast('Name the template first');
+    return;
+  }
+  const name = rawName;
   openModal('Duplicate template?', [
     el('div', {
       class: 'field-hint',
@@ -6057,6 +6422,7 @@ function deleteTemplateById(templateId, bemsid = '') {
     state.current = blankTagForType(currentTagType());
     state.selectedId = null;
     state.selectedCarrotId = null;
+    state.crossTabLoaded = false;
     state.previewSuppressed = false;
     state.carrotPreviewSuppressed = false;
   }
@@ -6259,7 +6625,10 @@ function applyImportedJsonData(data) {
   incomingTpl.forEach(t => tplById.set(t.id, migrateTag(t)));
   state.templates = Array.from(tplById.values());
   const carrotById = new Map(state.carrotTemplates.map(t => [t.id, t]));
-  incomingCarrots.forEach(t => carrotById.set(t.id, t));
+  incomingCarrots.forEach(t => {
+    const m = migrateCarrotTemplate(t);
+    carrotById.set(m.id, m);
+  });
   state.carrotTemplates = Array.from(carrotById.values());
   const deleteById = new Map((state.deletionHistory || []).map(t => [t.id, t]));
   incomingDeleteHistory.forEach((t, i) => {
@@ -6415,17 +6784,6 @@ function renderGuides() {
       onclick: () => { state.activeGuideIdx = i; renderAll(); }
     });
     t.appendChild(document.createTextNode(g.name));
-    t.appendChild(el('span', {
-      class: 'x',
-      onclick: e => {
-        e.stopPropagation();
-        URL.revokeObjectURL(state.guides[i].url);
-        state.guides.splice(i, 1);
-        if (state.activeGuideIdx >= state.guides.length)
-          state.activeGuideIdx = Math.max(0, state.guides.length - 1);
-        renderAll();
-      }
-    }, '×'));
     tabs.appendChild(t);
   });
 
@@ -6433,6 +6791,19 @@ function renderGuides() {
     class: 'btn btn-ghost',
     onclick: () => $('#filePdf').click()
   }, '+ Add PDF'));
+
+  // Trash button appears on the far right when a PDF is selected.
+  if (state.guides.length > 0) {
+    tabs.appendChild(el('div', { class: 'guides-tabs-spacer' }));
+    tabs.appendChild(el('button', {
+      class: 'guide-trash-btn',
+      title: 'Delete current PDF',
+      'aria-label': 'Delete current PDF',
+      onclick: () => confirmGuideDelete(state.activeGuideIdx),
+      html: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>'
+    }));
+  }
+
   wrap.appendChild(tabs);
 
   const view = el('div', { class: 'guide-viewer' });
@@ -6452,6 +6823,36 @@ function renderGuides() {
   }
   wrap.appendChild(view);
   return wrap;
+}
+
+function confirmGuideDelete(idx) {
+  const g = state.guides[idx];
+  if (!g) return;
+  const name = g.name || 'this PDF';
+  openModal('Remove PDF?', [
+    el('div', {
+      class: 'field-hint',
+      style: 'white-space:normal;line-height:1.5'
+    }, `Remove "${name}" from the Guides tab? The original file on disk is not deleted.`)
+  ], [
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+    el('button', {
+      class: 'btn btn-danger',
+      onclick: () => {
+        const removed = state.guides[idx];
+        if (removed && typeof removed.url === 'string' && removed.url.startsWith('blob:')) {
+          URL.revokeObjectURL(removed.url);
+        }
+        state.guides.splice(idx, 1);
+        if (state.activeGuideIdx >= state.guides.length) {
+          state.activeGuideIdx = Math.max(0, state.guides.length - 1);
+        }
+        closeModal();
+        renderAll();
+        toast('PDF removed');
+      }
+    }, 'Remove')
+  ]);
 }
 
 /* ============================================================================
@@ -6629,6 +7030,9 @@ function renderAll() {
   renderUndoButton();
   syncFeatureButtons();
   restoreScrollPositions(savedScroll);
+  // After paint, double-check the preview pane is wide enough so the
+  // initial layout (and any later re-render) never clips the live preview.
+  requestAnimationFrame(ensurePreviewWidthFits);
 }
 
 function syncFeatureButtons() {
@@ -7235,15 +7639,26 @@ function renderTourStep() {
   });
 }
 
-let tourSavedSelectedId = null;
+// Snapshot of the builder state taken before the tour loads a sample template.
+// On close we restore exactly what the user had — which is naturally a blank
+// tag when the tour is launched right after the splash screen.
+let tourPriorState = null;
 
 function openTour() {
   tourIndex = 0;
   const overlay = document.getElementById('tourOverlay');
   if (!overlay) return;
 
-  // Stash what the user had loaded so we can clear cleanly when the tour ends.
-  tourSavedSelectedId = state.selectedId;
+  // Snapshot the user's in-progress builder so we can restore on close.
+  tourPriorState = {
+    current: clone(state.current),
+    selectedId: state.selectedId,
+    selectedCarrotId: state.selectedCarrotId,
+    crossTabLoaded: !!state.crossTabLoaded,
+    previewSuppressed: !!state.previewSuppressed,
+    carrotPreviewSuppressed: !!state.carrotPreviewSuppressed,
+    startTagMode: !!state.startTagMode
+  };
 
   // Load the first available template into the builder so the preview shows
   // a real tag while the user walks the tour.
@@ -7277,15 +7692,27 @@ function closeTour() {
     window.removeEventListener('scroll', tourResizeHandler, true);
     tourResizeHandler = null;
   }
-  // Clear the form back to a blank tag when the tour finishes.
-  state.current = blankTagForType(currentTagType());
-  state.selectedId = null;
-  state.selectedCarrotId = null;
-  state.crossTabLoaded = false;
-  state.previewSuppressed = false;
-  state.carrotPreviewSuppressed = false;
-  state.startTagMode = false;
-  tourSavedSelectedId = null;
+  // Restore whatever the user had before the tour. After the first-run
+  // splash that snapshot is a blank tag, so the form still ends up empty.
+  // From the ? replay button it puts the user's work back.
+  if (tourPriorState) {
+    state.current = tourPriorState.current;
+    state.selectedId = tourPriorState.selectedId;
+    state.selectedCarrotId = tourPriorState.selectedCarrotId;
+    state.crossTabLoaded = tourPriorState.crossTabLoaded;
+    state.previewSuppressed = tourPriorState.previewSuppressed;
+    state.carrotPreviewSuppressed = tourPriorState.carrotPreviewSuppressed;
+    state.startTagMode = tourPriorState.startTagMode;
+    tourPriorState = null;
+  } else {
+    state.current = blankTagForType(currentTagType());
+    state.selectedId = null;
+    state.selectedCarrotId = null;
+    state.crossTabLoaded = false;
+    state.previewSuppressed = false;
+    state.carrotPreviewSuppressed = false;
+    state.startTagMode = false;
+  }
   renderAll();
 }
 
