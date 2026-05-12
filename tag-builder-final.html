@@ -3815,6 +3815,8 @@ function seedDefaults() {
     attachmentsEnabled: true,
     attachmentsText: '*See Attachments*',
     otherBlocks: [],
+    headerOthers: [],
+    notes: '',
     tags: ['example', 'tube'],
     pinned: false,
     createdAt: Date.now(),
@@ -4129,7 +4131,6 @@ function startResize(e, side) {
   e.preventDefault();
   const main = $('#main');
   if (!main) return;
-  const mainRect = main.getBoundingClientRect();
   const startX = e.clientX;
   const startSidebar = state.sidebarWidth;
   const startPreview = state.previewWidth;
@@ -4330,7 +4331,7 @@ function renderSettingsPage() {
     featureCard('Live preview', 'Preview formatted tag text as you type, then copy it directly to the clipboard.'),
     featureCard('Process spec references', 'Select one or more process specs for S/B auto-reference text.'),
     featureCard('Custom measurement sections', 'Add editable measurement/custom text sections with named headings.'),
-    featureCard('Other notes', 'Append custom labeled blocks after the main tag fields.'),
+    featureCard('Other notes', 'Append free-form text blocks after the main tag fields.'),
     featureCard('Caret templates', 'Save reusable NCO caret/work-instruction text.'),
     featureCard('Tags and filtering', 'Organize templates with tags and filter them from the sidebar dropdown.'),
     featureCard('PDF guides', 'Load local guide PDFs into tabs for side-by-side reference.'),
@@ -5604,6 +5605,8 @@ function startNotesResize(e) {
     // Drag up (dy negative) → grow notes textarea. Drag down → shrink.
     const next = Math.max(40, Math.min(560, startHeight - dy));
     ta.style.height = next + 'px';
+    const rendered = document.getElementById('previewNotesRendered');
+    if (rendered) rendered.style.height = next + 'px';
     state.notesHeight = next;
   }
   function onUp() {
@@ -5661,7 +5664,11 @@ function renderPreviewNotes() {
 
   // Read-only rendered view — supports markdown-ish "- [ ]" / "- [x]"
   // checkboxes that the user can click to toggle without entering edit mode.
-  wrap.appendChild(renderNotesContent(t.notes));
+  const rendered = renderNotesContent(t.notes);
+  // Keep the rendered view's height in sync with the textarea height so
+  // toggling between view/edit modes doesn't visibly resize the panel.
+  if (state.notesHeight) rendered.style.height = state.notesHeight + 'px';
+  wrap.appendChild(rendered);
 
   // Edit view — textarea bound to live-persist on every keystroke so any
   // re-render mid-edit won't wipe in-progress typing.
@@ -5703,9 +5710,15 @@ function renderNotesContent(text) {
     const mChecked = /^(\s*)- \[(x|X)\] (.*)$/.exec(line);
     if (mUnchecked || mChecked) {
       const isChecked = !!mChecked;
+      const indent = isChecked ? mChecked[1] : mUnchecked[1];
       const labelText = isChecked ? mChecked[3] : mUnchecked[2];
       lineEl.classList.add('preview-notes-line-todo');
       if (isChecked) lineEl.classList.add('is-done');
+      // Preserve leading whitespace as a left padding so indented sub-items
+      // visibly nest under their parents in the rendered view.
+      if (indent && indent.length) {
+        lineEl.style.paddingLeft = indent.length + 'ch';
+      }
       const cb = el('button', {
         class: 'preview-notes-checkbox' + (isChecked ? ' is-checked' : ''),
         type: 'button',
@@ -5752,7 +5765,10 @@ function toggleNotesCheckbox(lineIdx) {
 function refreshPreviewNotesRendered() {
   const old = document.getElementById('previewNotesRendered');
   if (!old) return;
-  old.replaceWith(renderNotesContent(state.current.notes));
+  const fresh = renderNotesContent(state.current.notes);
+  // Preserve the user-dragged height so checkbox toggles don't shrink/jump.
+  if (state.notesHeight) fresh.style.height = state.notesHeight + 'px';
+  old.replaceWith(fresh);
 }
 
 /* Live-write the note to state.current AND to the matching saved template
@@ -5763,10 +5779,9 @@ function liveUpdateNotes(value) {
   state.current.notes = value;
   if (state.selectedId) {
     const tpl = state.templates.find(x => x.id === state.selectedId);
-    if (tpl) {
-      tpl.notes = value;
-      tpl.updatedAt = Date.now();
-    }
+    // Notes are meta — don't bump tpl.updatedAt so the template doesn't
+    // jump to the top of "Recent" sort while the user types.
+    if (tpl) tpl.notes = value;
   }
   clearTimeout(_notesPersistTimer);
   _notesPersistTimer = setTimeout(persist, 250);
@@ -5794,10 +5809,8 @@ function togglePreviewNotesEdit() {
     state.current.notes = ta.value;
     if (state.selectedId) {
       const tpl = state.templates.find(x => x.id === state.selectedId);
-      if (tpl) {
-        tpl.notes = ta.value;
-        tpl.updatedAt = Date.now();
-      }
+      // Same rule as liveUpdateNotes — notes edits don't bump updatedAt.
+      if (tpl) tpl.notes = ta.value;
     }
     persist();
     ta.setAttribute('readonly', 'readonly');
@@ -6500,14 +6513,15 @@ function updateCurrentTemplate() {
 function computeTemplateDiff(a, b) {
   const out = [];
   const SCALAR_FIELDS = [
-    ['templateName',       'Template name'],
-    ['revisionNumber',     'Revision #'],
-    ['lso',                'LSO'],
-    ['lio',                'LIO'],
-    ['attachmentsEnabled', 'Attachments line shown'],
-    ['attachmentsText',    'Attachments text'],
-    ['carrotsText',        'Caret text'],
-    ['notes',              'Notes']
+    ['templateName',        'Template name'],
+    ['revisionNumber',      'Revision #'],
+    ['lso',                 'LSO'],
+    ['lio',                 'LIO'],
+    ['attachmentsEnabled',  'Attachments line shown'],
+    ['attachmentsText',     'Attachments text'],
+    ['carrotTemplateName',  'Caret template'],
+    ['carrotsText',         'Caret text'],
+    ['notes',               'Notes']
   ];
   SCALAR_FIELDS.forEach(([key, label]) => {
     const before = a[key] ?? '';
@@ -7105,6 +7119,12 @@ function isJsonFile(file) {
    MODAL helpers
    ============================================================================ */
 function openModal(title, options, footer) {
+  // Drop focus from any underlying input/textarea so keystrokes don't keep
+  // mutating the form (or live-update notes) while the modal is open.
+  if (document.activeElement && typeof document.activeElement.blur === 'function'
+      && document.activeElement !== document.body) {
+    document.activeElement.blur();
+  }
   const m = $('#modal');
   m.innerHTML = '';
   m.appendChild(el('h3', {}, title));
@@ -7909,7 +7929,7 @@ const TOUR_STEPS = [
     fallback: '#main'
   },
   {
-    target: '.preview-foot .btn',
+    target: '.preview-card-copy',
     pos: 'left',
     title: 'Copy tag',
     body: 'Sends the preview to your clipboard. Shortcut: <strong>⌘ Enter</strong> / <strong>Ctrl Enter</strong>.',
