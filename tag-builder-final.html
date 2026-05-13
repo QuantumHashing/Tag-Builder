@@ -4946,9 +4946,7 @@ function renderBuilder() {
 
   wrap.appendChild(head);
 
-  if (state.activeTab !== 'NCOs') {
-    wrap.appendChild(el('div', { class: 'builder-divider', 'aria-hidden': 'true' }));
-  }
+  wrap.appendChild(el('div', { class: 'builder-divider', 'aria-hidden': 'true' }));
 
   // ----- Header / Revision section -----
   const revSec = section('Header');
@@ -5222,7 +5220,9 @@ function field(labelText, type, value, onInput, extra = {}) {
     min: extra.min, max: extra.max,
     oninput: e => {
       // Auto-strip scanner prefixes on text inputs (number fields untouched).
-      if (type === 'text' && state.scanPrefixStrip) {
+      // Fields like Rev opt out via extra.noScanStrip so users can type a
+      // leading "-" without it being eaten as a scanner separator.
+      if (type === 'text' && state.scanPrefixStrip && !extra.noScanStrip) {
         const stripped = stripScanPrefix(e.target.value);
         if (stripped !== e.target.value) e.target.value = stripped;
       }
@@ -5332,7 +5332,7 @@ function renderDrawing(d, idx) {
   row.appendChild(field('Sheet', 'text', d.sheet,
     v => { d.sheet = v; updatePreview(); }, { placeholder: '1', startTagHighlight: true }));
   row.appendChild(field('Rev', 'text', d.rev,
-    v => { d.rev = v; updatePreview(); }, { placeholder: 'A', startTagHighlight: true }));
+    v => { d.rev = v; updatePreview(); }, { placeholder: 'A', startTagHighlight: true, noScanStrip: true }));
   sub.appendChild(row);
   return sub;
 }
@@ -5357,7 +5357,7 @@ function renderSpec(s, idx) {
   row.appendChild(field('Section', 'text', s.section,
     v => { s.section = v; updatePreview(); updateSpecRefControls(); }, { placeholder: '11.1a', startTagHighlight: true }));
   row.appendChild(field('Rev', 'text', s.rev,
-    v => { s.rev = v; updatePreview(); }, { placeholder: 'A', startTagHighlight: true }));
+    v => { s.rev = v; updatePreview(); }, { placeholder: 'A', startTagHighlight: true, noScanStrip: true }));
   sub.appendChild(row);
   return sub;
 }
@@ -5479,7 +5479,7 @@ function renderMeasSection(it, sec, sIdx) {
   const measRow = el('div', { class: 'row' });
   measRow.appendChild(field('Measurement', 'text', sec.text,
     v => { sec.text = v; updatePreview(); },
-    { placeholder: '0.172"L x 0.086"W x 0.007"D' }));
+    { placeholder: '0.172"L x 0.086"W x 0.007"D', startTagHighlight: true }));
   wrap.appendChild(measRow);
 
   return wrap;
@@ -5551,7 +5551,9 @@ function renderPreview() {
   head.appendChild(el('div', { class: 'preview-title' }, 'Live Preview'));
   head.appendChild(el('button', {
     class: 'preview-start-btn',
-    onclick: startMyTag
+    onclick: startMyTag,
+    title: 'Click a template and then click start tag',
+    'aria-label': 'Click a template and then click start tag'
   }, 'Start my tag'));
   wrap.appendChild(head);
 
@@ -5596,16 +5598,24 @@ function startNotesResize(e) {
   if (state.notesCollapsed) return;
   e.preventDefault();
   const ta = document.getElementById('previewNotesText');
-  if (!ta) return;
+  const rendered = document.getElementById('previewNotesRendered');
+  if (!ta && !rendered) return;
   const startY = e.clientY;
-  const startHeight = ta.offsetHeight;
+  // ta is display:none outside edit mode, so its offsetHeight is 0 then —
+  // fall back to whichever element is actually laid out, then the persisted
+  // height. Without this the next drag baselines from 0 and the bar lags
+  // the mouse / snaps to the min.
+  const startHeight =
+    (ta && ta.offsetHeight) ||
+    (rendered && rendered.offsetHeight) ||
+    state.notesHeight ||
+    80;
   document.body.classList.add('resizing-v');
   function onMove(ev) {
     const dy = ev.clientY - startY;
     // Drag up (dy negative) → grow notes textarea. Drag down → shrink.
     const next = Math.max(40, Math.min(560, startHeight - dy));
-    ta.style.height = next + 'px';
-    const rendered = document.getElementById('previewNotesRendered');
+    if (ta) ta.style.height = next + 'px';
     if (rendered) rendered.style.height = next + 'px';
     state.notesHeight = next;
   }
@@ -5871,18 +5881,13 @@ function startMyTag() {
     }
   });
 
-  (t.processSpecs || []).forEach(s => {
-    s.number = '';
-    s.section = '';
-    s.rev = '';
-  });
-
   (t.items || []).forEach(it => {
     it.itemNumber = '';
     it.countOf = '';
     it.countTotal = '';
     it.partNumber = '';
     it.description = '';
+    (it.measSections || []).forEach(sec => { sec.text = ''; });
   });
 
   t.lso = '';
@@ -6035,7 +6040,7 @@ function buildPreviewBlocks(t) {
     blocks.push({
       type: 'inline',
       className: 'lbl',
-      label: `${label}:`,
+      label: label,
       text: value
     });
   });
