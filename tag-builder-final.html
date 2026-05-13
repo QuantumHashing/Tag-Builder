@@ -6151,7 +6151,7 @@ function buildPreviewBlocks(t) {
 
   if (t.attachmentsEnabled && t.attachmentsText) {
     blocks.push({ type: 'spacer' });
-    blocks.push({ type: 'emphasis', lines: String(t.attachmentsText).split('\n') });
+    blocks.push({ type: 'emphasis', lines: String(t.attachmentsText).split('\n'), preserveCase: true });
   }
 
   (t.otherBlocks || []).forEach(o => {
